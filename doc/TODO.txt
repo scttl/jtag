@@ -1,29 +1,21 @@
                         JTAG TODO LIST
                        ****************
 
-$Id: TODO.txt,v 1.4 2003-07-31 19:14:10 scottl Exp $
+$Id: TODO.txt,v 1.5 2003-09-15 17:56:19 scottl Exp $
 
 Menu Completion
 ---------------
  * Need to create buttons and commands for the zoom menu (different presets)
- * Create a status bar giving info on # of pages, current page, selection mode
- *? Ability to undo selctions
- * create 'auto_classify' button that ties into training data and classifier
-   app.
 
 Image Related
 -------------
  * Update selection so that when creating rectangle and moving outside of
    display window, we automatically scroll in the proper direction
- * Shrink window to the size of the image (should never see blank canvas)
+ * Shrink window to the size of the image (should never see blank canvas) or
+   at least prevent selections from extending beyond edge of image.
 
 Classification Related
 ----------------------
- * Create command/ability to split a box into 2 (user could then
-   resize/reclassify it as necc)
- * Create/record ability for user to group selections together.  Write info to
-   jtag file (i.e. box 1 group with box 3 and 4)
-
 
 Function Call Hardening
 -----------------------
@@ -40,3 +32,8 @@ Application Design
  * Audit all code, and potentially redesign/re-engineer where needed (ex. poss. 
    separate file to deal with all things related to a single selection, move 
    code around etc.)
+
+ Documentation
+ -------------
+  * generate a useage.txt end user guide and roll it into the application when
+    they press the 'help' button
