@@ -5,7 +5,7 @@
 ## DESCRIPTION: Sample configuration file to be distributed with jtag
 ##              application.
 ##
-## CVS: $Id: .jconfig,v 1.1 2003-07-10 19:20:36 scottl Exp $
+## CVS: $Id: .jconfig,v 1.2 2003-07-16 19:33:16 scottl Exp $
 ##
 ################################################################################
 
@@ -22,6 +22,7 @@
 # whereas simple only allows the user to select vertical boundaries by
 # clicking with the mouse (orizontal boundaries are the image width
 # boundaries)
+#mode = simple
 mode = crop
 
 # window_size:
@@ -61,10 +62,22 @@ bucket_size = 50 50
 # values).  Each classifier will be separted by whitespace/newlines, and the 
 # component name and colour can not contain any spaces.
 classifiers = (
-               body_text blue
-               title     green
-               equation  red
-               image     orange
-               graph     yellow
-               pg_number brown
+               abstract             red
+               authour_list         tomato
+               decoration           orange
+               end_notes            goldenrod
+               equation_no_number   yellow
+               equation_numbered    khaki
+               footer               OliveDrab
+               footnote             green
+               graph                DarkSeaGreen
+               header               cyan
+               image                DeepSkyBlue
+               main_title           SteelBlue
+               references           Navy
+               section_heading      SlateGray
+               subsection_heading   DarkViolet
+               table                magenta
+               text                 DeepPink
+               toc                  brown
                )
