@@ -8,22 +8,25 @@ function m = xycut(img_file, varargin)
 %   process bottoms out when the valleys are less than H_THRESH and V_THRESH 
 %   pixels in length.
 %   
-%   The nx4 matrix M returned lists the left,top,bottom,right co-ordinated of
+%   The nx4 matrix M returned lists the left,top,bottom,right co-ordinates of
 %   each of the n segments created.
 %
 %   H_THRESH and V_THRESH are optional, and if left unspecified H_THRESH
-%   defaults to: 50 and V_THRESH defaults to: 50
+%   defaults to: 30 and V_THRESH defaults to: 30
 %
 %   If there is a problem at any point, an error is returned to the caller.
 
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.1 2003-08-01 22:01:36 scottl Exp $
+% $Id: xycut.m,v 1.2 2003-08-12 22:21:42 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.1  2003-08-01 22:01:36  scottl
+% Revision 1.2  2003-08-12 22:21:42  scottl
+% Changed default thresholds to 30 and 30.
+%
+% Revision 1.1  2003/08/01 22:01:36  scottl
 % Initial revision.
 %
 
@@ -31,8 +34,8 @@ function m = xycut(img_file, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-ht = 50;  % default horizontal threshold (if not passed above)
-vt = 50;  % default vertical threshold (if not passed above)
+ht = 30;  % default horizontal threshold (if not passed above)
+vt = 30;  % default vertical threshold (if not passed above)
 
 
 % first do some argument sanity checking on the argument passed
