@@ -35,7 +35,8 @@ dead_segs = [];
 %Next, the horizontal full pass on each live_seg
 [live_segs,ds] = seg_pass(ww,live_segs,pix,1,1,jt);
 dead_segs = [dead_segs;ds];
-
+segs = [live_segs;dead_segs];
+return;
 [live_segs,ds] = seg_pass(ww,live_segs,pix,0,0,jt);
 dead_segs = [dead_segs;ds];
 
@@ -89,6 +90,10 @@ while (length(live_segs) > 0);
         seg_ll_n(seg_samps(i).cut_before,seg_samps(i).cut_after) = n;
     end;
     fprintf('        Scored all seg_samps, t=%i.\n',toc);
+    global seg_mat_y;
+    seg_mat_y = seg_ll_y;
+    global seg_mat_n;
+    seg_mat_n = seg_ll_n;
     
 
     %Create a "path" and "score" with just the first candidate set to 1.

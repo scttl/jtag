@@ -24,6 +24,7 @@ else;
     fvals = reshape([samp.feat_vals],length(samp.feat_vals),1);
     cnames = ww.class_names;
     fvals = fvals + ww.norm_add;
+    ww.norm_div(find(ww.norm_div==0)) = 1;
     fvals = fvals ./ ww.norm_div;
 
     C = length(cnames);

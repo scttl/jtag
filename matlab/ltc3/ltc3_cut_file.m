@@ -73,6 +73,8 @@ cut_classes = {'no','yes'};
 done_segs = [];
 dead_segs = [];
 while (length(live_segs) > 0);
+    %fprintf('Pass with live_segs=\n');
+    %disp(live_segs);
     valid_cuts = [];
     paths = [];
     seg = live_segs(1,:);
@@ -84,18 +86,21 @@ while (length(live_segs) > 0);
         cut_cands = cut_cands(find([cut_cands.horizontal]==h));
         cut_samps = ltc3_make_samples_from_cands(cut_cands,pix,jt,h,f,seg);
     end;
+    %fprintf('Found %i cut cands.\n',length(cut_cands));
 
     %Evaluate the candidates
     for i=1:length(cut_cands);
         samp = cut_samps(i);
         cand = cut_cands(i);
         [score_y,score_n] = ltc3_score_seg(samp,ww);
+        %fprintf('Cand %i: y=%f, n=%f\n',i,score_y,score_n);
         if (score_y > score_n);
             samp.valid_cut = true;
             cand.valid_cut = true;
             valid_cuts = [valid_cuts;cand];
         end;
     end;
+    %fprintf('Of which, %i were valid.\n',length(valid_cuts));
     
     %Make the valid cuts
     if (length(valid_cuts) > 0);
@@ -109,3 +114,6 @@ while (length(live_segs) > 0);
 end;
 
 live_segs = done_segs;
+
+%fprintf('After pass, live_segs=\n');
+%disp(live_segs);

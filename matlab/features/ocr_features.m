@@ -154,7 +154,7 @@ end;
 %%% runs ocr on each subimage
 
 if (nargin < 5);
-    work_dir = './ocr_processing_tmp';
+    work_dir = './ocr_processing_tmp/';
 end;
 
 if (length(dir(work_dir)) == 0);
@@ -265,10 +265,12 @@ for i = 1:num_rects;
     pat = '(.*?)\w+(.*?)';
     [s, f] = regexp(ocr_text, pat, 'once');
     word = ' ';
-    for j = s(1):f(1);
-      if(~isspace(ocr_text(j)))
-         word = strcat(word, ocr_text(j));
-      end;
+    if (length(s) >0) && (length(f) > 0);
+        for j = s(1):f(1);
+          if(~isspace(ocr_text(j)))
+             word = strcat(word, ocr_text(j));
+          end;
+        end;
     end;
 
     distance_measure = 'levenshtein.perl';

@@ -91,7 +91,7 @@ for i = 1:length(jt.class_id);
     end;
 end;
 
-fprintf('Plotting %s', jt.img_file);
+fprintf('Plotting %s\n', jt.img_file);
 seg_plot(imread(jt.img_file),jt.rects,f,colours);
 
 
