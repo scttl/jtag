@@ -57,10 +57,11 @@ function yn = ComesBefore(ind1,ind2,jt);
     elseif (ind2 > size(jt.rects,1));
         yn = true;
     else;
-        if (((useSlope * jt.rects(ind1,2)) + jt.rects(ind1,1)) < ...
-            ((useSlope * jt.rects(ind2,2)) + jt.rects(ind2,1)));
-            yn = true;
-        else
-            yn = false;
-        end;
+        yn = rect_comes_before(jt.rects(ind1,:),jt.rects(ind2,:));
+        %if (((useSlope * jt.rects(ind1,2)) + jt.rects(ind1,1)) < ...
+        %    ((useSlope * jt.rects(ind2,2)) + jt.rects(ind2,1)));
+        %    yn = true;
+        %else
+        %    yn = false;
+        %end;
     end;

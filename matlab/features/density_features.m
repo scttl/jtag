@@ -15,11 +15,14 @@ function res = density_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: density_features.m,v 1.1 2004-06-19 00:27:26 klaven Exp $
+% $Id: density_features.m,v 1.2 2004-07-29 20:41:56 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: density_features.m,v $
-% Revision 1.1  2004-06-19 00:27:26  klaven
+% Revision 1.2  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.1  2004/06/19 00:27:26  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.6  2004/06/08 00:56:50  klaven
@@ -87,27 +90,33 @@ rect = rects(rr,:);
 % feature 1 counts the percentage of non-background pixels over the total
 % number of pixels inside the rectangle passed.
 res(rr,1).name  = 'rect_dens';
+res(rr,1).norm = false;
 
 % feature 2 is similar to 1, but calculates the percentage of non-backgorund
 % pixels over the total number of pixels inside the "snapped" subrectangle of
 % the rectangle passed.
 res(rr,2).name  = 'sr_dens';
+res(rr,2).norm = false;
 
 % feature 3 is the "sharpness" of the horizontal projection.  This should help
 % distinquish between text and non-text regions (when the document is
 % properly aligned).
 res(rr,3).name = 'h_sharpness';
+res(rr,3).norm = false;
 
 % feature 4 is a boolean indicating whether there appears to be a horizontal
 % line stretching across the region.
 res(rr,4).name = 'h_line';
+res(rr,4).norm = true;
 
 % feature 5 is a boolean indicating whether there appears to be a vertical
 % line stretching across the region.
 res(rr,5).name = 'v_line';
+res(rr,5).norm = true;
 
 % feature 6 is the fraction of the total ink falling in the left quarter
 res(rr,6).name = 'left_quarter_ink_fraction';
+res(rr,6).norm = false;
 
 % features 7 and on deal with the number of marks on the page, and their sizes
 

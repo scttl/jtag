@@ -43,7 +43,7 @@ for i = 1:length(jt.class_id);
         
         case 'authour_list'
             colours(:,i) = [0;0;0.6];
-        case {'equation_no_number', 'equation_numbered'}
+        case {'equation', 'equation_numbered'}
             colours(:,i) = [0;0;0.8];
         case 'bullet_item'
             colours(:,i) = [0;0;1];

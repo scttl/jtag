@@ -29,11 +29,14 @@ function w = memm_train(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: memm_train.m,v 1.3 2004-07-27 22:01:27 klaven Exp $
+% $Id: memm_train.m,v 1.4 2004-07-29 20:41:57 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: memm_train.m,v $
-% Revision 1.3  2004-07-27 22:01:27  klaven
+% Revision 1.4  2004-07-29 20:41:57  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.3  2004/07/27 22:01:27  klaven
 % The new function memm_fn can be used with the jtag software.  Made changes to several other files to accomodate this.
 %
 % Revision 1.2  2004/07/22 15:55:55  klaven
@@ -74,6 +77,11 @@ data = memm_add_td_label_features(data);
 w.class_names = data.class_names;
 w.weights = [];
 w.feature_names = data.feat_names;
+
+norms = find_norms(data);
+data = normalize_td(data,norms);
+w.norm_add = data.norm_add;
+w.norm_div = data.norm_div;
 
 % cc is the list of all selections class id's
 cc = [];

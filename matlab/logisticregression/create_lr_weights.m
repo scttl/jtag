@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
+% $Id: create_lr_weights.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.2  2004-07-01 16:45:50  klaven
+% Revision 1.3  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.2  2004/07/01 16:45:50  klaven
 % Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -76,6 +79,11 @@ end
 w.class_names = data.class_names;
 w.weights = [];
 w.feature_names = data.feat_names;
+
+norms = find_norms(data);
+data = normalize_td(data,norms);
+w.norm_add = data.norm_add;
+w.norm_div = data.norm_div;
 
 % cc is the list of all selections class id's
 cc = [];

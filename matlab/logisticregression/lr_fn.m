@@ -20,11 +20,14 @@ function class_id = lr_fn(class_names, features, jtag_file, in_weights)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: lr_fn.m,v 1.2 2004-07-27 22:00:11 klaven Exp $
+% $Id: lr_fn.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: lr_fn.m,v $
-% Revision 1.2  2004-07-27 22:00:11  klaven
+% Revision 1.3  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.2  2004/07/27 22:00:11  klaven
 % changed lr_fn so that it accepts the jtag file (or path to it).  This will allow us to extract features based on the file name (such as which page number it is).
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -77,10 +80,11 @@ for i = 1:size(weights.class_names,2)
     end
     if j == size(class_names,2)
         % weights class not found in class_names list
-        error('weights.class_names{i} not found in CLASS_NAMES list');
+        error([weights.class_names{i} ' not found in CLASS_NAMES list']);
     end
 end
 
+features = normalize_feats(features,weights);
 
 % get the transpose of features
 features = features';

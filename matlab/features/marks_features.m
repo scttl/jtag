@@ -15,11 +15,14 @@ function res = marks_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: marks_features.m,v 1.2 2004-06-28 16:22:38 klaven Exp $
+% $Id: marks_features.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: marks_features.m,v $
-% Revision 1.2  2004-06-28 16:22:38  klaven
+% Revision 1.3  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.2  2004/06/28 16:22:38  klaven
 % *** empty log message ***
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -80,45 +83,59 @@ rect = rects(rr,:);
 
 % Number of marks in the region.
 res(rr,1).name  = 'num_marks';
+res(rr,1).norm = false;
 
 % Number of marks per hundred pixels.  Essentially, marks per unit area.
 res(rr,2).name  = 'marks_per_hundred_pixels';
+res(rr,2).norm = false;
 
 % Number of marks per unit width.
 res(rr,3).name = 'marks_per_pixel_wide';
+res(rr,3).norm = false;
 
 % Number of marks per unit height.
 res(rr,4).name = 'marks_per_pixel_high';
+res(rr,4).norm = false;
 
 % Average number of pixels in each mark.
 res(rr,5).name = 'avg_pixels_per_mark';
+res(rr,5).norm = false;
 
 % Standard deviation of number of pixels in each mark.
 res(rr,6).name = 'std_pixels_per_mark';
+res(rr,6).norm = false;
 
 % Number of pixels in the single largest mark.
 res(rr,7).name = 'pixels_in_largest_mark';
+res(rr,7).norm = false;
 
 % Height of the largest mark.
 res(rr,8).name = 'largest_mark_height';
+res(rr,8).norm = false;
 
 % Width of the largest mark.
 res(rr,9).name = 'largest_mark_width';
+res(rr,9).norm = false;
 
 % Area (Height * Width) of the largest mark
 res(rr,10).name = 'largets_mark_area';
+res(rr,10).norm = false;
 
 % Height of the highest mark.
 res(rr,11).name = 'highest_mark_height';
+res(rr,11).norm = false;
 
 % Width of the highest mark.
 res(rr,12).name = 'highest_mark_width';
+res(rr,12).norm = false;
 
 % Height of the widest mark.
 res(rr,13).name = 'widest_mark_height';
+res(rr,13).norm = false;
 
 % Width of the widest mark.
 res(rr,14).name = 'widest_mark_width';
+res(rr,14).norm = false;
 
 if get_names
     return;

@@ -15,11 +15,14 @@ function res = distance_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: distance_features.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: distance_features.m,v 1.2 2004-07-29 20:41:56 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: distance_features.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.6  2004/06/08 00:56:50  klaven
@@ -108,77 +111,123 @@ rect = rects(rr,:);
 % associated edge in the "snapped" subrectangle (must contain at least
 % threshold percent ink)
 res(rr,1).name  = 'l_inksr_dist';
+res(rr,1).norm = false;
 res(rr,2).name  = 't_inksr_dist';
+res(rr,2).norm = false;
 res(rr,3).name  = 'r_inksr_dist';
+res(rr,3).norm = false;
 res(rr,4).name  = 'b_inksr_dist';
+res(rr,4).norm = false;
 
 % features 5 - 8 compute the distance from one edge of the rectangle to the
 % associated edge of the page
 res(rr,5).name  = 'l_page_dist';
+res(rr,5).norm = true;
 res(rr,6).name  = 't_page_dist';
+res(rr,6).norm = true;
 res(rr,7).name  = 'r_page_dist';
+res(rr,7).norm = true;
 res(rr,8).name  = 'b_page_dist';
+res(rr,8).norm = true;
 
 % features 9 - 12 copmute the distance from one edge of the "snapped"
 % subrectangle to the associated edge of the page.  This is really the sum of
 % the first and second group of features above, i.e.
 % res(9) = res(1) + res(5) etc.
 res(rr,9).name   = 'l_inksr_page_dist';
+res(rr,9).norm = true;
 res(rr,10).name  = 't_inksr_page_dist';
+res(rr,10).norm = true;
 res(rr,11).name  = 'r_inksr_page_dist';
+res(rr,11).norm = true;
 res(rr,12).name  = 'b_inksr_page_dist';
+res(rr,12).norm = true;
 
 % features 13 - 16 compute the distance from one edge of the rectangle to the
 % next threshold significant non-whitespace region.
 res(rr,13).name  = 'l_ws_dist';
+res(rr,13).norm = false;
 res(rr,14).name = 't_ws_dist';
+res(rr,14).norm = false;
 res(rr,15).name = 'r_ws_dist';
+res(rr,15).norm = false;
 res(rr,16).name = 'b_ws_dist';
+res(rr,16).norm = false;
 
 % features 17 - 20 compute the distance from one edge of the "snapped"
 % subrectangle to the next threshold significant non-whitespace region.
 % This is really the sum of the first and fourth group of features above, i.e.
 % res(17) = res(1) + res(13) etc.
 res(rr,17).name = 'l_inksr_ws_dist';
+res(rr,17).norm = false;
 res(rr,18).name = 't_inksr_ws_dist';
+res(rr,18).norm = false;
 res(rr,19).name = 'r_inksr_ws_dist';
+res(rr,19).norm = false;
 res(rr,20).name = 'b_inksr_ws_dist';
+res(rr,20).norm = false;
 
 res(rr,21).name = 'height';
+res(rr,21).norm = false;
 res(rr,22).name = 'width';
+res(rr,22).norm = false;
 res(rr,23).name = 'area';
+res(rr,23).norm = false;
 res(rr,24).name = 'height_over_width';
+res(rr,24).norm = false;
 res(rr,25).name = 'width_over_height';
+res(rr,25).norm = false;
 
 res(rr,26).name = 'is_centered';
+res(rr,26).norm = true;
 
 res(rr,27).name = 'on_left_edge';
+res(rr,27).norm = true;
 res(rr,28).name = 'on_top_edge';
+res(rr,28).norm = true;
 res(rr,29).name = 'on_right_edge';
+res(rr,29).norm = true;
 res(rr,30).name = 'on_bottom_edge';
+res(rr,30).norm = true;
 
 res(rr,31).name = 'furthest_left';
+res(rr,31).norm = true;
 res(rr,32).name = 'furthest_up';
+res(rr,32).norm = true;
 res(rr,33).name = 'furthest_right';
+res(rr,33).norm = true;
 res(rr,34).name = 'furthest_down';
+res(rr,34).norm = true;
 
 res(rr,35).name = 'left_neighbour_dist';
+res(rr,35).norm = false;
 res(rr,36).name = 'top_neighbour_dist';
+res(rr,36).norm = false;
 res(rr,37).name = 'right_neighbour_dist';
+res(rr,37).norm = false;
 res(rr,38).name = 'bottom_neighbour_dist';
+res(rr,38).norm = false;
 
 res(rr,39).name = 'left_neighbour_covers';
+res(rr,39).norm = true1;
 res(rr,40).name = 'top_neighbour_covers';
+res(rr,40).norm = true;
 res(rr,41).name = 'right_neighbour_covers';
+res(rr,41).norm = true;
 res(rr,42).name = 'bottom_neighbour_covers';
+res(rr,42).norm = true;
 
 res(rr,43).name = 'covers_left_neighbour';
+res(rr,43).norm = true;
 res(rr,44).name = 'covers_top_neighbour';
+res(rr,44).norm = true;
 res(rr,45).name = 'covers_right_neighbour';
+res(rr,45).norm = true;
 res(rr,46).name = 'covers_bottom_neighbour';
+res(rr,46).norm = true;
 
-
-
+res(rr,47).name = 'rect_order_fraction';
+res(rr,47).norm = true;
 
 
 if get_names
@@ -539,5 +588,18 @@ else
   res(rr,46).val = 0;
 end;
 
+%res(rr,47).name = 'rect_order_fraction';
+%Build a fake training data structure so that we can sort the regions.
+rnum = 0;
+for i=1:size(rects,1);
+    if (rect_comes_before(rects(i,:),rects(rr,:)));
+        rnum = rnum + 1;
+    end;
+end;
+if (size(rects,1)==1);
+    res(rr,47).val = 0;
+else;
+    res(rr,47).val = (rnum / (size(rects,1)-1));
+end;
 
 end;

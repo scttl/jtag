@@ -1,7 +1,7 @@
 function res = build_all_td(batchname);
 
     nipsTrainDirs = {'/p/learning/klaven/Journals/TAGGED/nips_2001/', ...
-                     '/p/learning//klaven/Journals/TAGGED/nips_2002/'};
+                     '/p/learning/klaven/Journals/TAGGED/nips_2002/'};
     nipsTestDirs = {'/p/learning/klaven/Journals/TEST_DATA/nips_2001/', ...
                     '/p/learning/klaven/Journals/TEST_DATA/nips_2002/'};
 
@@ -9,14 +9,14 @@ function res = build_all_td(batchname);
     jmlrTestDirs = {'/p/learning/klaven/Journals/TEST_DATA/jmlr/'};
 
     fprintf('For nips training data:\n');
-    build_td(nipsTrainDirs,['nips-train-',batchname],true);
+    build_td(nipsTrainDirs,[batchname '-nips-train'],true);
     fprintf('For nips test data:\n');
-    build_td(nipsTestDirs,['nips-test-',batchname],false);
+    build_td(nipsTestDirs,[batchname '-nips-test'],false);
 
     fprintf('For jmlr training data:\n');
-    build_td(jmlrTrainDirs,['jmlr-train-',batchname],true);
+    build_td(jmlrTrainDirs,[batchname '-jmlr-train'],true);
     fprintf('For jmlr test data:\n');
-    build_td(jmlrTestDirs,['jmlr-test-',batchname],false);
+    build_td(jmlrTestDirs,[batchname '-jmlr-test'],false);
 
 
 %*********************************************
@@ -38,10 +38,11 @@ function res = build_td(dirs,fname,dolr);
     tmp_td = create_training_data(trnfiles);
 
     fprintf('     Done feature extraction.  Saving knn data.\n');
-    dump_training_data(tmp_td, strcat(fname, '.knn.data'));
+    dump_training_data(tmp_td, strcat(fname, '.knn.mat'));
 
     if (nargin == 3) && dolr;
         build_lr(tmp_td,fname);
+        build_memm(tmp_td,fname);
     end;
 
 function res = build_lr(td, fname);
@@ -51,4 +52,10 @@ function res = build_lr(td, fname);
 
     fprintf('     Done LR optimization.  Saving results.');
     dump_lr_weights(tmp_lrweights, strcat(fname, '.lr.mat'));
+
+function res = build_memm(td,fname);
+    
+    fprintf('    Starting MEMM optimization');
+    tmp_memm_weights = memm_train(td,1e-3,1e4, strcat(fname,'.memm.mat'));
+    fprintf('    Done MEMM optimization.  Results saved');
 

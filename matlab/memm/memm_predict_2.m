@@ -36,6 +36,8 @@ function path = predict_page(pg,w,jt);
 
 global class_names;
 
+pg.features = normalize_feats(pg.features,w);
+
 firstguess = best_page_guess(pg,w,jt);
 
 prev_path(1).labels = {'start_of_page'};

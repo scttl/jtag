@@ -1,11 +1,15 @@
-function feature_vals = run_all_features(rects, pix_file)
+function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 % RUN_ALL_FEATURES    Iterates through each feature available on RECT,  building
 %                     up a cell array containing all the results.
 %
-%   RES = RUN_ALL_FEATURES(RECTS, PIX_FILE)  This function runs through each
+%   [FEATURE_VALS,F_NORM] = RUN_ALL_FEATURES(RECTS, PIX_FILE)  
+%   This function runs through each
 %   feature listed, passing the appropriate arguments, collecting the result
-%   and adding it to the vector RES which is returned once all features have
+%   and adding it to the vector which is returned once all features have
 %   been completed.
+%
+%   F_NORM is a boolean indicating if the feature is "naturally normalized",
+%   with values between 0 and 1, and a mean expected to be near 0.5.
 %
 %   If called without any arguments, then feature_vals returned is a cell
 %   array containing the names of each feature instead of feature data.
@@ -18,11 +22,14 @@ function feature_vals = run_all_features(rects, pix_file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.2 2004-07-27 21:57:58 klaven Exp $
+% $Id: run_all_features.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.2  2004-07-27 21:57:58  klaven
+% Revision 1.3  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.2  2004/07/27 21:57:58  klaven
 % run_all_features now takes the path to the image file, rather than the pixels.  This will let us parse the file name to determine which page it is, and how many pages there are in the journal.
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -56,6 +63,7 @@ function feature_vals = run_all_features(rects, pix_file)
 %%%%%%%%%%%%%%
 
 feature_vals = []; % the vector we will build as we run through features
+f_norm = [];
 get_names = false; % set to true to return feature names instead of values.
 data = {};         % temp holder for structs returned by features
 
@@ -93,8 +101,13 @@ end
 if get_names
     data = distance_features;
     feature_vals = {data.name};
+    f_norm = data.fnorm;
     data = density_features;
     feature_vals = [feature_vals,{data.name}];
+    f_norm = [f_norm data.fnorm];
+    data = pnum_features;
+    feature_vals = [feature_vals,{data.name}];
+    f_norm = [f_norm data.fnorm];
     %data = marks_features;
     %feature_vals = [feature_vals,{data.name}];
 
@@ -107,8 +120,13 @@ if get_names
 else
     data = distance_features(rects,pixels);
     feature_vals = reshape([data.val],size(data));
+    f_norm = data.fnorm;
     data = density_features(rects,pixels);
     feature_vals = [feature_vals,reshape([data.val],size(data))];
+    f_norm = [f_norm data.fnorm];
+    data = pnum_features(rects,pixels,pix_file);
+    feature_vals = [feature_vals,reshape([data.val],size(data))];
+    f_norm = [f_norm data.fnorm];
     %data = marks_features(rects,pixels);
     %feature_vals = [feature_vals,reshape([data.val],size(data))];
 

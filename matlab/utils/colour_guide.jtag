@@ -33,7 +33,7 @@ cksum = 4228248954
     image #B8A500
     text #003B94
     toc #4A0094
-    equation_no_number #DC0000
+    equation #DC0000
     footnote #6E00DC
     inline_heading #24B800
     figure_caption #2CDC00
@@ -180,7 +180,7 @@ pos = 5 196 93 213
 mode = crop
 snapped = 1
 ---
-class = equation_no_number
+class = equation
 pos = 6 154 64 171
 mode = crop
 snapped = 1

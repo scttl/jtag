@@ -34,11 +34,14 @@ function s = create_training_data(file_list, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.5 2004-07-27 21:57:57 klaven Exp $
+% $Id: create_training_data.m,v 1.6 2004-07-29 20:41:56 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.5  2004-07-27 21:57:57  klaven
+% Revision 1.6  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.5  2004/07/27 21:57:57  klaven
 % run_all_features now takes the path to the image file, rather than the pixels.  This will let us parse the file name to determine which page it is, and how many pages there are in the journal.
 %
 % Revision 1.4  2004/07/19 17:26:06  klaven
@@ -84,9 +87,11 @@ end
 s.class_names = {};
 s.num_pages = length(file_list);
 s.pg_names = file_list;
-s.feat_names = run_all_features;
+[s.feat_names,s.feat_normalized] = run_all_features;
 s.pg = {};
 s.isSorted = false;
+
+
 
 for i = 1:length(file_list)
 

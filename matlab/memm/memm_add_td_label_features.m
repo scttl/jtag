@@ -41,4 +41,7 @@ end;
 td_out.class_names = class_names;
 td_out.feat_names = [td_out.feat_names, {'follows_unknown_class'}, ...
                      strcat('follows_', class_names)];
+for i=(length(td_out.feat_normalized)+1):length(td_out.feat_names);
+    td_out.feat_normalized(i) = true;
+end;
 

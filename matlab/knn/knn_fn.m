@@ -19,11 +19,14 @@ function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.3 2004-07-27 21:59:36 klaven Exp $
+% $Id: knn_fn.m,v 1.4 2004-07-29 20:41:56 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.3  2004-07-27 21:59:36  klaven
+% Revision 1.4  2004-07-29 20:41:56  klaven
+% Training data is now normalized if required.
+%
+% Revision 1.3  2004/07/27 21:59:36  klaven
 % changed knn_fn so that it accepts the jtag file (or path to it).  This will allow us to extract features based on the file name (such as which page number it is).
 %
 % Revision 1.2  2004/07/01 16:45:50  klaven
@@ -69,6 +72,9 @@ class_id = nan;
 
 
 persistent data;  % so we don't have to recalculate data after each call
+
+%Normalize the features based on the norm values in data
+features = normalize_feats(features,data);
 
 
 % first do some sanity checking on the arguments passed

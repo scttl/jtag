@@ -40,3 +40,13 @@ IDEAS FOR SEGMENTATION
     -Would the topic of Simon's talk be appropriate/helpful?
 
 
+6. Learn To Cut Algorithm:
+-Find some heuristic to identify "possible cuts".  Create a set of
+ features for the proposed cut.  Learn a classifier to decide "cut" 
+ or "no cut" for each.
+
+
+7. Learn To Merge Algorithm:
+-Same as learn the cuts, but learns the merges instead.
+
+

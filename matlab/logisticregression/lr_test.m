@@ -15,6 +15,8 @@ else
     td = f_test;
 end;
 
+td = normalize_td(td,ww);
+
 allfeats = [];
 act_cnames = {};
 act_cid = [];

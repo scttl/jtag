@@ -30,21 +30,53 @@ sorting method.
 <DONE>Change run_all_features to accept the path to the pixels file, rather than
 the pixels.
 
-Do something about the lack of a "figure" class label.  Guh, this will
+<DONE>Do something about the lack of a "figure" class label.  Guh, this will
 take a while.
 
-Go through all the data to deal with the "figure" solution.
+<DONE>Go through all the data to deal with the "figure" solution.
+    <DONE>Training:
+        <DONE>JMLR
+            AllWein
+            Antos02a
+            Calif03a
+            Cancedda03a
+            Caruana03a
+            Chan02a
+            Chickering02b
+            Christensen03a
+            Crammer01a
+            Crammer03a
+        <DONE>NIPS2001
+        <DONE>NIPS2002
+    <DONE>Test:
+        <DONE>JMLR
+            Back02a
+            Cannon02a
+            Chickering02a
+            Colbert01a
+            Crammer03b
+        <DONE>NIPS2001
+        <DONE>NIPS2002
 
-Add features for:
-    -Is first region on page
-    -Is last region on page
-    -Fraction of the way down the page, in terms of region order
-    -Is first page
-    -Is last page
-    -In last 15% of document pages
-    -Fraction of the way through the document, in terms of page #
 
-Normalize the features in each data set before saving (do some research to make sure this is done right).
+<DONE>Add features for:
+    <DONE>-Is first region on page
+    <DONE>-Is last region on page
+    <DONE>-Fraction of the way down the page, in terms of region order
+    <DONE>-Is first page
+    <DONE>-Is last page
+    <DONE>-In last 15% of document pages
+    <DONE>-Fraction of the way through the document, in terms of page #
+
+<DONE>Test page number based features
+
+<DONE>Include page number based features in run_all_features
+
+<DONE>Normalize the features in each data set before saving (do some research to make sure this is done right).
+
+Test that the normalization is:
+    <DONE>1. Working.
+    2. Begin done in the right places.
 
 Re-extract all feature data.
 
