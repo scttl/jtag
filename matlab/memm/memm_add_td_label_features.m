@@ -27,6 +27,7 @@ for i=1:td_in.num_pages;
     pg.cid = get_cid([td_in.class_names(pg.cid), {'end_of_page'}]);
     blankfeat = zeros(1,size(pg.features,2));
     pg.features = [pg.features;blankfeat];
+    pg.ordered_index = [pg.ordered_index length(pg.cid)];
     cn = class_names(pg.cid(pg.ordered_index(1:end-1)));
     prevpagelabels = [{'start_of_page'}, cn];
     feats = pg.features(pg.ordered_index,:);
