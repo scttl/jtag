@@ -5,11 +5,17 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.8 2003-07-16 20:51:20 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.9 2003-07-18 17:58:48 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.8  2003-07-16 20:51:20  scottl
+## Revision 1.9  2003-07-18 17:58:48  scottl
+## - Fixed bug whereby already classified resizes where not being updated in the
+##   data array.
+## - Also split AddToBucket into a helper so that the helper can be used
+##   elsewhere.
+##
+## Revision 1.8  2003/07/16 20:51:20  scottl
 ## Bugfix to allow proper resizing when scrolled away from top-left corner.
 ##
 ## Revision 1.7  2003/07/16 20:28:05  scottl
@@ -369,7 +375,7 @@ proc ::Jtag::Classify::remove {sel_ref} {
     debug {entering ::Jtag::Classify::remove}
 
     if {[array names data -exact $sel_ref] == ""} {
-        debug "trying to remove a non-existent data item"
+        debug "trying to remove: $sel_ref a non-existent data item"
         return
     }
 
@@ -753,7 +759,7 @@ proc ::Jtag::Classify::SelExpand {c x y m} {
 #    c    The canvas upon which we are making the selection
 #    x    The x co-ord of the mouse currently
 #    y    The y co-ord of the mouse currently
-#    m    The mode (must be a string containing either "crop" or "simple"
+#    m    The mode (must be a string containing either "crop" or "simple")
 #  
 # Results:
 #   Completes the rectangle (drawn in black)
@@ -762,10 +768,13 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
 
     #link any namespace variables
     variable sel
+    variable ::Jtag::Config::data
 
     # declare any local variables
     # the amount of pixels used for thresholds during selection creation
     variable Min 6
+    variable ResizeRef
+    variable Class
 
     # stop the clock timer and adjust to seconds
     set sel(sl_time) [expr ($sel(sl_time) + \
@@ -784,11 +793,23 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
     # adjust selection rectangle to the current position:
     SelExpand $c $x $y $m
 
-    # hack to create transparent rectangles
-    ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
+    # check if we have just finished resizing a classified rectangle
+    set ResizeRef [::Jtag::Classify::get_selection $sel(id)]
 
-    # set options (ex outline colour etc.)
-    $c itemconfigure $sel(id) -width 2 -activewidth 4 -fill black -stipple null1
+    if {$ResizeRef == ""} {
+        # create a new selection rectangle
+        # hack to create transparent rectangles
+        ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
+
+        # set options (ex outline colour etc.)
+        $c itemconfigure $sel(id) -width 2 -activewidth 4 -fill black \
+                                  -stipple null1
+    } else {
+       # update the data array to give the new dimensions of the rectangle
+       set Class [string range $ResizeRef 0 [expr \
+                                    [string last "," $ResizeRef] -1]]
+       ::Jtag::Classify::AddToClass $c $Class $data($Class,colour)
+    }
 
     # set flag to end the modification of the selection rectangle
     set sel(modifying) 0
@@ -852,14 +873,40 @@ proc ::Jtag::Classify::PackageSel {c t} {
 proc ::Jtag::Classify::AddToBucket {c b} {
 
     # link any namespace variables
+
+    # declare any local variables
+    variable Class [string range $b [expr 1 + [string last "." $b]] \
+                   [string length $b]]
+
+    # let the AddToClass helper do all the work
+    ::Jtag::Classify::AddToClass $c $Class [$b cget -foreground]
+
+}
+
+
+# ::Jtag::Classify::AddToClass --
+#
+#    Classifies the selection made as the type of class passed
+#
+# Arguments:
+#    c        Canvas widget upon which we made our selection (drag&drop source)
+#    class    A valid class name (same as that which appears in the data array)
+#    colour   The colour to make the rectangle
+#
+# Results:
+#   The rectangle defined currently by sel(id) is added to the list of 
+#   classifications currently made for class class.  The rectangle is 
+#   updated to exhibit the colour passed, and it no longer becomes an active 
+#   drag&drop source (must be reactivated by clicking on it)
+proc ::Jtag::Classify::AddToClass {c class colour} {
+
+    # link any namespace variables
     variable sel
     variable ::Jtag::Config::data
     variable ::Jtag::Config::cnfg
     variable ::Jtag::Image::img
 
     # declare any local variables
-    variable Class [string range $b [expr 1 + [string last "." $b]] \
-                   [string length $b]]
     variable ReclassRef
     variable ReclassBase
     variable CommaPos
@@ -874,7 +921,7 @@ proc ::Jtag::Classify::AddToBucket {c b} {
                       - $sel(start_timer)]) / 1000.]
 
     # ensure that the button belongs to a valid class
-    if {$Class == ""} {
+    if {$class == ""} {
         debug {SERIOUS ERROR!}
         debug {Unable to extract class name from button.  Exiting}
         exit -1
@@ -899,10 +946,10 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     set Attmpt [expr $Attmpt + 1]
 
     # highlight the selection in the classes colour
-    $c itemconfigure $sel(id) -outline [$b cget -foreground]
+    $c itemconfigure $sel(id) -outline $colour
 
     # now update the data structure to reflect our new classification
-    ::Jtag::Classify::add $c $Class [expr $sel(x1) / $img(zoom)] \
+    ::Jtag::Classify::add $c $class [expr $sel(x1) / $img(zoom)] \
                [expr $sel(y1) / $img(zoom)] [expr $sel(x2) / $img(zoom)] \
                [expr $sel(y2) / $img(zoom)] $cnfg(mode) $sel(id) \
                $SelTime $ClsTime $Attmpt
