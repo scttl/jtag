@@ -8,19 +8,24 @@ function s = parse_jlog(file, st)
 %   field) as
 %   follows:
 %
-%     s.jlog_file  -> the full path and name to the .jtag file used to create s
-%     s.img_file   -> the full path and name to the associated image file
-%     s.rects      -> n x 4 matrix listing the 4 position values L,T,R,B of
-%                     each of the n selection rectangles made for this image
-%     s.sel_time   -> n x 1 matrix listing the total time in seconds it has
-%                     taken create the associated selection rectangle in
-%                     s.rects
-%     s.class_time -> n x 1 matrix listing the total time in seconds it has
-%                     taken to drag the associated selection rectangle in
-%                     s.rects to its class bucket
-%     s.attempts   -> n x 1 matrix listing the total number of classification
-%                     attempts that have been made for the associated
-%                     rectangle in s.rects
+%     s.jlog_file       -> the full path and name to the .jtag file used to 
+%                          create s
+%     s.img_file        -> the full path and name to the associated image file
+%     s.rects           -> n x 4 matrix listing the 4 position values left,top,
+%                          right,bottom of each of the n selection rectangles 
+%                          made for this image
+%     s.sel_time        -> n x 1 matrix listing the total time in seconds it has
+%                          taken create the associated selection rectangle in
+%                          s.rects
+%     s.class_time      -> n x 1 matrix listing the total time in seconds it has
+%                          taken to drag the associated selection rectangle in
+%                          s.rects to its class bucket
+%     s.class_attempts  -> n x 1 matrix listing the total number of 
+%                          classification attempts that have been made for the 
+%                          associated rectangle in s.rects
+%     s.resize_attempts -> n x 1 matrix listing the total number of manual 
+%                          resize attempts that have been made for the 
+%                          associated rectangle in s.rects
 %     ...
 %     additional fields from ST passed
 %     ...
@@ -31,11 +36,14 @@ function s = parse_jlog(file, st)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jlog.m,v 1.1 2003-07-29 21:01:22 scottl Exp $
+% $Id: parse_jlog.m,v 1.2 2003-08-01 22:01:00 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jlog.m,v $
-% Revision 1.1  2003-07-29 21:01:22  scottl
+% Revision 1.2  2003-08-01 22:01:00  scottl
+% Added resize_attempts parameter to jlog file.
+%
+% Revision 1.1  2003/07/29 21:01:22  scottl
 % Initial revision.
 %
 
@@ -78,17 +86,19 @@ while ~ feof(fid)
 end
 
 % now loop to parse and add each of the selections, should be in multiples
-% of 4 (5 including the separator)
-s.sel_time   = nan + zeros(size(s.rects, 1), 1);
-s.class_time = nan + zeros(size(s.rects, 1), 1);
-s.attempts   = nan + zeros(size(s.rects, 1), 1);
+% of 5 (6 including the separator)
+s.sel_time         = nan + zeros(size(s.rects, 1), 1);
+s.class_time       = nan + zeros(size(s.rects, 1), 1);
+s.class_attempts   = nan + zeros(size(s.rects, 1), 1);
+s.resize_attempts  = nan + zeros(size(s.rects, 1), 1);
 
 while ~ feof(fid)
 
-    pos_line    = parse_line(fgetl(fid));
-    sel_line    = parse_line(fgetl(fid));
-    class_line  = parse_line(fgetl(fid));
-    attmpt_line = parse_line(fgetl(fid));
+    pos_line       = parse_line(fgetl(fid));
+    sel_line       = parse_line(fgetl(fid));
+    class_line     = parse_line(fgetl(fid));
+    cl_attmpt_line = parse_line(fgetl(fid));
+    re_attmpt_line = parse_line(fgetl(fid));
 
     data = str2num([pos_line(2:5,:)]);
     data = data';
@@ -110,9 +120,10 @@ while ~ feof(fid)
     end
 
     % add this selection's data to the arrays
-    s.sel_time(i, :) = str2num(sel_line(2));
-    s.class_time(i, :) = str2num(class_line(2));
-    s.attempts(i, :) = str2num(attmpt_line(2));
+    s.sel_time(i, :) = str2double(sel_line(2,:));
+    s.class_time(i, :) = str2double(class_line(2,:));
+    s.class_attempts(i, :) = str2num(cl_attmpt_line(2));
+    s.resize_attempts(i, :) = str2num(re_attmpt_line(2));
 
     % next line must be a separator (if more lines exist)
     fgetl(fid);
