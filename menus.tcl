@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.6 2003-08-25 17:43:39 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.7 2003-09-04 02:48:34 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.6  2003-08-25 17:43:39  scottl
+## Revision 1.7  2003-09-04 02:48:34  scottl
+## Implemented split and merge commands.
+##
+## Revision 1.6  2003/08/25 17:43:39  scottl
 ## Added a status bar to display status messages during certain actions.
 ##
 ## Revision 1.5  2003/07/31 19:15:30  scottl
@@ -38,6 +41,7 @@
 ########################
 
 package require Tk 8.3
+package require BLT 2.4
 
 
 # NAMESPACE DECLARATION #
@@ -88,6 +92,15 @@ namespace eval ::Jtag::Menus {
     variable types { {{jtag image formats} \
                       {.tif .tiff .jpg .jpeg .bmp .png .gif} \
                      } }
+
+    # the current split mode (horizontal or vertical)
+    set vert_split 1
+
+    # name of line tags (created during split)
+    set line_tag 'line'
+
+    # array containing the id's of data array elements to be merged
+    variable merge_array
      
 
 }
@@ -315,6 +328,8 @@ proc ::Jtag::Menus::EditMenu {path} {
     $M add command -label "Delete" -accelerator "<Ctrl-x>" -command \
                                {::Jtag::Menus::DeleteCmd}
     $M add command -label "Snap Selection" -command {::Jtag::Menus::SnapCmd}
+    $M add command -label "Split Selection" -command {::Jtag::Menus::SplitCmd}
+    $M add command -label "Merge Selections" -command {::Jtag::Menus::MergeCmd}
 
     # now set any global bindings (these work even outside of this widget so
     # care must be taken to ensure the bindings don't overwrite other widget
@@ -391,8 +406,8 @@ proc ::Jtag::Menus::HelpMenu {path} {
 
     # now add its commands
     $M add command -label "About" -command {tk_dialog .dialog "About JTAG" \
-                                   "JTAG - A journal image tagger\n \
-                                   AUTHOR:  Scott Leishman\n \
+                                   " JTAG - A journal image tagger\n\
+                                   AUTHOR:  Scott Leishman\n\
                                    DATE: summer 2003" \
                                    "" 0 "Ok"}
 
@@ -500,7 +515,7 @@ proc ::Jtag::Menus::DeleteCmd {} {
     variable Rect
     variable SelRef
 
-    if {! $can(created)} {
+    if {! $can(created) || ! [::Jtag::Image::exists]} {
         return
     }
 
@@ -566,7 +581,7 @@ proc ::Jtag::Menus::SnapCmd {} {
 
     # declare any local variables needed
 
-    if {! $can(created)} {
+    if {! $can(created) || ! [::Jtag::Image::exists]} {
         return
     }
 
@@ -612,6 +627,316 @@ proc ::Jtag::Menus::SnapCmd {} {
             }
         }
         # restore the old settings
+        ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
+        ::Jtag::UI::status_text ""
+        $::Jtag::Image::can(path) configure -cursor left_ptr
+    }
+}
+
+
+# ::Jtag::Menus::SplitCmd --
+#
+#    Changes the mode so that when the user enters a rectangle, a vertical or
+#    horizontal line is drawn under the mouse, and when they click with their
+#    mouse button, the rectangle is split into two at the line under the
+#    mouse.  The data array is updated to the new entry (giving it the same
+#    time, selection, and class attributes).
+#
+# Arugments:
+#
+# Results:
+#    If the user clicks inside a rectangle, then it will be split into two at
+#    that point.  If they click outside all rectangles, nothing happens.
+proc ::Jtag::Menus::SplitCmd {} {
+
+    # link any namespace variables
+    variable ::Jtag::Image::can
+
+    # declare any local variables needed
+
+    if {! $can(created) || ! [::Jtag::Image::exists]} {
+        return
+    }
+
+    # change the cursor and wait for the user to click with the mouse
+    $can(path) configure -cursor crosshair
+    ::Jtag::Classify::unbind_selection
+    ::Jtag::UI::status_text "Select the rectangle to split with the \
+                             mouse and left click to perform the split \
+                             (right click to change orientation)."
+
+    bind $can(path) <Motion> {
+
+        # delete any previous lines
+        set Lines [$::Jtag::Image::can(path) find withtag \
+                   $::Jtag::Menus::line_tag]
+        $::Jtag::Image::can(path) delete $Lines
+
+        # create a new line
+        set Rect [$::Jtag::Image::can(path) find withtag current]
+        set Zoom $::Jtag::Image::img(zoom)
+        if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
+            set SelRef [::Jtag::Classify::get_selection $Rect]
+            if {$SelRef != ""} {
+                set Class [string range $SelRef 0 [expr \
+                          [string last "," $SelRef] - 1]]
+
+                if {$::Jtag::Menus::vert_split} {
+                    # draw a new vertical line under the mouse
+                    set XPos [$::Jtag::Image::can(path) canvasx %x]
+                    set Y1 [expr $Zoom * \
+                                 [lindex $::Jtag::Config::data($SelRef) 2]]
+                    set Y2 [expr $Zoom * \
+                                 [lindex $::Jtag::Config::data($SelRef) 4]]
+                    set Id [$::Jtag::Image::can(path) create line $XPos $Y1 \
+                           $XPos $Y2 -tags $::Jtag::Menus::line_tag -width 4 \
+                           -fill $::Jtag::Config::data($Class,colour)]
+                } else {
+                    # draw a new horizontal line under the mouse
+                    set YPos [$::Jtag::Image::can(path) canvasy %y]
+                    set X1 [expr $Zoom * \
+                                 [lindex $::Jtag::Config::data($SelRef) 1]]
+                    set X2 [expr $Zoom * \
+                                 [lindex $::Jtag::Config::data($SelRef) 3]]
+                    set Id [$::Jtag::Image::can(path) create line $X1 $YPos \
+                           $X2 $YPos -tags $::Jtag::Menus::line_tag -width 4 \
+                           -fill $::Jtag::Config::data($Class,colour)]
+                }
+            }
+        }
+    }
+
+    bind $can(path) <ButtonRelease-3> {
+        if {$::Jtag::Menus::vert_split} {
+            set ::Jtag::Menus::vert_split 0
+        } else {
+            set ::Jtag::Menus::vert_split 1
+        }
+        event generate $::Jtag::Image::can(path) <Motion>
+    }
+
+    bind $can(path) <ButtonRelease-1> {
+        bind $::Jtag::Image::can(path) <ButtonRelease-1> {}
+        bind $::Jtag::Image::can(path) <ButtonRelease-3> {}
+        bind $::Jtag::Image::can(path) <Motion> {}
+
+        # hack to ensure we always get the next rectangular selection (and not
+        # a line created during motion above) if one exists
+        set Rect [$::Jtag::Image::can(path) find closest \
+                  [$::Jtag::Image::can(path) canvasx %x] \
+                  [$::Jtag::Image::can(path) canvasy %y] \
+                  0 $::Jtag::Menus::line_tag]
+
+        if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
+            set SelRef [::Jtag::Classify::get_selection $Rect]
+            if {$SelRef != ""} {
+
+                # backup the original 'data' elements
+                set Id        [lindex $::Jtag::Config::data($SelRef) 0]
+                set Class     [string range $SelRef 0 [expr \
+                                        [string last "," $SelRef] - 1]]
+                set X1        [lindex $::Jtag::Config::data($SelRef) 1]
+                set Y1        [lindex $::Jtag::Config::data($SelRef) 2]
+                set X2        [lindex $::Jtag::Config::data($SelRef) 3]
+                set Y2        [lindex $::Jtag::Config::data($SelRef) 4]
+                set Mode      [lindex $::Jtag::Config::data($SelRef) 5]
+                set Snapped   [lindex $::Jtag::Config::data($SelRef) 6]
+                set SelTime   [lindex $::Jtag::Config::data($SelRef) 7]
+                set ClsTime   [lindex $::Jtag::Config::data($SelRef) 8]
+                set ClsAttmpt [lindex $::Jtag::Config::data($SelRef) 9]
+                set ResAttmpt [lindex $::Jtag::Config::data($SelRef) 10]
+
+                set Zoom $::Jtag::Image::img(zoom)
+                ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
+
+                # remove the original rectangle
+                $::Jtag::Image::can(path) delete $Id
+
+                if {$::Jtag::Menus::vert_split} {
+
+                    set Id [$::Jtag::Image::can(path) create rectangle \
+                        [expr $X1 * $Zoom] [expr $Y1 * $Zoom] \
+                        [$::Jtag::Image::can(path) canvasx %x] \
+                        [expr $Y2 * $Zoom]]
+                    $::Jtag::Image::can(path) itemconfigure $Id -width 2 \
+                           -activewidth 4 -fill black -stipple null1 -outline \
+                           $::Jtag::Config::data($Class,colour)
+                    set X1 [expr round([$::Jtag::Image::can(path) canvasx %x] \
+                                       / $Zoom)]
+                    lset ::Jtag::Config::data($SelRef) 0 $Id
+                    lset ::Jtag::Config::data($SelRef) 3 $X1
+
+                } else {
+
+                    set Id [$::Jtag::Image::can(path) create rectangle \
+                        [expr $X1 * $Zoom] [expr $Y1 * $Zoom] \
+                        [expr $X2 * $Zoom] \
+                        [$::Jtag::Image::can(path) canvasy %y]]
+                    $::Jtag::Image::can(path) itemconfigure $Id -width 2 \
+                           -activewidth 4 -fill black -stipple null1 -outline \
+                           $::Jtag::Config::data($Class,colour)
+                    set Y1 [expr round([$::Jtag::Image::can(path) canvasy %y] \
+                                       / $Zoom)]
+                    lset ::Jtag::Config::data($SelRef) 0 $Id
+                    lset ::Jtag::Config::data($SelRef) 4 $Y1
+                }
+
+                # create and add the new entry
+                set Id [$::Jtag::Image::can(path) create rectangle \
+                        [expr $X1 * $Zoom] [expr $Y1 * $Zoom] \
+                        [expr $X2 * $Zoom] [expr $Y2 * $Zoom]]
+                $::Jtag::Image::can(path) itemconfigure $Id -width 2 \
+                           -activewidth 4 -fill black -stipple null1 -outline \
+                           $::Jtag::Config::data($Class,colour)
+
+                ::Jtag::Classify::add $::Jtag::Image::can(path) $Class \
+                     [expr round($X1)] [expr round($Y1)] [expr round($X2)] \
+                     [expr round($Y2)] $Mode $Snapped $Id $SelTime $ClsTime \
+                     $ClsAttmpt $ResAttmpt
+            }
+        }
+
+        # delete any previous lines
+        set Lines [$::Jtag::Image::can(path) find withtag \
+                   $::Jtag::Menus::line_tag]
+        $::Jtag::Image::can(path) delete $Lines
+
+        # restore the old settings
+        ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
+        ::Jtag::UI::status_text ""
+        $::Jtag::Image::can(path) configure -cursor left_ptr
+    }
+}
+
+
+# ::Jtag::Menus::MergeCmd --
+#
+#    Changes the mode so that the user can select multiple rectangles by
+#    clicking on them with the mouse, then when ready, can click on a merge
+#    button to merge the outer boundaries of each into a single large
+#    rectangle.  During the merge, the new rectangle takes the sum of its
+#    constituent rectangle value where possible.  Otherwise it takes the value
+#    of the first rectangle selected (for things like class etc.)
+#
+# Arugments:
+#
+# Results:
+#    If the user clicks inside more than one different rectangle, they are
+#    merged using their co-ordinates to create one large rectangle completely
+#    engulfing all of them.  If the user selects one or fewer rectangles then
+#    nothing happens.  Users can cancel their selections by clicking inside
+#    them a second time.
+proc ::Jtag::Menus::MergeCmd {} {
+
+    # link any namespace variables
+    variable ::Jtag::Image::can
+
+    # declare any local variables needed
+
+    if {! $can(created) || ! [::Jtag::Image::exists]} {
+        return
+    }
+
+    # change the cursor and wait for the user to click with the mouse
+    $can(path) configure -cursor crosshair
+    ::Jtag::Classify::unbind_selection
+    ::Jtag::UI::status_text "Select the rectangles to merge with the \
+                                 mouse and left click inside them.  Click \
+                                 again to cancel the selection"
+
+    bind $can(path) <ButtonRelease-1> {
+        # get the data element entry for the rectangle
+        set Rect [$::Jtag::Image::can(path) find withtag current]
+        if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
+            set SelRef [::Jtag::Classify::get_selection $Rect]
+            if {$SelRef != ""} {
+                set Size [array size ::Jtag::Menus::merge_array]
+                set Found 0
+                for {set I 1} {$I <= $Size} {incr I} {
+                    if {$SelRef == $::Jtag::Menus::merge_array($I)} {
+                        set Found 1
+                        break
+                    }
+                }
+
+                if {$Found} {
+                    # remove the element from merge_array, unhighlighting it
+                    if {$I < $Size} {
+                        array set ::Jtag::Menus::merge_array [list $I \
+                                  $::Jtag::Menus::merge_array($Size)]
+                        array unset ::Jtag::Menus::merge_array $Size
+                    } else {
+                        array unset ::Jtag::Menus::merge_array($Size)
+                    }
+                    $::Jtag::Image::can(path) itemconfigure $Rect -width 2
+                } else {
+                    # add the element to merge_array, highlighting it
+                    incr Size
+                    array set ::Jtag::Menus::merge_array [list $Size $SelRef]
+                    $::Jtag::Image::can(path) itemconfigure $Rect -width 4
+                }
+            }
+        }
+    }
+
+    bind $can(path) <ButtonRelease-3> {
+        bind $::Jtag::Image::can(path) <ButtonRelease-1> {}
+
+        # merge all elements in merge_array using properties from element in
+        # position 1
+        set Size [array size ::Jtag::Menus::merge_array]
+
+        if {$Size > 0} {
+            # get the first rectangle's data for use in the merged rect.
+            set SelRef $::Jtag::Menus::merge_array(1)
+            set Class     [string range $SelRef 0 [expr \
+                                    [string last "," $SelRef] - 1]]
+            set X1        [lindex $::Jtag::Config::data($SelRef) 1]
+            set Y1        [lindex $::Jtag::Config::data($SelRef) 2]
+            set X2        [lindex $::Jtag::Config::data($SelRef) 3]
+            set Y2        [lindex $::Jtag::Config::data($SelRef) 4]
+            set Mode      [lindex $::Jtag::Config::data($SelRef) 5]
+            set Snapped   [lindex $::Jtag::Config::data($SelRef) 6]
+            set SelTime   [lindex $::Jtag::Config::data($SelRef) 7]
+            set ClsTime   [lindex $::Jtag::Config::data($SelRef) 8]
+            set ClsAttmpt [lindex $::Jtag::Config::data($SelRef) 9]
+            set ResAttmpt [lindex $::Jtag::Config::data($SelRef) 10]
+
+            for {set I 1} {$I <= $Size} {incr I} {
+                # update the merged rectangle boudaries and remove the element 
+                # from the data array as well as its rectangle
+                set SelRef $::Jtag::Menus::merge_array($I)
+                set Id [lindex $::Jtag::Config::data($SelRef) 0]
+                set CurX1 [lindex $::Jtag::Config::data($SelRef) 1]
+                set CurY1 [lindex $::Jtag::Config::data($SelRef) 2]
+                set CurX2 [lindex $::Jtag::Config::data($SelRef) 3]
+                set CurY2 [lindex $::Jtag::Config::data($SelRef) 4]
+    
+                if {$CurX1 < $X1} { set X1 $CurX1 }
+                if {$CurY1 < $Y1} { set Y1 $CurY1 }
+                if {$CurX2 > $X2} { set X2 $CurX2 }
+                if {$CurY2 > $Y2} { set Y2 $CurY2 }
+    
+                $::Jtag::Image::can(path) delete $Id
+                ::Jtag::Classify::remove $SelRef
+            }
+
+            # now add the merged rectangle to the data array and display
+            set Zoom $::Jtag::Image::img(zoom)
+            set Id [$::Jtag::Image::can(path) create rectangle \
+                   [expr $X1 * $Zoom] [expr $Y1 * $Zoom] [expr $X2 * $Zoom] \
+                   [expr $Y2 * $Zoom]]
+            ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
+            $::Jtag::Image::can(path) itemconfigure $Id -width 2 -activewidth \
+                   4 -fill black -stipple null1 -outline \
+                   $::Jtag::Config::data($Class,colour)
+            ::Jtag::Classify::add $::Jtag::Image::can(path) $Class $X1 $Y1 $X2 \
+                   $Y2 $Mode $Snapped $Id $SelTime $ClsTime $ClsAttmpt \
+                   $ResAttmpt
+        }
+
+        # restore the old settings
+        array unset ::Jtag::Menus::merge_array 
         ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
         ::Jtag::UI::status_text ""
         $::Jtag::Image::can(path) configure -cursor left_ptr
