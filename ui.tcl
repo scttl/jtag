@@ -6,11 +6,14 @@
 ##              This includes the display of all window components and
 ##              responding to user generated events (key presses mouse etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.2 2003-07-10 19:19:42 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.3 2003-07-16 19:09:08 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: ui.tcl,v $
-## Revision 1.2  2003-07-10 19:19:42  scottl
+## Revision 1.3  2003-07-16 19:09:08  scottl
+## Fix to ensure both button frames maintain equal widths.
+##
+## Revision 1.2  2003/07/10 19:19:42  scottl
 ## Throw errors during UI creation problems instead of displaying a debug message
 ## and continuing on.
 ##
@@ -171,14 +174,14 @@ proc ::Jtag::UI::create {} {
     # layout all the widgets created in a grid
     grid $f_menu -row 0 -column 0 -columnspan 4 -sticky ew
     grid $c_img -row 1 -column 1 -sticky nsew
-    grid [lindex $f_buckets 0] -row 1 -column 0 -sticky ns
-    grid [lindex $f_buckets 1] -row 1 -column 3 -sticky ns
+    grid [lindex $f_buckets 0] -row 1 -column 0 -sticky nsew
+    grid [lindex $f_buckets 1] -row 1 -column 3 -sticky nsew
     grid $cs_y -row 1 -column 2 -sticky ns
     grid $cs_x -row 2 -column 1 -sticky ew
 
-    grid columnconfigure . 0 -minsize 0
+    grid columnconfigure . 0 -minsize 0 -uniform buttons
     grid columnconfigure . 1 -weight 2
-    grid columnconfigure . 3 -minsize 0
+    grid columnconfigure . 3 -minsize 0 -uniform buttons
     grid rowconfigure . 1 -weight 1
 
     autoscroll $cs_x
