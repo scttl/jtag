@@ -6,11 +6,15 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.1 2003-07-07 18:42:54 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.2 2003-07-07 19:10:33 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.1  2003-07-07 18:42:54  scottl
+## Revision 1.2  2003-07-07 19:10:33  scottl
+## Renamed def_mode parameter to mode, now it will be used to hold the current
+## selection mode in use by the appplication.
+##
+## Revision 1.1  2003/07/07 18:42:54  scottl
 ## Initial revision.
 ##
 ##
@@ -44,7 +48,7 @@ namespace eval ::Jtag::Config {
     variable cnfg
 
     # Default selection mode
-    set cnfg(def_mode) {crop}
+    set cnfg(mode) {crop}
 
     # Window size related each value should be a list with 2 positive numerical 
     # elements width then height, and window size must be larger than canvas
