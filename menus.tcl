@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.9 2003-09-05 14:20:26 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.10 2003-09-05 20:12:06 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.9  2003-09-05 14:20:26  scottl
+## Revision 1.10  2003-09-05 20:12:06  scottl
+## Added bindings for merge,split etc. and implemented a help system for users.
+##
+## Revision 1.9  2003/09/05 14:20:26  scottl
 ## Implemented auto-prediction functionality.
 ##
 ## Revision 1.8  2003/09/04 14:09:15  scottl
@@ -510,14 +513,20 @@ proc ::Jtag::Menus::EditMenu {path} {
     # now add its commands
     $M add command -label "Delete" -accelerator "<Ctrl-x>" -command \
                                {::Jtag::Menus::DeleteCmd}
-    $M add command -label "Snap Selection" -command {::Jtag::Menus::SnapCmd}
-    $M add command -label "Split Selection" -command {::Jtag::Menus::SplitCmd}
-    $M add command -label "Merge Selections" -command {::Jtag::Menus::MergeCmd}
+    $M add command -label "Snap Selection" -accelerator "<Ctrl-n>" \
+                          -command {::Jtag::Menus::SnapCmd}
+    $M add command -label "Split Selection" -accelerator "<Ctrl-p>" \
+                          -command {::Jtag::Menus::SplitCmd}
+    $M add command -label "Merge Selections" -accelerator "<Ctrl-m>" \
+                          -command {::Jtag::Menus::MergeCmd}
 
     # now set any global bindings (these work even outside of this widget so
     # care must be taken to ensure the bindings don't overwrite other widget
     # bindings
     bind . <Control-x> {::Jtag::Menus::DeleteCmd}
+    bind . <Control-n> {::Jtag::Menus::SnapCmd}
+    bind . <Control-p> {::Jtag::Menus::SplitCmd}
+    bind . <Control-m> {::Jtag::Menus::MergeCmd}
 
 }
 
@@ -588,11 +597,32 @@ proc ::Jtag::Menus::HelpMenu {path} {
     set M [menu $path]
 
     # now add its commands
-    $M add command -label "About" -command {tk_dialog .dialog "About JTAG" \
-                                   " JTAG - A journal image tagger\n\
-                                   AUTHOR:  Scott Leishman\n\
-                                   DATE: summer 2003" \
-                                   "" 0 "Ok"}
+    $M add command -label "Useage" -command {
+        if {[winfo exists .text]} {
+            raise .text
+            return
+        }
+        toplevel .text
+        wm title .text "JTAG Useage Help"
+        text .text.t -wrap none -yscrollcommand ".text.v_scroll set"
+        scrollbar .text.v_scroll -command ".text.t yview"
+        pack .text.v_scroll -side right -fill y
+        pack .text.t -side left -fill both -expand 1
+        set FileId [open doc/useage.txt r]
+        while {! [eof $FileId]} {
+            set Data [gets $FileId]
+            if {! [string match #* $Data]} {
+                .text.t insert end $Data\n
+            }
+        }
+        close $FileId
+        .text.t configure -state disabled
+    }
+
+    $M add command -label "About" -command {
+        tk_dialog .dialog "About JTAG" " JTAG - A journal image tagger\n\
+                  AUTHOR:  Scott Leishman\nDATE: summer 2003" "" 0 "Ok"
+    }
 
 }
 
