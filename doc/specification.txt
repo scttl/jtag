@@ -4,7 +4,11 @@
 
 DOCUMENT HISTORY:
 -- $Log: specification.txt,v $
--- Revision 1.2  2003-06-13 20:44:54  scottl
+-- Revision 1.3  2003-07-15 17:06:54  scottl
+-- Created section 6 discussing major data structure used, plus various updates
+-- throughout the rest of the document.
+--
+-- Revision 1.2  2003/06/13 20:44:54  scottl
 -- Fixes and corrections based on discussion with Sam
 --
 -- Revision 1.1.1.1  2003/06/11 17:52:21  scottl
@@ -89,6 +93,7 @@ DOCUMENT HISTORY:
     * Will use colour coding to show what each selection has been classified as
 
 2.5 Read in Configuration Data from a file on startup
+    * when loading selection data, look for config data in that same file
     * on program startup look in current directory, then $HOME for a file
       named .jconfig
     * if not found, load some default set of config options
@@ -104,12 +109,11 @@ DOCUMENT HISTORY:
       selection based on where user clicks with mouse
     * Write to disk in order of top left corner pos, x value, then y value
     * See section 5 for output file format
+    * See section 6.1 for data structure used while storing in memory
 
 2.7 Break multiple page images (single file), into a series of single page
     images (multiple files)
-    * Make use of tiffinfo to determine if file contains multiple pages
-    * calls to tiffsplit (plus a prefix stored in config file) can do the
-      actual breaking apart
+    * Should be handled externally (in a separate application ex. tiffsplit)
 
 2.8 Use selections made in previous pages, to look ahead and predict tags
     for future pages.
@@ -122,10 +126,13 @@ DOCUMENT HISTORY:
 
 3.1 Platform / Software / Libraries
     * Must run on CSLab machines (Red Hat Linux)
-    * Write in Tcl/Tk
-      - Will require Img package (for displaying tiff files)
-      - Img in turn requires libtiff.so
-    *? Others??
+    * Write in Tcl/Tk (version 8.4 has been used and tested)
+      - Will require Img package (for displaying image files) libimg1.2.so
+      - Img in turn requires libtiff.so, libjpeg.so, libpng.so etc.
+    * BLT used for drag and drop functionality (version 2.4 tested)
+    * crc::cksum package 1.0.1 used to uniquely identify images.
+    * ImageMagick's identify application used to aid in determining image
+      type.  It will be distributed with the application in the bin dir.
 
 3.2 Must save selections between invocations of program on given file
     * Make use of output file, written to disk on program termination.  See 
@@ -154,18 +161,20 @@ DOCUMENT HISTORY:
     *? Anything necessary??
 
     4.3.2 Body Info
-    * First line will contain 'def_mode=' followed by a string representing
+    * First line will contain 'mode=' followed by a string representing
       the default mode.  Valid values are "crop" or "simple"
-    * Next lines will contain a 'classifiers=[' followed by a list of 
-      classification types, each of which has an '=' followed by a colour
-      representing what colour selections of that type will be displayed as.
-      Each list item is comma separated and may span multiple 
-      lines.  End when closing ']' is reached.  Each classification type 
+    * Second line will contain settings for default window resolution,
+      default canvas size, and default bucket size @@@change this
+    * Next lines will contain a 'classifiers=(' followed by a list of 
+      classification types, each of which has a name then some whitespace 
+      followed by a colour representing the colour selections of that type 
+      will be displayed as.  Each list item may span multiple 
+      lines.  End when closing ')' is reached.  Each classification type 
       is a string representing what a portion of the journal may be.  e.x.
-           classifiers=[text=blue,
-                          equation=red,
-                   title=green,
-                       graph=orange   ]
+           classifiers=(  text blue
+                          equation    red
+                   title green
+                       graph orange   )
     *? Other configuration attributes??
 
 
@@ -192,32 +201,91 @@ DOCUMENT HISTORY:
       pixels e.x. 640x480)
     * Fourth line contains 'cksum=' followed by a checksum of the associated 
       image file
+    * Next lines are optional, and if present they contain configuration data 
+      used to make these selections, and are of the exact same format as seen 
+      in 4.3.2.  This data will override any information in any .jconfig files
+      currently loaded.
 
     5.3.2 Body Info (.jtag file) Repeated 0 or more times -- each represents
       a single selection
     * First line contains a separator of '---'
-    * Second line contains 'class=' followed by the classification type e.x. 
-      text or title
-    * Third line should contain 'pos=' followed by a series of 4 comma
+    * Second line contains 'class=' followed by the classification type name
+      e.x. text or title
+    * Third line should contain 'pos=' followed by a series of 4 whitespace
       separated numbers representing selection co-ords (normalized by image
       resolution)
     * Fourth line should contain 'mode=' followed by a string representing the
       mode used ("crop" or "simple")
-    * Fifth line contains 'colour=' followed by a string representing the
-      colour used for the selection ("blue or "red" etc.)
     *? Anything else??
 
     5.3.3 Body Info (.jlog file) Repeated 0 or more times -- each represents
       a single selection
-    * First line contains 'sel_time=' followed by a decimal number
+    * First line contains 'pos=' followed by a series of 4 whitespace
+      separated numbers representing selection co-ords (normalized by image
+      resolution)
+    * Second line contains 'sel_time=' followed by a decimal number
       representing the time in seconds to make the final bounding box selection 
       This includes edit and refinement time.
-    * Second line should contain 'class_attempts=' followed by a positive 
+    * Third line should contain 'class_attempts=' followed by a positive 
       integer representing the total number of classification attempts
       made (i.e. if placed in a bucket, then later changed to another).  Must
       be >= 1
-    * Third line should contain class_time=' followed by the total time taken 
+    * Fourth line should contain class_time=' followed by the total time taken 
       to classify the selection (i.e. once bounding box created, the time 
       required to drag the selection over a bucket).  Must add time, each time 
       a selection is reclassified -- moved from one bucket to another
     *? Anything else??
+
+
+6. MAJOR DATA STRUCTURES
+------------------------
+
+6.1 Classification data representation
+
+    6.1.1 Diagram
+    data              $data(class1)
+    +-----------+     +--------+----------+--------+     +------+
+    | class1 o--+---->| colour | num_sels | sel1 o | ... | seln |
+    +-----------+     +--------+----------+------|-+     +------+
+         .                                       |
+         .         $data(class1,sel1)            v
+         .        +----+----+----+----+----+------+----------+---------+-------+
+    +-----------+ | id | x1 | y1 | x2 | y2 | mode | sel_time | cl_time | attmpt|
+    | classn    | +----+----+----+----+----+------+----------+---------+-------+
+    +-----------+
+
+    6.1.2 Description
+    * Top level component in the structure is an associative array called 'data'
+      containing the entries class1 ... classn, each of which is labelled
+      according to its classifier name (ex. body_text).
+    * Each of the classx entries is also an associative array containing a 
+      minimum of two elements.  One of which is the colour of the classifier,
+      and the second is the number of selections currently existing for that 
+      classifier.  The remaining elements in the array represent the selections 
+      made thus far (there should be num_sels of these), and are indexed 
+      starting at 1.  
+    * Each of the selections is a list containing exactly 9 ordered
+      elements.  These elements are (in the order in which they appear in the
+      list): 'id' the unique id given to the rectangle when it is created on 
+      the canvas, 'x1' the pixel of the left edge of the selection (normalized 
+      to actual image resolution), 'y1' the pixel of the top edge, 'x2' the 
+      pixel of the right edge, 'y2' the pixel of the bottom edge, 'mode' the 
+      selection mode used (crop/simple) to create the rectangle, 'sel_time' 
+      the total time in seconds to create/refine the dimensions of the 
+      rectangle, 'cl_time' the total time in seconds to drag the selection to 
+      a classification bucket, 'attempts' the number of times the selection 
+      has been classified/reclassified.
+
+   6.1.3 Referencing
+   * Tcl/Tk does not allow nested or multi-dimensional array structures, so a 
+     hack is used whereby multi-dimensional arrays are simulated by adding a 
+     comma between dimension element names i.e.  $data(dim1e,dim2e,dim3e) is 
+     used.  Not that this is in actual fact a single dimensional array element
+     with an element name of "dim1e,dim2e,dim3e".  Therefore care must be
+     taken to ensure that there is no whitespace anywhere in the name of the
+     elements.
+   * To reference the list containing selection data for the 4th selection of
+     the body_text classifier, you would use the following: 
+     $data(body_text,4) .  You can then use lindex on the item returned to 
+     pick out particular components of the selection ex.  to get the mode 
+     (item 6) use [lindex data(body_text,4) 5] since lists start numbering at 0.
