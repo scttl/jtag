@@ -33,11 +33,14 @@ function s = create_training_data(file_list)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.1 2003-08-18 14:56:00 scottl Exp $
+% $Id: create_training_data.m,v 1.2 2003-08-22 15:13:11 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.1  2003-08-18 14:56:00  scottl
+% Revision 1.2  2003-08-22 15:13:11  scottl
+% Updates to reflect the change to a cell array struct for class_name
+%
+% Revision 1.1  2003/08/18 14:56:00  scottl
 % Initial revision.
 %
 
@@ -85,7 +88,7 @@ for i = 1:length(file_list)
       found = false;
       for k = 1:length(s.class_names)
           if strcmp(s.class_names{k}, ...
-                    ddeblank(pg_s.class_name(pg_s.class_id(j),:)))
+                    ddeblank(pg_s.class_name{pg_s.class_id(j)}))
               id = k;
               found = true;
               break;
@@ -95,7 +98,7 @@ for i = 1:length(file_list)
       if ~ found
           % add the class to the global list of class names
           id = length(s.class_names) + 1;
-          s.class_names{id} = ddeblank(pg_s.class_name(pg_s.class_id(j),:));
+          s.class_names{id} = ddeblank(pg_s.class_name{pg_s.class_id(j)});
       end
 
       cids = [cids; id];
