@@ -60,16 +60,28 @@ Figure out why the marks features are decreasing performance.
 
 <DONE>Fix up "snapping" errors in test and training data
 
-Check out OCR from http://rcat.utoronto.ca/
+<CANCELLED>Check out OCR from http://rcat.utoronto.ca/
 
-Check out "NCA" for KNN (talk to Jacob)
+<CANCELLED>Check out "NCA" for KNN (talk to Jacob)
 
-Implement HMM
 
-Read about CRF's (Conditional Random Fields)
+
+<DONE>Read about MEMM's
+Implement MEMM
+    <DONE>1. By adding booleans for previous class.
+             <DONE>NOTE: Include a trailing "end-of-page" tag.
+    2. By training a separate classifier for each previous class.
+
+
+
+
+
+
+
+<DONE>Read about CRF's (Conditional Random Fields)
 Implement CRF's
 
-Make changes requested by Sam for MS package
+<DONE>Make changes requested by Sam for MS package
 
 <DONE> Get ready to send stuff to Microsoft
 
@@ -79,3 +91,6 @@ References.
 <DONE>Go over test data and training data, to make above items consistent.
 
 Think about inferring font size before doing segmentation, and using this.
+
+
+
