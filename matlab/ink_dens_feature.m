@@ -1,5 +1,5 @@
 function p = ink_dens_feature(rect, pixels, varargin)
-% RECT_DENS_FEATURE   Returns the total percentage of non-background pixels
+% INK_DENS_FEATURE   Returns the total percentage of non-background pixels
 %                     inside the ink threshold subrectangle of RECT passed.
 %
 %  P = INK_DENS_FEATURE(RECT, PAGE, {THRESH})  This feature simply counts all 
@@ -10,11 +10,14 @@ function p = ink_dens_feature(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: ink_dens_feature.m,v 1.2 2003-07-24 19:28:30 scottl Exp $
+% $Id: ink_dens_feature.m,v 1.3 2003-08-13 19:30:16 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: ink_dens_feature.m,v $
-% Revision 1.2  2003-07-24 19:28:30  scottl
+% Revision 1.3  2003-08-13 19:30:16  scottl
+% Fixed type in function name comment.
+%
+% Revision 1.2  2003/07/24 19:28:30  scottl
 % Added checking to threshold passed.
 %
 % Revision 1.1  2003/07/23 22:26:34  scottl
