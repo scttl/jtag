@@ -1,7 +1,7 @@
                         JTAG TODO LIST
                        ****************
 
-$Id: TODO.txt,v 1.2 2003-07-15 16:55:18 scottl Exp $
+$Id: TODO.txt,v 1.3 2003-07-28 16:01:10 scottl Exp $
 
 .jlog File Reading
 ------------------
@@ -31,7 +31,6 @@ Multiple page files
 
 Image Related
 -------------
- * Investigate why size in memory is so large (ex. 100+Mb for 6Mb tiff file)
  * Update selection so that when creating rectangle and moving outside of
    display window, we automatically scroll in the proper direction
  * Shrink window to the size of the image (should never see blank canvas)
