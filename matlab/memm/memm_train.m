@@ -29,11 +29,14 @@ function w = memm_train(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: memm_train.m,v 1.1 2004-07-16 20:38:48 klaven Exp $
+% $Id: memm_train.m,v 1.2 2004-07-22 15:55:55 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: memm_train.m,v $
-% Revision 1.1  2004-07-16 20:38:48  klaven
+% Revision 1.2  2004-07-22 15:55:55  klaven
+% MEMM is working correctly as of this version.
+%
+% Revision 1.1  2004/07/16 20:38:48  klaven
 % First version of MEMM (Maximum Entropy Markov Model) learning.  In this version, the class label of the previous region is used as a feature during training and classification.  This is done using a binary feature for each possible class label, which is true if the previous region was labelled that class, and false otherwise.
 %
 %
@@ -59,8 +62,10 @@ if ~ isstruct(data)
 end
 
 %Sort the elements of each page of the data.
-data = memm_add_td_label_features(data);
 data = memm_sort(data);
+
+%After the elements are sorted, add the labels.
+data = memm_add_td_label_features(data);
 
 % initialize output struct and fields
 w.class_names = data.class_names;

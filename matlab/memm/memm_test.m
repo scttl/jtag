@@ -15,7 +15,7 @@ else
     td = f_test;
 end;
 
-td = memm_predict(td,ww);
+td = memm_predict_2(td,ww);
 
 fprintf('Prediction complete.  Calculating results.\n');
 
@@ -26,7 +26,7 @@ act_cid = [];
 pred_cnames = {};
 pred_cid = [];
 for i=1:length(td.pg);
-    act_cid = [act_cid,td.pg{i}.cid'];
+    act_cid = [act_cid,td.pg{i}.cid];
     act_cnames = [act_cnames,td.class_names([td.pg{i}.cid])];
     pred_cid = [pred_cid,td.pg{i}.pred_cid'];
     pred_cnames = [pred_cnames,td.class_names([td.pg{i}.pred_cid])];

@@ -26,7 +26,7 @@ for ss = 1:size(ff_in,1);
     %    end;
     %end;
     cnum = cnums(ss);
-    if (cnum == 0);
+    if ((cnum == 0) && (strcmp(char(label_text(ss)),'unknown') == 0));
         fprintf('Class name "%s" is not known.\n',char(label_text(ss)));
     else;
         %fprintf('Class name "%s" got cnum %i.\n',char(label_text(ss)),cnum);
