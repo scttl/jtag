@@ -5,11 +5,15 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.16 2003-08-25 17:43:39 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.17 2003-08-29 18:53:27 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.16  2003-08-25 17:43:39  scottl
+## Revision 1.17  2003-08-29 18:53:27  scottl
+## Updated status bar to display data array info when mousing over a
+## classified selection.
+##
+## Revision 1.16  2003/08/25 17:43:39  scottl
 ## Added a status bar to display status messages during certain actions.
 ##
 ## Revision 1.15  2003/07/31 19:18:17  scottl
@@ -464,7 +468,7 @@ proc ::Jtag::Classify::get_selection id {
     # declare any local variables needed
     variable I
 
-    debug "entering ::Jtag::Classify::get_selection"
+    # debug "entering ::Jtag::Classify::get_selection"
 
     # iterate through each of the selections in the data array one-by-one
     foreach I [array names data -regexp {(.*)(,)([0-9])+}] {
@@ -786,6 +790,29 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
         set Y2 [lindex $Coords 3]
         $c configure -cursor [::Jtag::Classify::DeterminePos $X1 $Y1 $X2 $Y2 \
                               [$c canvasx $x] [$c canvasy $y]]
+
+        set SelRef [::Jtag::Classify::get_selection $R]
+        if {$SelRef != ""} {
+            # display the original 'data' elements
+            set Class     [string range $SelRef 0 [expr \
+                          [string last "," $SelRef] - 1]]
+            set X1        [lindex $::Jtag::Config::data($SelRef) 1]
+            set Y1        [lindex $::Jtag::Config::data($SelRef) 2]
+            set X2        [lindex $::Jtag::Config::data($SelRef) 3]
+            set Y2        [lindex $::Jtag::Config::data($SelRef) 4]
+            set Mode      [lindex $::Jtag::Config::data($SelRef) 5]
+            set Snapped   [lindex $::Jtag::Config::data($SelRef) 6]
+            set SelTime   [lindex $::Jtag::Config::data($SelRef) 7]
+            set ClsTime   [lindex $::Jtag::Config::data($SelRef) 8]
+            set ClsAttmpt [lindex $::Jtag::Config::data($SelRef) 9]
+            set ResAttmpt [lindex $::Jtag::Config::data($SelRef) 10]
+
+            ::Jtag::UI::status_text "SEL: ($X1, $Y1, $X2, $Y2) \
+            Class=$Class Mode=$Mode Snapped=$Snapped SelTime=$SelTime \
+            ClsTime=$ClsTime ClassAttmpts=$ClsAttmpt \
+            ResizeAttmpts=$ResAttmpt"
+        }
+
     } else {
         $c configure -cursor left_ptr
     }
