@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.13 2004-01-19 01:44:57 klaven Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.14 2004-04-22 17:08:20 klaven Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.13  2004-01-19 01:44:57  klaven
+## Revision 1.14  2004-04-22 17:08:20  klaven
+## Reduced the threshold for snapping.  The snapping was causing regions to miss a fair bit of ink, and sometimes to omit entire symbols (such as superscripts in equations).
+##
+## Revision 1.13  2004/01/19 01:44:57  klaven
 ## Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
 ##
 ## Revision 1.12  2003/09/19 15:25:58  scottl
@@ -424,7 +427,7 @@ proc ::Jtag::Menus::run_prediction {} {
     # run it (will return an error if it fails)
     ::Jtag::UI::status_text "Running Auto-Prediction...."
     update idletasks
-    eval exec $matlab_exe -nojvm -nosplash "<" $TmpFile "> ./kevtmp.txt"
+    eval exec $matlab_exe -nojvm -nosplash "<" $TmpFile "> ./MatlabOutput.txt"
     ::blt::busy release .
 
     # clean up the temp script

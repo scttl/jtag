@@ -5,7 +5,7 @@
 %% DESCRIPTION: Sample configuration file to be distributed with jtag
 %%              application.
 %%
-%% CVS: $Id: .jconfig,v 1.8 2004-01-19 01:44:57 klaven Exp $
+%% CVS: $Id: .jconfig,v 1.9 2004-04-22 17:08:20 klaven Exp $
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -16,9 +16,9 @@
 % B O D Y  I N F O %
 %%%%%%%%%%%%%%%%%%%%
 
-% mode: 
+% mode:
 % Set the default selection mode.  Valid choices are 'crop' or
-% 'simple'.  Crop allows the user to create a bounding box with the mouse, 
+% 'simple'.  Crop allows the user to create a bounding box with the mouse,
 % whereas simple only allows the user to select vertical boundaries by
 % clicking with the mouse (orizontal boundaries are the image width
 % boundaries)
@@ -26,23 +26,23 @@
 mode = crop
 
 % window_size:
-% Set the default size of the window containing the application.  Must be a 
-% value of the form <width> <height> where each <width> and <height> are 
-% replaced with positive numerical values specifying the number of pixels for 
+% Set the default size of the window containing the application.  Must be a
+% value of the form <width> <height> where each <width> and <height> are
+% replaced with positive numerical values specifying the number of pixels for
 % the width and height respectively.
 window_size = 900 900
 
 % window_pos:
 % Set the default initial position (top left corner) of the window containing
 % the application.  Must be a value of the form <left> <top> where
-% each of the two arguments are numerical integers specifying the number of 
-% pixels to move in from the left, top respectively edges before placing the 
+% each of the two arguments are numerical integers specifying the number of
+% pixels to move in from the left, top respectively edges before placing the
 % window on the screen
 window_pos = 0 0
 
 % canvas_size:
-% Set the default size of the canvas upon which the image will be displayed.  
-% Must be a value of the form <width> <height> where each <width> and <height> 
+% Set the default size of the canvas upon which the image will be displayed.
+% Must be a value of the form <width> <height> where each <width> and <height>
 % are replaced with positive numerical values specifying the number of pixels
 % for the width and height respectively.  These values should be smaller than
 % those specified in the window_size
@@ -60,7 +60,7 @@ bucket_size = 50 50
 % when scanning a single line of a selection rectangle to prohibit it from
 % being passed over when snapping it to text.  This value must lie in the
 % range [0...100] and can take on fractions if neccessary
-snap_threshold = 1
+snap_threshold = 0.2
 
 % learner:
 % The name of the learning algorithm to be used during automatic "prediction"
@@ -86,7 +86,7 @@ learner_args = '/h/40/klaven/klaven/Journals/TRAINING_DATA/jmlr.lr.data'
 % List of possible classification types based on the component of the journal
 % that they represent.  Each item will contain a string specifying its name
 % and a string giving its colour (symbolic equivalent of the 8-bit RGB
-% values).  Each classifier will be separted by whitespace/newlines, and the 
+% values).  Each classifier will be separted by whitespace/newlines, and the
 % component name and colour can not contain any spaces.
 classes = (
                abstract             #FF0000

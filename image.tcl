@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.14 2004-01-19 01:44:57 klaven Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.15 2004-04-22 17:08:20 klaven Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.14  2004-01-19 01:44:57  klaven
+## Revision 1.15  2004-04-22 17:08:20  klaven
+## Reduced the threshold for snapping.  The snapping was causing regions to miss a fair bit of ink, and sometimes to omit entire symbols (such as superscripts in equations).
+##
+## Revision 1.14  2004/01/19 01:44:57  klaven
 ## Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
 ##
 ## Revision 1.13  2003/09/05 14:22:17  scottl
@@ -132,7 +135,7 @@ namespace eval ::Jtag::Image {
     set img(img) {}
 
     # the current zoom factor
-    set img(zoom) 1.2
+    set img(zoom) 1.15
 
     # the checksum value for the image file
     set img(cksum) {}
@@ -481,7 +484,7 @@ proc ::Jtag::Image::add_scrollbars {region} {
 #    scaled image, and updates img(height) and img(width) to reflect
 #    the new image resolution.  actual_height and actual_width remain unchanged.
 
-proc ::Jtag::Image::resize {{factor 1.}} {
+proc ::Jtag::Image::resize {{factor 1.15}} {
 
     # link any namespace variables
     variable can
