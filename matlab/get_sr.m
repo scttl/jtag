@@ -13,11 +13,15 @@ function s = get_sr(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: get_sr.m,v 1.6 2003-08-18 15:23:08 scottl Exp $
+% $Id: get_sr.m,v 1.7 2003-08-25 17:50:50 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: get_sr.m,v $
-% Revision 1.6  2003-08-18 15:23:08  scottl
+% Revision 1.7  2003-08-25 17:50:50  scottl
+% Cropped input rectangle to first non-bg position on each side to improve
+% accuracy.  Changed default threshold to 1 percent instead of 2.
+%
+% Revision 1.6  2003/08/18 15:23:08  scottl
 % Renamed sr_ink_feature.m to get_sr.m
 %
 % Revision 1.5  2003/08/13 19:31:42  scottl
@@ -42,7 +46,7 @@ function s = get_sr(rect, pixels, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-threshold = .02;  % default threshold to use if not passed above
+threshold = .01;  % default threshold to use if not passed above
 bg = 1;           % default value for background pixels
 
 
@@ -64,14 +68,37 @@ if nargin == 3
     threshold = varargin{1};
 end
 
-% loop over the 4 sides, trimming our current bounding box until we have met
-% our ink thresholds
-
+% to ensure accurate results, crop the rectangle into the first non-bg pixels
+% on each side.
 left   = rect(1);
 top    = rect(2);
 right  = rect(3);
 bottom = rect(4);
 
+while left < right & isempty(find(pixels(top:bottom, left) ~= bg))
+    left = left + 1;
+end
+
+while right > left & isempty(find(pixels(top:bottom, right) ~= bg))
+    right = right - 1;
+end
+
+while top < bottom & isempty(find(pixels(top, left:right) ~= bg))
+    top = top + 1;
+end
+
+while bottom > top & isempty(find(pixels(bottom, left:right) ~= bg))
+    bottom = bottom - 1;
+end
+
+if left >= right | top >= bottom
+    warning('Empty rect passed.  Returning orig. subrectangle');
+    s = rect;
+    return;
+end
+
+% loop over the 4 sides, trimming our current bounding box until we have met
+% our ink thresholds
 l_done = false;
 t_done = false;
 r_done = false;
