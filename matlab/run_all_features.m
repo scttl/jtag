@@ -18,11 +18,15 @@ function res = run_all_features(rect, pixels)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.1 2003-08-18 15:00:01 scottl Exp $
+% $Id: run_all_features.m,v 1.2 2003-08-26 21:38:20 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.1  2003-08-18 15:00:01  scottl
+% Revision 1.2  2003-08-26 21:38:20  scottl
+% Included 4 new features that calculate the distance from subrectangle edges
+% to associated page edges.
+%
+% Revision 1.1  2003/08/18 15:00:01  scottl
 % Initial revision.
 %
 
@@ -58,14 +62,14 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if get_names
-    data(1:16) = distance_features;
-    data(17:18) = density_features;
+    data(1:20) = distance_features;
+    data(21:22) = density_features;
     for i = 1:length(data)
         res{i} = data{i}.name;
     end
 else
-    data(1:16) = distance_features(rect,pixels);
-    data(17:18) = density_features(rect,pixels);
+    data(1:20) = distance_features(rect,pixels);
+    data(21:22) = density_features(rect,pixels);
     for i = 1:length(data)
         res = [res, data{i}.val];
     end
