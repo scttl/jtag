@@ -18,9 +18,11 @@ Thesis TOC Gaps:
     
 ----------------------------------------------------
 
-Fix bottom-of-page bug and re-run 2-col reflow examples
+<DONE>Fix bottom-of-page bug and re-run 2-col reflow examples
 
 Read Yann Lecunn papers
+
+Change LTC2 so that each sample doesn't include the feature names.
 
 Implement the best-merge algorithm
 
@@ -28,15 +30,15 @@ Implement Voronoi Diagrams for best-merge
 
 Test Voronoi Diagrams for best-merge
 
-Improve the document re-flowing
+<DONE>Improve the document re-flowing
 
-Add extra feature for original Learn-To-Cut
+<DONE>Add extra feature for original Learn-To-Cut
 
-Implement "optimizing" Learn-To-Cut data collection
+<DONE>Implement "optimizing" Learn-To-Cut data collection
 
 Train "optimizing" Learn-To-Cut
 
-Code "optimizing" Learn-To-Cut cutting algorithm
+<DONE>Code "optimizing" Learn-To-Cut cutting algorithm
 
 Test "optimizing" Learn-To-Cut cutting algorithm
 

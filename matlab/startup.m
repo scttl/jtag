@@ -3,9 +3,11 @@ addpath('./knn/');
 addpath('./segmentation/');
 addpath('./learntocut/');
 addpath('./ltc2/');
+addpath('./ltc3/');
 addpath('./features/');
 addpath('./utils/');
 addpath('./memm/');
+addpath('./merge/');
 addpath('./reflow/');
 global class_names;
 class_names = {'text' 'authour_list' 'section_heading' 'main_title' ...
