@@ -1,0 +1,289 @@
+##################################################################################
+## FILE: useage.txt
+##
+## CVS: $Id: useage.txt,v 1.1 2003-09-19 13:16:54 scottl Exp $
+##
+## DESCRIPTION: Text file describing how to use the JTAG journal image tagging
+##              application for end-users.
+##
+## ARGUMENTS:
+##
+## REQUIRES:
+##
+################################################################################
+
+1. Starting Up
+--------------
+
+First ensure that you have installed the JTAG application and its dependent
+software locally on your machine (see the top-level README file for
+instructions on how to do this).
+
+Once installed, you can start the JTAG application by entering the top-level
+directory and issuing:
+
+    ./main.tcl
+
+from the command line.  This will start up and display the GUI, and from there
+you can begin loading journal images for tagging.
+
+Alternately, you can specify a journal image to load upon startup by passing
+its path and name as a parameter.  If I had a file in my home directory called
+img1.tiff I would load it on startup as follows (after cd'ing to the top-level
+JTAG directory):
+
+    ./main.tcl ~/img1.tiff
+
+1.1 Supported Image Formats
+---------------------------
+
+One of the main purposes of the JTAG application is to render and display
+raster image representations of journal articles.  All of this image rendering
+and manipulation is carried out by an external Tcl/Tk library called TkImg.
+It transparently supports all of the following formats (although only TIFF,
+and JPG have been tested thus far):
+
+  - tiff
+  - jpeg
+  - gif
+  - png
+  - bmp
+  - xbm
+  - xpm
+  - partial postscript support (flakey and possibly broken)
+
+Since most journal articles will come in multiple-page postscript or Adobe pdf
+format, I have written a script to automatically convert such files, into
+individual tiff files (1 page per file) for input into the JTAG application.
+See the README file in the scripts directory as well as the file
+scripts/pdf_to_tiff.pl for more information on converting to an appropriate
+image format.
+
+1.2 Configuration and Customization
+-----------------------------------
+
+A large portion of the default behaviour of the JTAG application can be
+customized by the user before startup.  This is accomplished through the use
+of a config file called .jconfig.  The application searches for this file upon
+initial startup, first in the current directory, then secondly in the current
+users home directory.  It then proceeds to read and load the config variable
+values from the first .jconfig file it finds.  If a valid .jconfig file can
+not be found, it loads a series of default values.  To see what these values
+are you can have a look at the beginning of the config.tcl file.  For further
+information on each config variable see the sample .jconfig file in the
+top-level directory, as well as section 3. below.
+
+
+2. Basic Controls and Actions
+-----------------------------
+
+Upon first loading the JTAG application you will see a menu and various
+buttons along the top, 2 vertical columns of buckets containing various class
+names & colours, and the main image viewing window.  Interaction with the
+application is accomplished through mouse movements, mouse button presses, and
+various keyboard combinations.
+
+2.1 Image Display
+-----------------
+
+A journal image file can be opened for display by either selecting "Open" from
+the File menu using the mouse, or with the keyboard shortcut <Ctrl><o> (i.e.
+pressing the Ctrl key while also pressing the o key).  If an image is already
+being displayed when a new image is opened, the previous image's selections
+(if any) are saved to disk first before the new image is opened.
+
+In order to get a better view of the image one can zoom in and out to magnify
+and shrink what is shown.  Zooming in increases the magnification (allowing
+one to focus on a portion of the document in detail) and zooming out does the
+opposite.  This can be accomplished with the mouse by pressing the "Zoom In"
+or "Zoom out" button, or by clicking on the desired zoom magnification from
+the Zoom menu.  Alternately, one can incrementally zoom in (out) by pressing
+the <+> key (<-> key).
+
+If the image is magnified such that it doesn't entirely fit in the display
+window a vertical and/or horizontal scrollbar will appear around the
+right/bottom edge of the image window.  Using the mouse, one can slide the
+scrollbar to view other regions of the document.
+
+2.2 Creating Selections
+-----------------------
+
+A selection is a rectangular region of ink that belongs to a single class
+(Ex. the ink making up an article title, or equation, or page number etc.)
+The main purpose of the JTAG application is to allow one to hand create such
+selections and view them on screen.
+
+With an image displayed on screen, a selection can be created by hand using
+the mouse.  Simply move the mouse over where you want the selection to begin
+(one corner of the region), then press and hold down the left mouse button.
+With the left mouse button held, begin to drag the mouse towards the opposite
+corner, as you do so you will see a rectangular box being drawn.  Once the
+rectangular box encloses your region, let go of the left mouse button (the
+black rectangular box should remain).  Note that this box is not yet
+classified (see section 2.6 on how to associate it with a class).
+
+By default the selection you draw out is "snapped" inward on each side until
+it touches a significant portion of ink (this ensures accurate results when
+creating training data etc.).  Sometimes however, snapping the selection chops 
+off too much, or you would like to manually set the size of the box.  To
+resize a selection once it has initially been drawn out can be accomplished by
+moving the mouse into the selection, then towards the edge you wish to resize.
+At that point you will see the mouse cursor change and left clicking and
+holding you can now move the mouse and that edge will move too.  When you are
+happy with the resize, let go of the left mouse button to finish the change.
+You can also shrink 2 adjacent edges at the same time by moving the mouse to the
+corner (where the edges meet) and repeating the procedure outlined above.
+
+If you have resized a selection manually and would like to snap it to ink,
+this can be accomplished by selecting "Snap Selection" from the Edit menu,
+then left clicking inside the selection you wish to snap (left-click outside
+of all selections to cancel this).  Alternately, you can place the mouse
+inside the selection you wish to snap, press <Ctrl><n> on the keyboard, and
+left click inside of it once the cursor icon changes to a crosshair.
+
+Selections can also be created automatically (if MATLAB is installed, and you
+have set configuration settings to include training data -- see section 1.2).
+If there are no selections currently on the page displayed, and you click the
+"Auto Predict Selections" button with the mouse, the application will attempt
+to segment the document into regions and classify them using the learner you
+specify.
+
+2.3 Deleting Selections
+-----------------------
+
+If you wish to delete a selection, you can either select "Delete Selection"
+from the Edit menu, then left-click inside the selection you wish to delete
+(left-click outside of all selections to cancel this).  Alternately, you can
+press <Ctrl><x> on the keyboard then left-click inside of the selection you
+want to delete.
+
+2.4 Splitting Selections
+------------------------
+
+If you wish to split a region into two regions (for instance if you let the
+application detect regions and it incorrectly grouped multiple ones under a
+single region), you can do so by selecting "Split Selection" from the Edit
+menu.  Then move the mouse inside the selection you wish to split.  You will
+see a vertical (or horizontal) line stretching from edge to edge of the
+selection.  Move the line where you would like the split to occur, then
+left-click to carry out the split.  If you would like to change the line from
+vertical to horizontal (or vice versa), simply right-click with the mouse
+before you finish creating the split (i.e. before you left-click).
+Alternately you can start the split process by pressing <Ctrl><p> from the
+keyboard, then following the procedure above.  To cancel the split, simply
+left-click outside of all selections.
+
+2.5 Merging Selections
+----------------------
+
+If you have two or more adjacent selections that should be grouped as one
+single selection, simply select "Merge Selections" from the Edit menu.  Then
+using the mouse, move it inside each of the selections you wish to include in
+the merge and left-click inside of it (when you move outside that selection it
+should remain highlighted).  Once you have highlighted all the selections you
+wish to include in the merge, simply right-click and a new single rectangle
+will be created using the outermost co-ordinates of each of the selected
+rectangles.  If you have highlighted a selection for inclusion in the merge
+and you wish to change that, you can do so by left-clicking inside of it a
+second time (now when you move outside of it, it should not remain
+highlighted).  To cancel the merge, simply un-highlight each selection and
+right-click the mouse.  You can also being the merging process by pressing
+<Ctrl><m> with the keyboard, then proceed as explained above.
+
+2.6 Classifying Selections
+--------------------------
+
+Once a selection has been created, it should be classified (as text, or a page
+number etc.).  To accomplish this simply move the mouse inside the selection
+you wish to classify, then click and hold the left mouse button.  Then with
+the left-button held down, simply drag the mouse over the bucket you wish to
+classify the selection as.  You will see that a floating button is created
+called "selection" while you drag the mouse.  You can let go of the left-mouse
+button once the bucket you wish to classify the selection is highlighted.
+Once a selection is classified it is diplayed in the same colour as its
+bucket.
+
+To change the classification of a selection, simply drag it to the new bucket
+following the procedure above.
+
+You can also let the application guess at the classification for all
+selections currently on the page by pressing the "Auto Predict Selections"
+button (this button is displayed if you have MATLAB installed and you have set
+the .jconfig file appropriately).
+
+2.7 Saving Results
+------------------
+
+You can save the selections created out to disk at any time either by
+selecting "Save" from the File menu, or by pressing <Ctrl><s> from the
+keyboard.  This will result in files in the same directory as the image file
+created, one with a .jtag extension, and one with a .jlog extension.  The jtag
+file is in ASCII format, and stores selection information (co-ordinates,
+class, etc.), configuration information, and image information.  The jlog file
+is also in ASCII format, but it stores auxiliary data like the time taken to
+create a selection, or classify it etc.
+
+2.8 Switching Pages
+-------------------
+
+If image files happen to be multiple pages from the same journal, they can
+easily be recognized as such and switch between while the application is
+running.  Consecutive images from the same journal should have the same base
+filename followed by .aa for the first page, .ab for the second and so on (up
+to .zz).  Following the page should be the image format .tif or .jpg for
+example.  So a valid page 3 of an image named foo.tif would be foo.ac.tif for
+example.
+
+If a file is recognized as being multiple pages, you can switch to the
+previous or next page simply be clicking on the "Prev Page" button or "Next
+Page" button with the mouse.  Alternately, you can do the same with the
+keyboard by pressing the <Page Up> or <Page Down> keys.
+
+When you switch pages, the contents of the first page are saved to disk before
+the next page is loaded.
+
+
+3. Configuration & Customization
+--------------------------------
+
+As discussed in section 1.2 above, the JTAG application makes extensive use of
+the .jconfig file to set most configurable aspects.  For a discussion of what
+each config item does, and how to set its value, see the sample .jconfig file
+kept in the top-level directory.
+
+Customization can also be made to the scripts in the matlab directory (for
+things like segmentation thresholds etc.), since these are used with the auto-
+predict feature to come up with selections and predict classifications.  For
+more information on how to setup these variables, see the README file in the
+matlab directory.
+
+
+4. Limitations & Misc. Issues
+-----------------------------
+
+Tcl/Tk and the TkImg toolkit use a rather crude representation for images (at
+least tiff files) whereby they use 32 bits per pixel and render the *entire*
+image at any given time.  As a result, any large (in terms of number of
+pixels) image will take up a large amount of memory while the application is
+running.  Further compounding the problem occurs whenever you zoom in on the
+page repeatedly.  Increasing the magnification simply doubles etc. the number 
+of pixels that have to be rendered.  At extremely high magnifications this
+takes a large amount of cpu-time and largely increases the memory footprint of
+the application.  It is best not to zoom in too much!
+
+When creating selections, you should classify them as soon as you finish
+creating one (as opposed to creating multiple selections then classifying
+each).  The way the application was designed, it only stores auxiliary
+information for the most recently created selection.  This information is only
+save internally, after it has been classified.  As a result if a new selection
+is created before classification, the originals auxiliary data may be lost or
+become garbage.
+
+If a selection is really narrow (in the vertical or horizontal sense) it may
+be automatically deleted.  This feature was put in place to ensure that each
+rectangle created is larger than a minimum size (so random noise and "dirt"
+are not created as selections.  A trick to creating "thin" selections that
+should stay as selections involves making them to large to begin with (by
+including another region), then classify it, then resize it manually so you
+are only left with the thin piece of ink and whitespace, then snap it to a
+region.
