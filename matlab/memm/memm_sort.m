@@ -15,16 +15,16 @@ function td = memm_sort(td_in);
 
 if (isfield(td_in, 'isSorted') && td_in.isSorted);
     td = td_in;
-    fprintf('Data is already sorted.\n');
+    %fprintf('Data is already sorted.\n');
     return;
 end;
 
 td = td_in;
 
-fprintf('Beginning to sort...\n');
+%fprintf('Beginning to sort...\n');
 for pp = 1:length(td.pg);
     pg = td.pg{pp};
-    fprintf('    Sorting page %i of %i...\n', pp, length(td.pg));
+    %fprintf('    Sorting page %i of %i...\n', pp, length(td.pg));
     %jt = parse_jtag(td.pg_names{pp});
     pg.ordered_index = zeros(size(pg.cid));
     for ff = 1:length(td.pg{pp}.cid);
@@ -41,7 +41,7 @@ for pp = 1:length(td.pg);
 end;
 
 td.isSorted = true;
-fprintf('\nSorting complete.\n');
+%fprintf('\nSorting complete.\n');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Subfunction declarations
