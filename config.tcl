@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.7 2003-07-21 21:36:16 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.8 2003-07-28 19:57:12 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.7  2003-07-21 21:36:16  scottl
+## Revision 1.8  2003-07-28 19:57:12  scottl
+## Implemented jlog reading and writing functionality to dump auxiliary 'data'
+##
+## Revision 1.7  2003/07/21 21:36:16  scottl
 ## Added snap_threshold param.
 ##
 ## Revision 1.6  2003/07/16 20:27:12  scottl
@@ -61,6 +64,10 @@ namespace eval ::Jtag::Config {
 
     # Name of the configuration file
     variable config_file {.jconfig}
+
+    # jtag and jlog file extensions
+    variable jtag_ext {.jtag}
+    variable jlog_ext {.jlog}
 
     # name of the configuration variable denoting the classes list
     variable class_name {classes}
@@ -113,6 +120,7 @@ namespace eval ::Jtag::Config {
     variable hpre
     variable separator {---}
     variable btpre
+    variable blpre
 
     # all of the header prefixes
     set hpre(img) {img}
@@ -125,6 +133,13 @@ namespace eval ::Jtag::Config {
     set btpre(pos) {pos}
     set btpre(mode) {mode}
     set btpre(colour) {colour}
+    set btpre(snapped) {snapped}
+
+    # all of the jlog body prefixes
+    set blpre(pos) {pos}
+    set blpre(sel_time) {sel_time}
+    set blpre(class_time) {class_time}
+    set blpre(attempts) {class_attempts}
 
 }
 
@@ -188,13 +203,16 @@ proc ::Jtag::Config::read_config {} {
 
 # ::Jtag::Config::read_data --
 #
-#    Attempts to read the contents of a jtag selection file into memory,
+#    Attempts to read the contents of a jtag selection file (and possibly an
+#    associated jlog auxiliary data file) into memory,
 #    storing the results in the data array.  For a detailed description of the
 #    structure of the data array, see section 6.1 of the file
 #    specification.txt in the doc directory.
 #
 # Arguments:
 #    jtag_file    The complete path and name of a jtag file to be loaded.
+#    jlog_file    (optional)  The complete path and name of a jlog file to be 
+#                 loaded.
 #
 # Results:
 #    Provided that the file passed exists and contains validly formatted
@@ -202,19 +220,23 @@ proc ::Jtag::Config::read_config {} {
 #    data array.  Otherwise an error is thrown back to the caller, with the
 #    appropriate reason returned.
 
-proc ::Jtag::Config::read_data {jtag_file} {
+proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
 
     # link any namespace variables needed
     variable data
     variable ::Jtag::Image::img
     variable ::Jtag::Image::can
+    variable hpre
     variable btpre
+    variable blpre
 
     # declare any local variables needed
     variable ConfigFile ""
     variable Result
+    variable JLogResult ""
     variable ElemList
     variable I
+    variable J
     variable Class
     variable Canvas
     variable X1
@@ -222,18 +244,28 @@ proc ::Jtag::Config::read_data {jtag_file} {
     variable X2
     variable Y2
     variable Mode
+    variable Snapped
+    variable SelTime ""
+    variable ClassTime ""
+    variable Attempts ""
     variable Colour
+    variable FBuckets
+    variable CkSumPos 3 ;# the line in the header the cksum field is to appear
+    variable SelElements 4 ;# number of element comprising a single selection
 
 
     debug {entering ::Jtag::Config::read_data}
 
-    # first check and see if the file passed exists
+    # first check and see if the files passed exist
     if {! [file exists $jtag_file]} {
-        error "File passed does not exist"
+        error "$jtag_file passed does not exist"
+    }
+    if {$jlog_file != "" && ! [file exists $jlog_file]} {
+        error "$jlog_file passed does not exist"
     }
 
     # ensure there's an image and canvas upon which to add selections
-    if { ! [::Jtag::Image::exists]} {
+    if {! [::Jtag::Image::exists]} {
         error "Trying to add selections for a non-existent image"
     } elseif {! $can(created)} {
         error "Trying to add selections to a non-existent canvas"
@@ -241,24 +273,30 @@ proc ::Jtag::Config::read_data {jtag_file} {
 
     set Canvas $can(path)
 
-    # pass the file off for reading
+    # pass the jtag file off for reading
     if {[catch {::Jtag::File::parse $jtag_file} Result]} {
         error "Problems reading $jtag_file  Reason:\n$Result"
     }
 
+    # pass the jlog file off for reading
+    if {$jlog_file != "" && [catch {::Jtag::File::parse $jlog_file} \
+                                    JLogResult]} {
+        error "Problems reading $jlog_file  Reason:\n$Result"
+    }
+
     # ensure that the data read matches the file in memory (cksum's)
     if { ! [::Jtag::Image::exists] || 
-         $img(cksum) != [lindex [lindex $Result 3] 1]} {
+         $img(cksum) != [lindex [lindex $Result $CkSumPos] 1]} {
        error "$jtag_file specifies data for a different or non-existent image"
     }
 
-    # trim the first 4 elements from result (header data) since it has already
-    # served its purpose in verifying the image
-    set Result [lrange $Result 4 end]
+    # trim the header elements from result since it has already
+    # served its purpose in verifying the image (cksum above)
+    set Result [lrange $Result [array size hpre] end]
 
     # any items from here until the first $btpre(class) are config elements
     set I 0
-    while {[lindex [lindex $Result $I] 0] != $btpre(class) &&
+    while {[lindex [lindex $Result $I] 0] != $btpre(class) && \
            $I < [llength $Result]} {
         incr I
     }
@@ -266,18 +304,31 @@ proc ::Jtag::Config::read_data {jtag_file} {
     if {$I > 0 && $I <= [llength $Result]} {
         # reset our config data
         ::Jtag::Config::ResetCnfg [lrange $Result 0 [expr $I - 1]]
-        #@@ to do -- update the buckets to reflect array changes
-        #::Jtag::Classify::create_buckets {} {}
+        # update the buckets to reflect array changes
+        if {[ catch {::Jtag::Classify::create_buckets {} {}} FBuckets]} {
+            error "failed to re-create buckets.  Reason:\n$FBuckets"
+        }
+        grid [lindex $FBuckets 0] -row 1 -column 0 -sticky nsew
+        grid [lindex $FBuckets 1] -row 1 -column 3 -sticky nsew
         set Result [lrange $Result $I end]
     }
 
-    # ensure that the total number of elements remaining is a multiple of 3
-    # since each specifies a complete selection
-    if {[llength $Result] % 3 } {
+    # if we have jlog data, jump ahead to its first entry
+    if {$JLogResult != ""} {
+        set J 0
+        while {[lindex [lindex $JLogResult $J] 0] != $blpre(pos) && \
+               $J < [llength $JLogResult]} {
+            incr J
+         }
+    }
+
+    # ensure that the total number of elements remaining is a multiple of
+    # $SelElements since each specifies a complete selection
+    if {[llength $Result] % $SelElements } {
         error "$jtag_file has an incorrect number of fields"
     }
 
-    for {set I 0} {$I < [llength $Result]} {incr I 3} {
+    for {set I 0} {$I < [llength $Result]} {incr I $SelElements} {
         set ElemList [lindex $Result $I]
         if {[llength $ElemList] != 2 || \
             [lindex $ElemList 0] != $btpre(class)} {
@@ -311,8 +362,65 @@ proc ::Jtag::Config::read_data {jtag_file} {
             set Mode [lindex $ElemList 1]
         }
 
-        # since everything was found ok, add the selection
-        ::Jtag::Classify::add $Canvas $Class $X1 $Y1 $X2 $Y2 $Mode
+        set ElemList [lindex $Result [expr $I + 3]]
+
+        if {[llength $ElemList] != 2 || \
+            [lindex $ElemList 0] != $btpre(snapped)} {
+            error "Corrupt data in file $jtag_file at line:\n$ElemList"
+        } else {
+            set Snapped [lindex $ElemList 1]
+        }
+
+        # if we have jlog data, search for the entry associated with the
+        # current jtag selection found.
+        if {$JLogResult != ""} {
+            set K $J
+            while {$K < [llength $JLogResult]} {
+                set ElemList [lindex $JLogResult $K]
+                if {[lindex $ElemList 0] == $blpre(pos) && \
+                    [llength $ElemList] == 5 && \
+                    [lindex $ElemList 1] == $X1 && \
+                    [lindex $ElemList 2] == $Y1 && \
+                    [lindex $ElemList 3] == $X2 && \
+                    [lindex $ElemList 4] == $Y2} {
+
+                    # match found, extract data
+                    set ElemList [lindex $JLogResult [expr $K + 1]]
+                    if {[llength $ElemList] != 2 || \
+                        [lindex $ElemList 0] != $blpre(sel_time)} {
+                        error "Corrupt data in $jlog_file at line:\n$ElemList"
+                    } else {
+                        set SelTime [lindex $ElemList 1]
+                    }
+
+                    set ElemList [lindex $JLogResult [expr $K + 2]]
+                    if {[llength $ElemList] != 2 || \
+                        [lindex $ElemList 0] != $blpre(class_time)} {
+                        error "Corrupt data in $jlog_file at line:\n$ElemList"
+                    } else {
+                        set ClassTime [lindex $ElemList 1]
+                    }
+
+                    set ElemList [lindex $JLogResult [expr $K + 3]]
+                    if {[llength $ElemList] != 2 || \
+                        [lindex $ElemList 0] != $blpre(attempts)} {
+                        error "Corrupt data in $jlog_file at line:\n$ElemList"
+                    } else {
+                        set Attempts [lindex $ElemList 1]
+                    }
+
+                    break;
+
+                } else {
+                    incr K
+                }
+            }
+        } 
+
+        # now add the selection data into memory (if no jlog file exists, no
+        # auxiliary data is actually added)
+        ::Jtag::Classify::add $Canvas $Class $X1 $Y1 $X2 $Y2 $Mode $Snapped \
+                              "" $SelTime $ClassTime $Attempts
 
     }
 
@@ -322,7 +430,8 @@ proc ::Jtag::Config::read_data {jtag_file} {
 # ::Jtag::Config::write_data --
 #
 #    Attempts to dump the contents of the 'data' array and some header
-#    information out to the appropriate jtag file.
+#    information out to the appropriate jtag file (and potentially the jlog
+#    file too).
 #
 # Arguments:
 #
@@ -330,7 +439,8 @@ proc ::Jtag::Config::read_data {jtag_file} {
 #    Provided that an image has been created already, its information,
 #    configuration information, and all selection information in the data
 #    array are written out to disk in a jtag file created by renaming the
-#    extension of the image to jtag.  If the image has not been created yet,
+#    extension of the image to jtag (additional data may also be written to
+#    the jlog file if present).  If the image has not been created yet,
 #    nothing is written but no error is returned.  In all other cases, an
 #    error is returned to the caller.
 
@@ -339,13 +449,16 @@ proc ::Jtag::Config::write_data {} {
     # link any namespace variables needed
     variable ::Jtag::Image::img
     variable data
-
-    # declare any local variables needed
-    variable DList {}
-    variable FileName
     variable hpre
     variable separator
     variable btpre
+    variable blpre
+
+    # declare any local variables needed
+    variable DList {}
+    variable LogList {}
+    variable FileName
+    variable LogFileName
     variable CommentPre {# }
 
 
@@ -363,6 +476,7 @@ proc ::Jtag::Config::write_data {} {
     }
     set TmpDims [join [::Jtag::Image::get_actual_dimensions] x]
     set FileHeader "FILE: $img(jtag_name)"
+    set LogFileHeader "FILE: $img(jlog_name)"
     set TimeStamp "DUMPED: [clock format [clock seconds] -format %c]"
     #set User  "BY: []"
     set ImageHeader "IMAGE INFO:"
@@ -376,7 +490,17 @@ proc ::Jtag::Config::write_data {} {
                   "${hpre(cksum)} = $img(cksum)" \
                   ""
 
-    # now add commented out version of the config data used
+    lappend LogList ${CommentPre}$LogFileHeader \
+                    ${CommentPre}$TimeStamp \
+                    "" \
+                    ${CommentPre}$ImageHeader \
+                    "${hpre(img)} = $img(file_name)" \
+                    "${hpre(type)} = $img(file_format)" \
+                    "${hpre(res)} = $TmpDims" \
+                    "${hpre(cksum)} = $img(cksum)" \
+                    ""
+
+    # now add the config data used to the jtag file
     set ConfigHeader {CONFIGURATION INFO:}
     lappend DList ${CommentPre}$ConfigHeader
     set DList [concat $DList [::Jtag::Config::DumpConfig]]
@@ -385,18 +509,34 @@ proc ::Jtag::Config::write_data {} {
     # now add the selection data
     set SelectionHeader {CLASSIFICATION INFO:}
     lappend DList ${CommentPre}$SelectionHeader
+    lappend LogList ${CommentPre}$SelectionHeader
     foreach I [array names data -regexp {(.*)(,)([0-9]+)}] {
         regexp {(.*)(,)([0-9]+)} $I M Class Comma Num
         set Pos [join [lrange $data($I) 1 4] " "]
         set Mode [lindex $data($I) 5]
+        set Snapped [lindex $data($I) 6]
+        set SelTime [lindex $data($I) 7]
+        set ClTime [lindex $data($I) 8]
+        set Attmpts [lindex $data($I) 9]
         lappend DList $separator \
                       "${btpre(class)} = $Class" \
                       "${btpre(pos)} = $Pos" \
-                      "${btpre(mode)} = $Mode"
+                      "${btpre(mode)} = $Mode" \
+                      "${btpre(snapped)} = $Snapped"
+
+        lappend LogList $separator \
+                      "${blpre(pos)} = $Pos" \
+                      "${blpre(sel_time)} = $SelTime" \
+                      "${blpre(class_time)} = $ClTime" \
+                      "${blpre(attempts)} = $Attmpts"
     }
 
-    # now send the data off to the file for writing (catching any errors)
+    # now send the data off to the jtag file for writing (catching any errors)
     ::Jtag::File::write $img(jtag_name) $DList
+
+    if {$img(jlog_name) != ""} {
+        ::Jtag::File::write $img(jlog_name) $LogList
+    }
 
 }
 
