@@ -15,11 +15,14 @@ function res = distance_features(use, rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: distance_features.m,v 1.4 2004-08-16 22:38:10 klaven Exp $
+% $Id: distance_features.m,v 1.5 2004-12-09 03:38:44 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: distance_features.m,v $
-% Revision 1.4  2004-08-16 22:38:10  klaven
+% Revision 1.5  2004-12-09 03:38:44  klaven
+% *** empty log message ***
+%
+% Revision 1.4  2004/08/16 22:38:10  klaven
 % Functions that extract features now work with a bunch of boolean variables to turn the features off and on.
 %
 % Revision 1.3  2004/08/04 20:51:19  klaven
@@ -500,7 +503,8 @@ for rr = 1:size(rects,1);
         % between this one and any edge.
 
         % res(rr,fnum).name = 'on_left_edge';
-        if (left == 1) || (max(max(regmap(top:bottom,1:left-1))) == 0);
+        %if (left == 1) || (max(max(regmap(top:bottom,1:left-1))) == 0);
+        if (left == 1) || (max(max(1-pixels(top:bottom,1:left-1))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -508,7 +512,8 @@ for rr = 1:size(rects,1);
         fnum = fnum + 1;
 
         %res(rr,fnum).name = 'on_top_edge';
-        if (top == 1) || (max(max(regmap(1:top-1,left:right))) == 0);
+        %if (top == 1) || (max(max(regmap(1:top-1,left:right))) == 0);
+        if (top == 1) || (max(max(1-pixels(1:top-1,left:right))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -516,7 +521,8 @@ for rr = 1:size(rects,1);
         fnum = fnum + 1;
 
         %res(rr,fnum).name = 'on_right_edge';
-        if (right == c) || (max(max(regmap(top:bottom,right+1:c))) == 0);
+        %if (right == c) || (max(max(regmap(top:bottom,right+1:c))) == 0);
+        if (right == c) || (max(max(1-pixels(top:bottom,right+1:c))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -524,7 +530,8 @@ for rr = 1:size(rects,1);
         fnum = fnum + 1;
 
         %res(rr,fnum).name = 'on_bottom_edge';
-        if (bottom == r) || (max(max(regmap(bottom+1:r,left:right))) == 0);
+        %if (bottom == r) || (max(max(regmap(bottom+1:r,left:right))) == 0);
+        if (bottom == r) || (max(max(1-pixels(bottom+1:r,left:right))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -536,7 +543,8 @@ for rr = 1:size(rects,1);
         % each edge of the page.
 
         %res(rr,fnum).name = 'furthest_left';
-        if (left == 1) || (max(max(regmap(1:r,1:left-1))) == 0);
+        %if (left == 1) || (max(max(regmap(1:r,1:left-1))) == 0);
+        if (left == 1) || (max(max(1-pixels(1:r,1:left-1))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -544,7 +552,8 @@ for rr = 1:size(rects,1);
         fnum = fnum + 1;
 
         %res(rr,fnum).name = 'furthest_up';
-        if (top == 1) || (max(max(regmap(1:top-1,1:c))) == 0);
+        %if (top == 1) || (max(max(regmap(1:top-1,1:c))) == 0);
+        if (top == 1) || (max(max(1-pixels(1:top-1,1:c))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -552,7 +561,8 @@ for rr = 1:size(rects,1);
         fnum = fnum + 1;
 
         %res(rr,fnum).name = 'furthest_right';
-        if (right == c) || (max(max(regmap(1:r,right+1:c))) == 0);
+        %if (right == c) || (max(max(regmap(1:r,right+1:c))) == 0);
+        if (right == c) || (max(max(1-pixels(1:r,right+1:c))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -560,7 +570,8 @@ for rr = 1:size(rects,1);
         fnum = fnum + 1;
 
         %res(rr,fnum).name = 'furthest_down';
-        if (bottom == r) || (max(max(regmap(bottom+1:r,1:c))) == 0);
+        %if (bottom == r) || (max(max(regmap(bottom+1:r,1:c))) == 0);
+        if (bottom == r) || (max(max(1-pixels(bottom+1:r,1:c))) == 0);
           res(rr,fnum).val = 1;
         else
           res(rr,fnum).val = 0;
@@ -573,28 +584,28 @@ for rr = 1:size(rects,1);
 
         l_neighbour = 0;
         l_pt = left;
-        while (l_neighbour == 0) && (l_pt > 1);
+        while (l_neighbour <= 0) && (l_pt > 1);
           l_pt = l_pt-1;
           l_neighbour = max(regmap(top:bottom,l_pt));
         end;
 
         t_neighbour = 0;
         t_pt = top;
-        while (t_neighbour == 0) && (t_pt > 1);
+        while (t_neighbour <= 0) && (t_pt > 1);
           t_pt = t_pt-1;
           t_neighbour = max(regmap(t_pt,left:right));
         end;
 
         r_neighbour = 0;
         r_pt = right;
-        while (r_neighbour == 0) && (r_pt < c);
+        while (r_neighbour <= 0) && (r_pt < c);
           r_pt = r_pt+1;
           r_neighbour = max(regmap(top:bottom,r_pt));
         end;
 
         b_neighbour = 0;
         b_pt = bottom;
-        while (b_neighbour == 0) && (b_pt < r);
+        while (b_neighbour <= 0) && (b_pt < r);
           b_pt = b_pt+1;
           b_neighbour = max(regmap(b_pt,left:right));
         end;
