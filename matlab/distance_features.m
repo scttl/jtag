@@ -9,17 +9,20 @@ function res = distance_features(rect, pixels, varargin)
 %
 %  If THRESHOLD is specified, it should be given as a percentage (between
 %  0 and 1), determining the amount of non-background pixels that must be found
-%  for the side to be considered significant.  If not specified it defaults to 
+%  for the side to be considered significant.  If not specified it defaults to
 %  2 percent.
 
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: distance_features.m,v 1.2 2003-08-26 21:37:50 scottl Exp $
-% 
+% $Id: distance_features.m,v 1.3 2004-06-01 19:24:34 klaven Exp $
+%
 % REVISION HISTORY:
 % $Log: distance_features.m,v $
-% Revision 1.2  2003-08-26 21:37:50  scottl
+% Revision 1.3  2004-06-01 19:24:34  klaven
+% Assorted minor changes.  About to re-organize.
+%
+% Revision 1.2  2003/08/26 21:37:50  scottl
 % Added 4 new features that calculate the distance from subrectangle edges to
 % associated page edges
 %
@@ -35,7 +38,6 @@ function res = distance_features(rect, pixels, varargin)
 threshold = .02;    % default threshold to use if not passed above
 bg = 1;             % default value for background pixels
 get_names = false;  % determine if we are looking for names only
-
 
 % first do some argument sanity checking on the arguments passed
 error(nargchk(0,3,nargin));
@@ -66,7 +68,7 @@ res = {};
 % page!!
 
 % features 1 - 4 compute the distance from one edge of the rectangle to the
-% associated edge in the "snapped" subrectangle (must contain at least 
+% associated edge in the "snapped" subrectangle (must contain at least
 % threshold percent ink)
 res{1}.name  = 'l_inksr_dist';
 res{2}.name  = 't_inksr_dist';
@@ -89,7 +91,7 @@ res{10}.name  = 't_inksr_page_dist';
 res{11}.name  = 'r_inksr_page_dist';
 res{12}.name  = 'b_inksr_page_dist';
 
-% features 13 - 16 compute the distance from one edge of the rectangle to the 
+% features 13 - 16 compute the distance from one edge of the rectangle to the
 % next threshold significant non-whitespace region.
 res{13}.name  = 'l_ws_dist';
 res{14}.name = 't_ws_dist';

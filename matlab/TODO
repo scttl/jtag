@@ -10,13 +10,14 @@ Remove the non-useful distance features.
 Add some new distance features:
   -Height
   -Width
+  -Area
   -Aspect Ratio (what's the best way to do this?)
   -More/other???
 
 
-  
-  
-  
+
+
+
 Add some "marks" features:
   -Number of marks
   -Ratio of # of marks to area

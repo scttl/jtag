@@ -1,4 +1,4 @@
-function res = run_all_features(rect, pixels) 
+function res = run_all_features(rect, pixels)
 % RUN_ALL_FEATURES    Iterates through each feature available on RECT,  building
 %                     up a cell array containing all the results.
 %
@@ -18,11 +18,14 @@ function res = run_all_features(rect, pixels)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.3 2004-05-14 17:21:32 klaven Exp $
+% $Id: run_all_features.m,v 1.4 2004-06-01 19:24:34 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.3  2004-05-14 17:21:32  klaven
+% Revision 1.4  2004-06-01 19:24:34  klaven
+% Assorted minor changes.  About to re-organize.
+%
+% Revision 1.3  2004/05/14 17:21:32  klaven
 % Working on features for classification.  Realized that the distance features need some work.  Specifically, I think they are not being normalized properly, and several of them are redundant.
 %
 % Revision 1.2  2003/08/26 21:38:20  scottl
@@ -58,7 +61,7 @@ else
     end
 end
 
-% start running through features.  
+% start running through features.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ==========> Edit below as more features are added/removed <========== %
@@ -66,13 +69,13 @@ end
 
 if get_names
     data(1:20) = distance_features;
-    data(21:26) = density_features;
+    data(21:22) = density_features;
     for i = 1:length(data)
         res{i} = data{i}.name;
     end
 else
     data(1:20) = distance_features(rect,pixels);
-    data(21:26) = density_features(rect,pixels);
+    data(21:22) = density_features(rect,pixels);
     for i = 1:length(data)
         res = [res, data{i}.val];
     end
