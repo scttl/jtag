@@ -15,11 +15,14 @@ function res = density_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: density_features.m,v 1.4 2004-06-01 21:38:21 klaven Exp $
+% $Id: density_features.m,v 1.5 2004-06-01 21:56:54 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: density_features.m,v $
-% Revision 1.4  2004-06-01 21:38:21  klaven
+% Revision 1.5  2004-06-01 21:56:54  klaven
+% Modified all functions that call the feature extraction methods to call them with all the rectanges at once.
+%
+% Revision 1.4  2004/06/01 21:38:21  klaven
 % Updated the feature extraction methods to take all the rectangles at once, rather than work one at a time.  This allows for the extraction of features that use relations between rectangles.
 %
 % Revision 1.3  2004/06/01 19:24:34  klaven
@@ -72,6 +75,10 @@ end
 res = {};
 
 
+if get_names
+    rects = ones(1);
+end
+
 for rr=1:size(rects,1);
 rect = rects(rr,:);
 
@@ -106,7 +113,6 @@ res{rr,2}.name  = 'sr_dens';
 if get_names
     return;
 end
-
 
 % calculate feature 1 value
 left   = rect(1);

@@ -37,9 +37,10 @@ pixels = imread(jt.img_file);
 correct = 0;
 total = 0;
 
+all_features = run_all_features(jt.rects,pixels);
 for ii=1:size(jt.rects,1);
   total = total + 1;
-  features = run_all_features(jt.rects(ii,:),pixels);
+  reatures = all_features(ii,:);
   predID = lr_fn(classes,features,ww);
   actClass = jt.class_name(jt.class_id(ii));
   jj = 1;

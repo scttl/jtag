@@ -20,11 +20,14 @@ function res = classify_pg(class_names, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.5 2004-01-19 01:44:57 klaven Exp $
+% $Id: classify_pg.m,v 1.6 2004-06-01 21:56:54 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.5  2004-01-19 01:44:57  klaven
+% Revision 1.6  2004-06-01 21:56:54  klaven
+% Modified all functions that call the feature extraction methods to call them with all the rectanges at once.
+%
+% Revision 1.5  2004/01/19 01:44:57  klaven
 % Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
 %
 % Revision 1.4  2003/09/19 15:27:08  scottl
@@ -99,9 +102,10 @@ catch
 end
 
 % loop to classify each reactangle
+all_features = run_all_features9s.rects,pixels);
 for i = 1:size(s.rects,1)
     % run through all features for this rectangle
-    features = run_all_features(s.rects(i,:), pixels);
+    features = all_features(i,:);
     if ~isempty(varargin)
         s.class_id(i,:) = feval(class_fn, s.class_name, features, varargin{:});
     else

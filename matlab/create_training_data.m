@@ -33,11 +33,14 @@ function s = create_training_data(file_list)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.2 2003-08-22 15:13:11 scottl Exp $
+% $Id: create_training_data.m,v 1.3 2004-06-01 21:56:54 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.2  2003-08-22 15:13:11  scottl
+% Revision 1.3  2004-06-01 21:56:54  klaven
+% Modified all functions that call the feature extraction methods to call them with all the rectanges at once.
+%
+% Revision 1.2  2003/08/22 15:13:11  scottl
 % Updates to reflect the change to a cell array struct for class_name
 %
 % Revision 1.1  2003/08/18 14:56:00  scottl
@@ -78,10 +81,11 @@ for i = 1:length(file_list)
   cids = [];
   pixels = imread(pg_s.img_file);
 
+  all_features = run_all_features(pg_s.rects,pixels);
   for j = 1:size(pg_s.rects,1)
 
       % run through each feature adding it to features
-      feats = [feats; run_all_features(pg_s.rects(j,:), pixels)];
+      feats = all_features(j,:);
 
       % convert the local classid for this rectangle to a global one, add it
       % to cid
