@@ -1,0 +1,337 @@
+##################################################################################
+## FILE: README
+##
+## CVS: $Id: README,v 1.1 2003-08-26 20:49:18 scottl Exp $
+##
+## DESCRIPTION: Text file describing this directory structure, its contents,
+##              useage, and other notes.
+##
+## ARGUMENTS:
+##
+## REQUIRES:
+##
+################################################################################
+
+
+1. Directory Contents
+---------------------
+
+This directory contains several matlab functions and scripts used to interact
+with document image files as well as the output ASCII text jtag and jlog files 
+from the jtag application.  The main functions of these scripts are to:
+
+  * Build up a corpus of training data from already tagged and classified
+    jtag and jlog files (See section 3.)
+
+  * Read and segment image files into appropriate rectangular regions (See
+    section 4.)
+
+  * Determine various feature values for a particular region (See section 5.)
+
+  * Automatically classify regions of a page using training data and a
+    learning algorithm (See section 6.)
+
+
+2. File Contents
+----------------
+
+README - this file
+
+classify_pg.m - matlab function that classifies a page of rectangular regions
+                given training data and a learner
+
+create_training_data.m - matlab function that reads in a list of image files,
+                         extracts info from the associated jtag file, and
+                         builds up an in-memory structure of this information
+
+ddeblank.m - utility matlab function that strips leading and trailing blanks
+             from an input string
+
+density_features.m - matlab function that given an image and a single
+                     rectangular region, calculates values for various density 
+                     related features
+
+distance_features.m - matlab function that given an image and a single
+                      rectangular region, calculates values for various
+                      distance related features
+
+dump_jfiles.m - matlab function that dumps an in-memory representation of
+                a jtag and jlog file out to disk in the appropriate format
+                
+dump_training_data.m - matlab function that dumps an in-memory representation of
+                       some training data out to disk in the appropriate format
+
+get_sr.m - matlab helper function that when given an image and a single
+           rectangular region, calculates the subrectangular region inside the 
+           rectangle that has its bounding box snapped tightly against a 
+           threshold of non-background pixels on each side.
+
+knn_fn.m - matlab function that implements the k-nearest neighbours learning
+           algorithm given training data and a list of feature values
+
+line_detect.m - @@ *not currently used* @@ matlab function that given an image
+                and rectangular region attempts to further subdivide the region 
+                based on profile sums and whitespace
+
+parse_jlog.m - matlab function that given a jlog file, reads into an in-memory 
+               structure
+
+parse_jtag.m - matlab function that given a jtag file, reads into an in-memory 
+               structure
+
+run_all_features.m - matlab function that given an image and a single
+                     rectangular region, calculates values for all features 
+                     currently available for that region
+
+sample_td_script.m - sample matlab script that should be edited and run to
+                     create and dump out training data
+
+xycut.m - matlab function that uses a recursive top-down segmentation
+          procedure to create rectangular regions of the image file passed
+
+
+3. Creating Training Data
+-------------------------
+
+3.1 Procedure
+-------------
+
+a) Acquire a series of test document images (if pdf see scripts/pdf_to_tiff.sh) 
+   and if multiple page, use bin/tiffsplit to leave you with one image per page
+
+b) Use the jtag application to create and hand-classify rectangular regions of
+   the images
+
+c.1) Edit the matlab/sample_td_script.m file, changing the imgs list to
+     include your images procured in a) and run the script (see USEAGE section
+     in the file for instructions).  You will be left with an ASCII dump of
+     the training data in the file matlab/sample.data (unless you change the
+     default outfile name)
+
+ - OR -
+
+c.2) Startup matlab with this (the matlab) dir in your path (or cd to that dir
+     after startup)
+
+d.2) Create a cell array listing the image files
+
+e.2) Call the function create_training_data passing in the cell array created
+     in step d.2) above.  The structure returned is an in-memory
+     representation of the training data (like that described in section 3.3)
+
+f.2) (Optional) Dump the training data out to disk (so that it can be reused
+     later with the command dump_training_data passing the struct as the first
+     parameter, and a string giving the output file path and name as the
+     second
+
+3.2 Loading Training Data from Disk
+-----------------------------------
+
+a) Follow section 3.1 to create an ASCII training data file on disk
+
+b) Startup matlab with this (the matlab) dir in your path (or cd to that dir
+   after startup)
+
+c) Call the function parse_training_data passing in the path and name of the
+   data file as a string
+
+3.3 Matlab (in-memory) Structure
+--------------------------------
+
+The training data is stored in the struct S as follows:
+
+  s.class_names -> cell array whose entries represent the string name of
+                   the class associated with that entry number
+  s.num_pages   -> scalar giving the total number of pages examined in the
+                   training set
+  s.pg_names    -> cell array whose entries represent the string name of
+                   the page image.  This is identical to file_list passed
+  s.feat_names  -> cell array whose entries list the string names of each
+                   of the features tested on each selection below
+  s.pg          -> cell array whose entries are structs, representing all
+                   information for a given page.
+
+  Furthermore, each struct i in s.pg (access via s.pg{i})  is arranged as 
+  follows:
+
+  s.pg{i}.cid      -> vector of class id #'s one entry for each selection
+                      on the page.  These values correspond to which entry 
+                      in s.class_names the selection was classified as.
+  s.pg{i}.features -> matrix containing one row for each selection on the 
+                      page.  Each column entry corresponds to the results 
+                      of running that selection on one feature.
+
+3.4 ASCII File Structure
+------------------------
+
+In general, the training data is stored on disk as follows:
+
+<name> = <value(s)>
+
+where each <name> and its <values> are replaced as described below:
+
+  <name>        <values>
+
+  class_names   comma separated class id and class name pairs, each pair being
+                separated via a ';' character
+                ex:  1, text; 3, pg_number; 2, main_title;
+
+  feat_names    comma separated feature id and feature name pairs, each pair
+                being separated via a ';' character
+                ex: 2, l_inksr_dist; 1, t_inksr_dist; 10, rect_dens;
+
+  num_pages     single scalar value listing the number of pages of training
+                data
+
+  pg_name       string listing the full path and name of an image file this
+                page represents
+
+  pg_data       repeated listing of rectangle id's followed by a ':'
+                character, then a comma separated list of feature values for 
+                that rectangle, then a ';' character
+                ex: 1:0.122,0.004,0.444;2:0,0,0;4:0.99,0.1111111,0.0044;
+3.4.1 Notes:
+------------
+- There will be a pg_name and pg_data entry for each of the num_pages pages.  
+  These are separated by the '---' separator and it should appear before 
+  pg_name and pg_data
+  ex:
+  ---
+  pg_name = ./blah.tif
+  pg_data = 1:0;2:0.5;
+  ---
+  pg_name = ./blah2.tif
+  pg_data = 1:0.111,2:0.444;
+  ...
+- The '%' character denotes the start of a comment and anything after it on the
+  same line is ignored
+- blank lines or lines containing only whitespace are skipped during
+  processing
+- extending values over multiple lines can be accomplished by the '[' and ']'
+  characters.  Any characters enclosed within these two delimeters and
+  stretching over multiple lines is treated as a single line
+
+
+4. Segmenting Image Files
+-------------------------
+
+4.1 Procedure
+-------------
+
+a) Startup matlab with this (the matlab) dir in your path (or cd to that dir
+   after startup)
+
+b) Call the xycut function, passing the string containing the path and name of
+   the image file as an argument.  You can also optionally specify horizontal
+   and vertical thresholds as the 2nd and 3rd arguments respectively.  These
+   should be positive integers listing the minimum length of a background
+   pixel run that must be found in order for a cut to occur.  An nx4 matrix
+   will be returned giving the n rectangular regions found during the
+   segmentation process, the co-ords as they relate to the matrix columns are:
+   1 = left, 2 = top, 3 = right, and 4 = bottom
+
+4.2 Algorithm
+-------------
+
+Currently using a top-down implementation of the xycut algorithm.
+See doc/segmentation_alg_survey.ps page 13 for more information.
+
+
+5. Determining Feature Values
+-----------------------------
+
+5.1 Procedure
+-------------
+
+a) Startup matlab with this (the matlab) dir in your path (or cd to that dir
+   after startup)
+
+b) Get the image file and the co-ords of the rectangle you wish to determine 
+   feature values for and ensure it stored in a 4 element vector listing its 
+   left, top, right, and bottom pixel co-ords
+
+c) Get a pixel map of the image file passing a string representing the path
+   and name of the image file to the imread function
+
+d) Pass the rectangle vector and the pixel map into the function
+   run_all_features.  The vector returned contains the values of each of the
+   features.
+
+e) (Optional) to determine the names/order of each of the feature values
+   returned simply call the run_all_features function with no arguments
+bottom co-ords
+
+5.2 Current Feature Listing
+---------------------------
+
+1) l_inksr_dist - the distance in pixels from the left edge of the input
+   rectangle to the left edge of the "snapped" subrectangle
+2) t_inksr_dist - the distance in pixels from the top edge of the input
+   rectangle to the top edge of the "snapped" subrectangle
+3) r_inksr_dist - the distance in pixels from the right edge of the input
+   rectangle to the right edge of the "snapped" subrectangle
+4) b_inksr_dist - the distance in pixels from the bottom edge of the input
+   rectangle to the bottom edge of the "snapped" subrectangle
+5) l_page_dist - the distance in pixels from the left edge of the input
+   rectangle to the left edge of the page
+6) t_page_dist - the distance in pixels from the top edge of the input
+   rectangle to the top edge of the page
+7) r_page_dist - the distance in pixels from the right edge of the input
+   rectangle to the right edge of the page
+8) b_page_dist - the distance in pixels from the bottom edge of the input
+   rectangle to the bottom edge of the page
+9) l_inksr_page_dist - the distance in pixels from the left edge of the
+   "snapped" subrectangle to the left edge of the page
+10) l_inksr_page_dist - the distance in pixels from the top edge of the
+   "snapped" subrectangle to the top edge of the page
+11) l_inksr_page_dist - the distance in pixels from the right edge of the
+   "snapped" subrectangle to the right edge of the page
+12) l_inksr_page_dist - the distance in pixels from the bottom edge of the
+   "snapped" subrectangle to the bottom edge of the page
+13) l_ws_dist - the distance in pixels from the left edge of the input 
+    rectangle outward to the next significant non-background region 
+14) t_ws_dist - the distance in pixels from the top edge of the input rectangle 
+   outward to the next significant non-background region 
+15) r_ws_dist - the distance in pixels from the right edge of the input 
+    rectangle outward to the next significant non-background region 
+16) b_ws_dist - the distance in pixels from the bottom edge of the input 
+    rectangle outward to the next significant non-background region 
+17) l_inksr_ws_dist - the distance in pixels from the left edge of the
+    "snapped" subrectangle outward to the next significant non-background
+    region
+18) t_inksr_ws_dist - the distance in pixels from the top edge of the
+    "snapped" subrectangle outward to the next significant non-background
+    region
+19) r_inksr_ws_dist - the distance in pixels from the right edge of the
+    "snapped" subrectangle outward to the next significant non-background
+    region
+20) b_inksr_ws_dist - the distance in pixels from the bottom edge of the
+    "snapped" subrectangle outward to the next significant non-background
+    region
+21) rect_dens - the percentage of the total pixels in the input rectangle that
+    are non-background pixels 
+22) sr_dens - the percentage of the total pixels in the "snapped" 
+    subrectangle that are non-background pixels 
+
+
+6. Classifying Pages
+--------------------
+
+6.1 Procedure
+-------------
+
+a) Startup matlab with this (the matlab) dir in your path (or cd to that dir
+   after startup)
+
+b) Load the training data to be used into memory (See section 3.1 and 3.2) on
+   how to do this
+
+c) Call classify_pg passing in the training data, a string specifying the path
+   and name of the image file to classify, a string giving the name of the
+   matlab function to use as a learner (ex: 'knn_fn') and (optionally) any
+   addtional arguments the learner requires
+
+d) The results are automatically dumped to the jtag and jlog files created by
+   replacing the input image file extension with jtag and jlog respectively.
+   Note that previous jtag and jlog files are overwritten in the process
+
