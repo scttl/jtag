@@ -3,7 +3,7 @@
 ##
 ## FILE: build_td_script.pl
 ##
-## CVS: $Id: build_td_script.pl,v 1.1 2003-09-17 18:15:27 scottl Exp $
+## CVS: $Id: build_td_script.pl,v 1.2 2004-01-19 01:44:58 klaven Exp $
 ##
 ## DESCRIPTION: Script that dynamically creates an input script to be used by
 ## MATLAB to create a working dump of training data.  You specify the
@@ -56,7 +56,6 @@ if ($#ARGV < 1) {
 } 
 
 $outfile = shift @ARGV;
-$datafile = "\'$outfile.data\'";
 print "Creating training data script: $outfile\n";
 
 # open the outfile and write header information to it
@@ -67,7 +66,13 @@ print OUTFILE "%          valid training data file\n%\n";
 print OUTFILE "% USEAGE: matlab -nojvm -nosplash < $outfile > /dev/null\n";
 print OUTFILE "%         where you have the jtag/matlab dir in your matlab\n";
 print OUTFILE "%         path (or cd to that dir first)\n\n";
+
+$datafile = "\'$outfile.knn.data\'";
 print OUTFILE "td_outfile = $datafile;\n";
+
+$datafile = "\'$outfile.lr.data\'";
+print OUTFILE "lr_outfile = $datafile;\n\n";
+
 print OUTFILE "imgs = {\n";
 
 # iterate over each file in each directory, adding its tagged image files to
@@ -113,7 +118,9 @@ while (<@ARGV>) {
 # write out the rest of the script
 print OUTFILE "}\n\n";
 print OUTFILE "tmp_var = create_training_data(imgs);\n";
-print OUTFILE "dump_training_data(tmp_var, td_outfile);\n";
+print OUTFILE "dump_training_data(tmp_var, td_outfile);\n\n";
+print OUTFILE "tmp_lrweights = create_lr_weights(tmp_var,1e-3,1e4);\n";
+print OUTFILE "dump_lr_weights(tmp_lrweights, lr_outfile);\n\n";
 
 close(OUTFILE);
 

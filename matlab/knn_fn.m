@@ -18,11 +18,14 @@ function class_id = knn_fn(class_names, features, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.3 2003-09-19 18:19:15 scottl Exp $
+% $Id: knn_fn.m,v 1.4 2004-01-19 01:44:57 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.3  2003-09-19 18:19:15  scottl
+% Revision 1.4  2004-01-19 01:44:57  klaven
+% Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
+%
+% Revision 1.3  2003/09/19 18:19:15  scottl
 % Made data a static (persistent) variable, thus drastically reducing running
 % times over multiple calls.
 %
@@ -38,11 +41,11 @@ function class_id = knn_fn(class_names, features, in_data, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-k = 1;  % default number of nearest neighbours to consider if k not passd as 
+k = 1;  % default number of nearest neighbours to consider if k not passd as
         % an arg above.
 
 distances = [];  % will hold the top k nearest distances as they are computed
-names = {};        % will hold the associated class names for the k nearest 
+names = {};        % will hold the associated class names for the k nearest
                    % distances
 
 max_dist = inf;  % distance computed must be less than this to be eligible for
@@ -50,6 +53,7 @@ max_dist = inf;  % distance computed must be less than this to be eligible for
 num_elems = 0;  % number of training data elements considered thus far.
 
 class_id = nan;
+
 
 persistent data;  % so we don't have to recalculate data after each call
 
@@ -86,7 +90,7 @@ for i = 1:size(data.class_names,2)
     end
     if j == size(class_names,2)
         % training data class not found in class_names list
-        error('data.class_names{i} not found in CLASS_NAMES list');
+        error(strcat(data.class_names{i}, ' not found in CLASS_NAMES list'));
     end
 end
 

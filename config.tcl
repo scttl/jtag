@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.12 2003-09-19 15:24:52 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.13 2004-01-19 01:44:57 klaven Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.12  2003-09-19 15:24:52  scottl
+## Revision 1.13  2004-01-19 01:44:57  klaven
+## Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
+##
+## Revision 1.12  2003/09/19 15:24:52  scottl
 ## Removed td_loc variable.
 ##
 ## Revision 1.11  2003/09/05 14:22:17  scottl
@@ -128,6 +131,9 @@ namespace eval ::Jtag::Config {
     set data(title,num_sels) 0
     set data(equation,colour) red
     set data(equation,num_sels) 0
+    #added by Kevin
+      set data(eq_number,colour) purple
+      set data(eq_number,num_sels) 0
     set data(image,colour) orange
     set data(image,num_sels) 0
     set data(graph,colour) yellow

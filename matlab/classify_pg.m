@@ -20,11 +20,14 @@ function res = classify_pg(class_names, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.4 2003-09-19 15:27:08 scottl Exp $
+% $Id: classify_pg.m,v 1.5 2004-01-19 01:44:57 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.4  2003-09-19 15:27:08  scottl
+% Revision 1.5  2004-01-19 01:44:57  klaven
+% Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
+%
+% Revision 1.4  2003/09/19 15:27:08  scottl
 % Updates to remove always passing training data.  Now it is an optional
 % argument since it is only needed for knn_fn.
 %
@@ -42,6 +45,8 @@ function res = classify_pg(class_names, img_file, class_fn, varargin)
 
 % LOCAL VARS %
 %%%%%%%%%%%%%%
+
+disp('Trying to classify page');
 
 jtag_extn = 'jtag';  %jtag filename extension
 jlog_extn = 'jlog';  %jlog filename extension
@@ -84,6 +89,9 @@ try
     s.rects = tmp_struct.rects;
 catch
     rects = xycut(img_file);
+    % rects = dist_img(img_file);
+    % rects = dist_img_red(img_file);
+    disp(strcat('Found ', int2str(size(rects,1)), ' rectangles'));
     for i = 1:size(rects,1)
         % s.rects = [s.rects; line_detect(pixels, rects(i,:))];
         s.rects(i,:) = get_sr(rects(i,:), pixels);

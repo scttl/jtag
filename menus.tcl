@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.12 2003-09-19 15:25:58 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.13 2004-01-19 01:44:57 klaven Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.12  2003-09-19 15:25:58  scottl
+## Revision 1.13  2004-01-19 01:44:57  klaven
+## Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
+##
+## Revision 1.12  2003/09/19 15:25:58  scottl
 ## Removed td_loc variable.  Now everythin is passed as an argument to the
 ## learner through the learner_args variable.
 ##
@@ -421,11 +424,11 @@ proc ::Jtag::Menus::run_prediction {} {
     # run it (will return an error if it fails)
     ::Jtag::UI::status_text "Running Auto-Prediction...."
     update idletasks
-    eval exec $matlab_exe -nojvm -nosplash "<" $TmpFile
+    eval exec $matlab_exe -nojvm -nosplash "<" $TmpFile "> ./kevtmp.txt"
     ::blt::busy release .
 
     # clean up the temp script
-    file delete $TmpFile
+    # file delete $TmpFile
 
     # redisplay the page
     if {$FoundSels} {

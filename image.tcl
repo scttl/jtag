@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.13 2003-09-05 14:22:17 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.14 2004-01-19 01:44:57 klaven Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.13  2003-09-05 14:22:17  scottl
+## Revision 1.14  2004-01-19 01:44:57  klaven
+## Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
+##
+## Revision 1.13  2003/09/05 14:22:17  scottl
 ## Implemented auto-prediction functionality.
 ##
 ## Revision 1.12  2003/09/03 20:23:13  scottl
@@ -129,7 +132,7 @@ namespace eval ::Jtag::Image {
     set img(img) {}
 
     # the current zoom factor
-    set img(zoom) 1.
+    set img(zoom) 1.2
 
     # the checksum value for the image file
     set img(cksum) {}
@@ -199,7 +202,7 @@ proc ::Jtag::Image::create_image {file_name} {
     set img(actual_width) [image width $img(orig_img)]
     set img(height) $img(actual_height)
     set img(width) $img(actual_width)
-    set img(zoom) 1.0
+    set img(zoom) 1.15
     set img(created) 1
     set img(cksum) [::crc::cksum -file $file_name]
     ::Jtag::UI::status_text "Creating image $img(file_name)"
@@ -473,9 +476,9 @@ proc ::Jtag::Image::add_scrollbars {region} {
 #              scaling factor.  If not given defaults to 1.0 (no scale)
 #
 # Results:
-#    If no previous image exists, or the factor specified is 0.0, an error is 
-#    thrown, otherwise sets img(img) to contain a reference to the newly 
-#    scaled image, and updates img(height) and img(width) to reflect 
+#    If no previous image exists, or the factor specified is 0.0, an error is
+#    thrown, otherwise sets img(img) to contain a reference to the newly
+#    scaled image, and updates img(height) and img(width) to reflect
 #    the new image resolution.  actual_height and actual_width remain unchanged.
 
 proc ::Jtag::Image::resize {{factor 1.}} {

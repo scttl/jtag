@@ -5,7 +5,7 @@
 %% DESCRIPTION: Sample configuration file to be distributed with jtag
 %%              application.
 %%
-%% CVS: $Id: .jconfig,v 1.7 2003-09-19 15:24:33 scottl Exp $
+%% CVS: $Id: .jconfig,v 1.8 2004-01-19 01:44:57 klaven Exp $
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -67,7 +67,8 @@ snap_threshold = 1
 % by the application.  See the matlab/README file for more information on
 % available learners.
 %learner = knn_fn
-learner = 
+%learner = knn_fn
+learner = lr_fn
 
 % learner_args:
 % Any additional arguments that the learning algorithm expects to be passed to
@@ -78,7 +79,8 @@ learner =
 % whitespace.  For more information see the matlab file associated with the
 % learner specified above and the matlab/README file.
 %learner_args = '/h/42/scottl/research/TRAINING_DATA/nips.data'
-learner_args = 
+%learner_args = '/h/40/klaven/klaven/Journals/TRAINING_DATA/nips.data'
+learner_args = '/h/40/klaven/klaven/Journals/TRAINING_DATA/jmlr.lr.data'
 
 % classes:
 % List of possible classification types based on the component of the journal
@@ -96,6 +98,7 @@ classes = (
                end_notes            #FF0099
                equation_no_number   #DC0000
                equation_numbered    #DCC600
+               eq_number            #A37C90
                figure_caption       #2CDC00
                figure_label         #00DC9A
                footer               #0058DC
@@ -115,3 +118,21 @@ classes = (
                text                 #003B94
                toc                  #4A0094
            )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
