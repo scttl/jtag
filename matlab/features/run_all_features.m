@@ -22,11 +22,14 @@ function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.4 2004-08-04 20:51:19 klaven Exp $
+% $Id: run_all_features.m,v 1.5 2004-08-16 22:38:10 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.4  2004-08-04 20:51:19  klaven
+% Revision 1.5  2004-08-16 22:38:10  klaven
+% Functions that extract features now work with a bunch of boolean variables to turn the features off and on.
+%
+% Revision 1.4  2004/08/04 20:51:19  klaven
 % Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
 %
 % Revision 1.3  2004/07/29 20:41:56  klaven
@@ -65,6 +68,8 @@ function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
+global use;
+
 feature_vals = []; % the vector we will build as we run through features
 f_norm = [];
 get_names = false; % set to true to return feature names instead of values.
@@ -102,43 +107,43 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if get_names
-    data = distance_features;
+    data = distance_features(use);
     feature_vals = {data.name};
     f_norm = [data.norm];
-    data = density_features;
-    feature_vals = [feature_vals,{data.name}];
-    f_norm = [f_norm [data.norm]];
-    data = pnum_features;
-    feature_vals = [feature_vals,{data.name}];
-    f_norm = [f_norm [data.norm]];
-    %data = marks_features;
-    %feature_vals = [feature_vals,{data.name}];
-
-    %data = [data,[density_features.name]];
-    %data(1:20) = distance_features;
-    %data(21:22) = density_features;
-    %for i = 1:length(data)
-    %    feature_vals{i} = data{i}.name;
-    %end
+    if (use.dens);
+        data = density_features;
+        feature_vals = [feature_vals,{data.name}];
+        f_norm = [f_norm [data.norm]];
+    end;
+    if (use.pnum)
+        data = pnum_features;
+        feature_vals = [feature_vals,{data.name}];
+        f_norm = [f_norm [data.norm]];
+    end;
+    if (use.mark);
+        data = marks_features;
+        feature_vals = [feature_vals,{data.name}];
+        f_norm = [f_norm, [data.norm]];
+    end;
 else
-    data = distance_features(rects,pixels);
+    data = distance_features(use,rects,pixels);
     feature_vals = reshape([data.val],size(data));
     f_norm = [data.norm];
-    data = density_features(rects,pixels);
-    feature_vals = [feature_vals,reshape([data.val],size(data))];
-    f_norm = [f_norm [data.norm]];
-    data = pnum_features(rects,pixels,pix_file);
-    feature_vals = [feature_vals,reshape([data.val],size(data))];
-    f_norm = [f_norm [data.norm]];
-    %data = marks_features(rects,pixels);
-    %feature_vals = [feature_vals,reshape([data.val],size(data))];
-
-    %data = [data,density_features(rects,pixels)];
-    %for j = 1:length(rects);
-    %    for i = 1:length(data);
-    %    feature_vals(j,i) = data{i}.val;
-    %    end;
-    %end;
+    if (use.dens);
+        data = density_features(rects,pixels);
+        feature_vals = [feature_vals,reshape([data.val],size(data))];
+        f_norm = [f_norm [data.norm]];
+    end;
+    if (use.pnum);
+        data = pnum_features(rects,pixels,pix_file);
+        feature_vals = [feature_vals,reshape([data.val],size(data))];
+        f_norm = [f_norm [data.norm]];
+    end;
+    if (use.mark);
+        data = marks_features(rects,pixels);
+        feature_vals = [feature_vals,reshape([data.val],size(data))];
+        f_norm = [f_norm [data.norm]];
+    end;
 end;
 
 

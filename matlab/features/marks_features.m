@@ -15,11 +15,14 @@ function res = marks_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: marks_features.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
+% $Id: marks_features.m,v 1.4 2004-08-16 22:38:10 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: marks_features.m,v $
-% Revision 1.3  2004-07-29 20:41:56  klaven
+% Revision 1.4  2004-08-16 22:38:10  klaven
+% Functions that extract features now work with a bunch of boolean variables to turn the features off and on.
+%
+% Revision 1.3  2004/07/29 20:41:56  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.2  2004/06/28 16:22:38  klaven
@@ -141,13 +144,13 @@ if get_names
     return;
 end
 
+left   = rect(1);
+top    = rect(2);
+right  = rect(3);
+bottom = rect(4);
+
+
 % % calculate the mark_map for this region.
-% 
-% left   = rect(1);
-% top    = rect(2);
-% right  = rect(3);
-% bottom = rect(4);
-% 
 % 
 % 
 % markmap = zeros(bottom-top+1,right-left+1);
@@ -240,7 +243,17 @@ end
 % % At this point, markmap and marks are both correct.
 % % Now we can start computing features.
 
-[markmap, nummarks] = bwlabel(1-p3,8);
+[markmap, nummarks] = bwlabel((bg - pixels(top:bottom, left:right)),8);
+for i = 1:nummarks;
+  [x,y] = find(markmap == i);
+  if (length(x) > 0);
+    marks(i).x = x + left - 1;
+    marks(i).y = y + top - 1;
+  end;
+end;
+% 
+% % At this point, markmap and marks are both correct.
+% % Now we can start computing features.
 
 
 % Number of marks in the region.
@@ -261,7 +274,7 @@ res(rr,4).val = nummarks / ((bottom - top + 1) / 10);
 
 % Average number of pixels in each mark.
 % res(rr,5).name = 'avg_pixels_per_mark';
-for i=1:length(marks);
+for i=1:nummarks;
   mpix(i) = length([marks(i).x]);
 end;
 res(rr,5).val = mean(mpix);
