@@ -3,7 +3,7 @@
 ##
 ## FILE: pdf_to_tiff.sh
 ##
-## CVS: $Id: pdf_to_tiff.sh,v 1.2 2003-08-28 16:50:14 scottl Exp $
+## CVS: $Id: pdf_to_tiff.sh,v 1.3 2003-08-28 17:14:11 scottl Exp $
 ##
 ## DESCRIPTION: script that takes as input a directory containing pdf files,
 ##              and converts each of them into multiple tiff files (one per
@@ -59,14 +59,14 @@ mkdir -p $OUTDIR
 
 # ensure that our ghostscript command is valid
 which $GC_CMD > /dev/null 2>&1
-if [ ! $? ]; then
+if [ $? != 0 ]; then
     echo "ghostscript command: $GS_CMD is invalid"
     exit -1
 fi
 
 # check if the split command is valid
 which $SPLIT_CMD > /dev/null 2>&1
-if [ ! $? ]; then
+if [ $? != 0 ]; then
     echo "warning, split command: $SPLIT_CMD is invalid"
     USE_SPLIT=false
     RM_ORIG_TIFF=false
