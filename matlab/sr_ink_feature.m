@@ -13,11 +13,15 @@ function s = sr_ink_feature(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: sr_ink_feature.m,v 1.4 2003-07-24 19:24:52 scottl Exp $
+% $Id: sr_ink_feature.m,v 1.5 2003-08-13 19:31:42 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: sr_ink_feature.m,v $
-% Revision 1.4  2003-07-24 19:24:52  scottl
+% Revision 1.5  2003-08-13 19:31:42  scottl
+% Updated to return original subrectangle instead of empty one if no
+% sufficient amount of ink was found.
+%
+% Revision 1.4  2003/07/24 19:24:52  scottl
 % Changed threshold to a value between 0 and 1 (not 100).
 % Return a row vector instead of a column vector.
 %
@@ -73,8 +77,8 @@ b_done = false;
 while ~ (l_done & t_done & r_done & b_done)
 
     if left >= right | top >= bottom
-        warning('Did not find sufficient ink.  Returning empty subrectangle');
-        s = [];
+        warning('Did not find sufficient ink.  Returning orig. subrectangle');
+        s = rect;
         return;
     end
 
