@@ -14,16 +14,16 @@ function s = parse_jlog(file, st)
 %     s.rects           -> n x 4 matrix listing the 4 position values left,top,
 %                          right,bottom of each of the n selection rectangles 
 %                          made for this image
-%     s.sel_time        -> n x 1 matrix listing the total time in seconds it has
-%                          taken create the associated selection rectangle in
-%                          s.rects
-%     s.class_time      -> n x 1 matrix listing the total time in seconds it has
-%                          taken to drag the associated selection rectangle in
-%                          s.rects to its class bucket
-%     s.class_attempts  -> n x 1 matrix listing the total number of 
+%     s.sel_time        -> n element vector listing the total time in seconds it
+%                          has taken create the associated selection rectangle 
+%                          in s.rects
+%     s.class_time      -> n element vector listing the total time in seconds 
+%                          it has taken to drag the associated selection 
+%                          rectangle in s.rects to its class bucket
+%     s.class_attempts  -> n element vector  listing the total number of 
 %                          classification attempts that have been made for the 
 %                          associated rectangle in s.rects
-%     s.resize_attempts -> n x 1 matrix listing the total number of manual 
+%     s.resize_attempts -> n element vector listing the total number of manual 
 %                          resize attempts that have been made for the 
 %                          associated rectangle in s.rects
 %     ...
@@ -36,11 +36,14 @@ function s = parse_jlog(file, st)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jlog.m,v 1.3 2003-08-12 22:19:31 scottl Exp $
+% $Id: parse_jlog.m,v 1.4 2003-08-22 15:11:34 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jlog.m,v $
-% Revision 1.3  2003-08-12 22:19:31  scottl
+% Revision 1.4  2003-08-22 15:11:34  scottl
+% Updated comments (no code changes).
+%
+% Revision 1.3  2003/08/12 22:19:31  scottl
 % Made error checking more robust.
 %
 % Revision 1.2  2003/08/01 22:01:00  scottl
