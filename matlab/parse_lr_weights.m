@@ -1,4 +1,4 @@
-function w = parse_lr_weights(file)
+function w = parse_lr_weights2(file)
 % PARSE_LR_WEIGHTS  Reads the contents of the logistic regression weight file 
 %                   passed into a structure array.
 %
@@ -18,14 +18,26 @@ function w = parse_lr_weights(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_lr_weights.m,v 1.1 2003-09-22 17:47:31 scottl Exp $
+% $Id: parse_lr_weights.m,v 1.2 2004-06-14 20:20:06 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_lr_weights.m,v $
-% Revision 1.1  2003-09-22 17:47:31  scottl
+% Revision 1.2  2004-06-14 20:20:06  klaven
+% Changed the load and save routines for lr weights to be more general, allowing me to add more fields to the weights data structure.  Also added a record of the log likelihood progress to the weights data structure.
+%
+% Revision 1.1  2003/09/22 17:47:31  scottl
 % Initial revision.
 %
 
+% New version of save routine stores w in a .mat file.
+if (strcmp(file(end-3:end;), '.mat'));
+    evalstr = ['load ' file ';'];
+    eval(evalstr);
+    w = savedweightvar;
+    return;
+end;
+
+% If it is not a .mat file, try the old loading routine.
 
 % LOCAL VARS %
 %%%%%%%%%%%%%%
@@ -33,7 +45,7 @@ function w = parse_lr_weights(file)
 % lr weights file specifics (update these as the weights file spec. changes)
 w.class_names = {};
 w.weights = [];
-
+w.feature_names = {};
 
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,1,nargin));

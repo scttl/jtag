@@ -12,6 +12,6 @@ dump_training_data(tmp_td, strcat(target, '.knn.data'));
 fprintf('Starting LR optimization');
 tmp_lrweights = create_lr_weights(tmp_td,1e-3,1e4);
 fprintf('Done LR optimization.  Saving results.');
-dump_lr_weights(tmp_lrweights, strcat(target, '.lr.data'));
+dump_lr_weights(tmp_lrweights, strcat(target, '.lr.mat'));
 
 res = tmp_lrweights;

@@ -13,13 +13,22 @@ function res = dump_lr_weights(w, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: dump_lr_weights.m,v 1.1 2003-09-22 17:47:09 scottl Exp $
+% $Id: dump_lr_weights.m,v 1.2 2004-06-14 20:20:06 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: dump_lr_weights.m,v $
-% Revision 1.1  2003-09-22 17:47:09  scottl
+% Revision 1.2  2004-06-14 20:20:06  klaven
+% Changed the load and save routines for lr weights to be more general, allowing me to add more fields to the weights data structure.  Also added a record of the log likelihood progress to the weights data structure.
+%
+% Revision 1.1  2003/09/22 17:47:09  scottl
 % Initial revision.
 %
+
+savedweightvar = w;
+evalstr = ['save ' outfile ' savedweightvar;'];
+eval(evalstr);
+res = 0;
+return;
 
 
 % LOCAL VARS %

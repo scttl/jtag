@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.4 2004-06-09 19:20:17 klaven Exp $
+% $Id: create_lr_weights.m,v 1.5 2004-06-14 20:20:06 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.4  2004-06-09 19:20:17  klaven
+% Revision 1.5  2004-06-14 20:20:06  klaven
+% Changed the load and save routines for lr weights to be more general, allowing me to add more fields to the weights data structure.  Also added a record of the log likelihood progress to the weights data structure.
+%
+% Revision 1.4  2004/06/09 19:20:17  klaven
 % Started working on marks-based features.
 %
 % Revision 1.3  2004/04/22 16:51:03  klaven
@@ -77,6 +80,8 @@ end
 C = max(cc(:));
 [M,N] = size(ff);
 
-ll = minimize(sqrt(sigma)*randn((M+1)*C,1),'mefun',maxevals,cc,ff,sigma);
+[weightmatrix,llprogress,iterations] = ...
+     minimize(sqrt(sigma)*randn((M+1)*C,1),'mefun',maxevals,cc,ff,sigma);
 
-w.weights = reshape(ll(:),M+1,C);
+w.loglikelihoods = llprogress;
+w.weights = reshape(weightmatrix(:),M+1,C);
