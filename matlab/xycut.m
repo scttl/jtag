@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.6 2004-04-30 00:25:42 klaven Exp $
+% $Id: xycut.m,v 1.7 2004-04-30 01:07:04 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.6  2004-04-30 00:25:42  klaven
+% Revision 1.7  2004-04-30 01:07:04  klaven
+% This is the version to use for my demo.
+%
+% Revision 1.6  2004/04/30 00:25:42  klaven
 % xycut now uses a snap function that jumps back to the beginning of the current mark once the threshold is crossed.  The threshold is now cumulative since the start of the most recent mark.
 %
 % Revision 1.5  2004/04/28 18:53:54  klaven
@@ -46,7 +49,10 @@ function m = xycut(img_file, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-ht = 20;  % default horizontal threshold (if not passed above)
+% default horizontal threshold (if not passed above)
+%ht = 40;  % prefered ht for single-column layout
+ht = 20;  %prefered ht for double-column layout
+
 vt = 18;  % default vertical threshold (if not passed above)
 wst = 0.009;  % minimum percent ink in whitespace to count as valley
 
