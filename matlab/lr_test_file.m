@@ -17,19 +17,19 @@ function [correct,total,results] = lr_test_file(jt_file,lr_weights);
 %         predicted value, and ww.classnames(cor) was
 %         the correct value.
 
-if ischar(in_weights);
-  ww=parse_lr_weights(in_weights);
+if ischar(lr_weights);
+  ww=parse_lr_weights(lr_weights);
 else
-  ww=in_weights;
+  ww=lr_weights;
 end;
 
 classes = ww.class_names;
 results = zeros(length(classes),length(classes)+1);
 
-if ischar(in_file);
-  jt = parse_jtag(in_file);
+if ischar(jt_file);
+  jt = parse_jtag(jt_file);
 else
-  jt = in_file;
+  jt = jt_file;
 end;
 
 pixels = imread(jt.img_file);
