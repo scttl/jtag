@@ -6,11 +6,15 @@
 ##              This includes the display of all window components and
 ##              responding to user generated events (key presses mouse etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.1 2003-07-04 17:02:51 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.2 2003-07-10 19:19:42 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: ui.tcl,v $
-## Revision 1.1  2003-07-04 17:02:51  scottl
+## Revision 1.2  2003-07-10 19:19:42  scottl
+## Throw errors during UI creation problems instead of displaying a debug message
+## and continuing on.
+##
+## Revision 1.1  2003/07/04 17:02:51  scottl
 ## Initial revision.
 ##
 ##
@@ -125,7 +129,7 @@ proc ::Jtag::UI::create {} {
 
     # setup the menu and its frame
     if {[catch {::Jtag::Menus::create $w_root} f_menu]} {
-        debug "failed to create menu system.  Reason:\n$f_menu"
+        error "failed to create menu system.  Reason:\n$f_menu"
     }
 
     # setup the image canvas (and its autoscrollbars)
@@ -138,12 +142,12 @@ proc ::Jtag::UI::create {} {
 
     if {[catch {::Jtag::Image::create_canvas $w_root $Width $Height} \
                 c_img]} {
-        debug "failed to create image canvas.  Reason:\n$c_img"
+        error "failed to create image canvas.  Reason:\n$c_img"
     }
 
     if {[catch {::Jtag::Image::add_scrollbars \
                 [list $Left $Top $Right $Bottom]} C_scrolls]} {
-        debug "failed to add scrollbars.  Reason:\n$C_scrolls"
+        error "failed to add scrollbars.  Reason:\n$C_scrolls"
     }
 
     set cs_x [lindex $C_scrolls 0]
@@ -151,7 +155,7 @@ proc ::Jtag::UI::create {} {
 
     # setup the buckets
     if {[ catch {::Jtag::Classify::create_buckets $w_root $w_root} f_buckets]} {
-        debug "failed to create buckets.  Reason:\n$f_buckets"
+        error "failed to create buckets.  Reason:\n$f_buckets"
     }
 
     if {[::Jtag::Image::exists]} {
@@ -160,7 +164,7 @@ proc ::Jtag::UI::create {} {
         set ScaleH [expr $Height / ($Bottom - $Top + 0.0)]
         ::Jtag::Image::resize [expr $ScaleW<=$ScaleH ? $ScaleW : $ScaleH]
 
-        #bind the mouse to the canvas to allow selections
+        # bind the mouse to the canvas to allow selections
         ::Jtag::Classify::bind_selection $c_img
     }
 
