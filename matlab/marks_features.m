@@ -3,7 +3,7 @@ function res = marks_features(rects, pixels, varargin)
 %
 %  DENSITY_FEATURES(RECT, PAGE, {THRESHOLD})  Runs the 4 element vector RECT
 %  passed against 2 different desnsity features, each of which returns a
-%  scalar value.  These values along with the feature name are built up as
+%  scalar.val.  These.vals along with the feature name are built up as
 %  fields in a struct, with one entry for each feature.  These entries are
 %  combined in a cell array and returned as RES.
 %
@@ -15,11 +15,14 @@ function res = marks_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: marks_features.m,v 1.1 2004-06-09 19:20:17 klaven Exp $
+% $Id: marks_features.m,v 1.2 2004-06-14 16:25:19 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: marks_features.m,v $
-% Revision 1.1  2004-06-09 19:20:17  klaven
+% Revision 1.2  2004-06-14 16:25:19  klaven
+% Completed the marks-based features.  Still need to test them to make sure they are behaving.
+%
+% Revision 1.1  2004/06/09 19:20:17  klaven
 % Started working on marks-based features.
 %
 
@@ -28,7 +31,7 @@ function res = marks_features(rects, pixels, varargin)
 %%%%%%%%%%%%%%
 
 threshold = .02;    % default threshold to use if not passed above
-bg = 1;             % default value for background pixels
+bg = 1;             % default.val for background pixels
 ink_count = 0;      % the # of non background pixels counted
 get_names = false;  % determine if we are looking for names only
 
@@ -68,28 +71,48 @@ end
 for rr=1:size(rects,1);
 rect = rects(rr,:);
 
+
+% Number of marks in the region.
 res(rr,1).name  = 'num_marks';
 
+% Number of marks per hundred pixels.  Essentially, marks per unit area.
 res(rr,2).name  = 'marks_per_hundred_pixels';
 
-res(rr,3).name = 'pixels_per_mark';
+% Number of marks per unit width.
+res(rr,3).name = 'marks_per_pixel_wide';
 
-res(rr,4).name = 'pixels_in_largest_mark';
+% Number of marks per unit height.
+res(rr,4).name = 'marks_per_pixel_high';
 
-res(rr,5).name = 'largest_mark_height';
+% Average number of pixels in each mark.
+res(rr,5).name = 'avg_pixels_per_mark';
 
-res(rr,6).name = 'largest_mark_width';
+% Standard deviation of number of pixels in each mark.
+res(rr,6).name = 'std_pixels_per_mark';
 
-res(rr,7).name = 'largets_mark_area';
+% Number of pixels in the single largest mark.
+res(rr,7).name = 'pixels_in_largest_mark';
 
-res(rr,8).name = 'highest_mark_height';
+% Height of the largest mark.
+res(rr,8).name = 'largest_mark_height';
 
-res(rr,9).name = 'highest_mark_width';
+% Width of the largest mark.
+res(rr,9).name = 'largest_mark_width';
 
-res(rr,10).name = 'widest_mark_height';
+% Area (Height * Width) of the largest mark
+res(rr,10).name = 'largets_mark_area';
 
-res(rr,11).name = 'widest_mark_width';
+% Height of the highest mark.
+res(rr,11).name = 'highest_mark_height';
 
+% Width of the highest mark.
+res(rr,12).name = 'highest_mark_width';
+
+% Height of the widest mark.
+res(rr,13).name = 'widest_mark_height';
+
+% Width of the widest mark.
+res(rr,14).name = 'widest_mark_width';
 
 if get_names
     return;
@@ -176,17 +199,17 @@ while changed;
     end;
 end;
 
-marknum = 0;
+nummarks = 0;
 oldmarkmap = markmap;
 markmap = zeros(size(markmap));
 for i = 1:mm;
   [x,y] = find(oldmarkmap == i);
   if (length(x) > 0);
-    marknum = marknum + 1;
-    marks(marknum).x = x + left - 1;
-    marks(marknum).y = y + top - 1;
+    nummarks = nummarks + 1;
+    marks(nummarks).x = x + left - 1;
+    marks(nummarks).y = y + top - 1;
     for (nn = 1:length(x));
-      markmap(x(nn),y(nn)) = marknum;
+      markmap(x(nn),y(nn)) = nummarks;
     end;
   end;
 end;
@@ -194,6 +217,72 @@ end;
 % At this point, markmap and marks are both correct.
 % Now we can start computing features.
 
-res = marks;
+% Number of marks in the region.
+% res(rr,1).name  = 'num_marks';
+res(rr,1).val = nummarks;
+
+% Number of marks per hundred pixels.  Essentially, marks per unit area.
+% res(rr,2).name  = 'marks_per_hundred_pixels';
+res(rr,2).val = nummarks / ((right - left + 1) * (bottom-top+1) / 100);
+
+% Number of marks per unit width.
+% res(rr,3).name = 'marks_per_width';
+res(rr,3).val = nummarks / ((right - left + 1) / 10);
+
+% Number of marks per unit height.
+% res(rr,4).name = 'marks_per_pixel_high';
+res(rr,4).val = nummarks / ((bottom - top + 1) / 10);
+
+% Average number of pixels in each mark.
+% res(rr,5).name = 'avg_pixels_per_mark';
+for i=1:length(marks);
+  mpix(i) = length([marks(i).x]);
+end;
+res(rr,5).val = mean(mpix);
+
+% Standard deviation of number of pixels in each mark.
+% rev(rr,6).name = 'stddev_pixels_per_mark';
+res(rr,6).val = std(mpix);
+
+% Number of pixels in the single largest mark.
+% res(rr,7).name = 'pixels_in_largest_mark';
+[tmp,largest] = max(mpix);
+res(rr,7).val = tmp;
+
+% Height of the largest mark.
+% res(rr,8).name = 'largest_mark_height';
+res(rr,8).val = (max([marks(largest).y]) - min([marks(largest).y]) + 1) / 10;
+
+% Width of the largest mark.
+% res(rr,9).name = 'largest_mark_width';
+res(rr,9).val = (max([marks(largest).x]) - min([marks(largest).x]) + 1) / 10;
+
+% Area (Height * Width) of the largest mark
+% res(rr,10).name = 'largets_mark_area';
+res(rr,10).val = (max([marks(largest).y])-min([marks(largest).y])+1) * ...
+                   (max([marks(largest).x])-min([marks(largest).x])+1) / ...
+                   100;
+
+% Height of the highest mark.
+% res(rr,11).name = 'highest_mark_height';
+for i=1:length(marks);
+  heights(i) = max([marks(i).y]) - min([marks(i).y]) + 1;
+  widths(i) = max([marks(i).x]) - min([marks(i).x]) + 1;
+end;
+[tmp, highest] = max(heights);
+res(rr,11).val = tmp;
+
+% Width of the highest mark.
+% res(rr,12).name = 'highest_mark_width';
+res(rr,12).val = widths(highest);
+
+% Height of the widest mark.
+% res(rr,13).name = 'widest_mark_height';
+[tmp, widest] = max(widths);
+res(rr,13).val = heights(widest);
+
+% Width of the widest mark.
+% res(rr,14).name = 'widest_mark_width';
+res(rr,14).val = tmp;
 
 end;

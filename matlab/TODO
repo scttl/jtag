@@ -7,7 +7,7 @@ Normalize the features in each data set before saving (do some research to make 
 
 <DONE> Make sure the above changes work.
 
-Add some new distance features:
+<DONE> Add some new distance features:
   <DONE>-Height
   <DONE>-Width
   <DONE>-Area
@@ -23,13 +23,15 @@ Add some new distance features:
 <DONE> Normalize the new features
 
 
-Add some "marks" features:
-  -Number of marks
-  -Ratio of # of marks to area
-  -Width of widest mark (as fraction of total?)
-  -Height of tallest mark (as fraction of total?)
-  -Area of largest mark (as fraction of total?)
-  -Pixels in largest mark
+<DONE> Add some "marks" features:
+  <DONE>-Number of marks
+  <DONE>-Ratio of # of marks to area
+  <DONE>-Width of widest mark (as fraction of total?)
+  <DONE>-Height of tallest mark (as fraction of total?)
+  <DONE>-Area of largest mark (as fraction of total?)
+  <DONE>-Pixels in largest mark
+
+Make the marks features reasonably quick to compute.
 
 <DONE> Create a single train/test script
 

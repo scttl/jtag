@@ -18,11 +18,14 @@ function feature_vals = run_all_features(rects, pixels)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.6 2004-06-08 00:56:50 klaven Exp $
+% $Id: run_all_features.m,v 1.7 2004-06-14 16:25:19 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.6  2004-06-08 00:56:50  klaven
+% Revision 1.7  2004-06-14 16:25:19  klaven
+% Completed the marks-based features.  Still need to test them to make sure they are behaving.
+%
+% Revision 1.6  2004/06/08 00:56:50  klaven
 % Debugged new distance and density features.  Added a script to make training simpler.  Added a script to print out output.
 %
 % Revision 1.5  2004/06/01 21:38:21  klaven
@@ -83,6 +86,8 @@ if get_names
     feature_vals = {data.name};
     data = density_features;
     feature_vals = [feature_vals,{data.name}];
+    data = marks_features;
+    feature_vals = [feature_vals,{data.name}];
 
     %data = [data,[density_features.name]];
     %data(1:20) = distance_features;
@@ -94,6 +99,8 @@ else
     data = distance_features(rects,pixels);
     feature_vals = reshape([data.val],size(data));
     data = density_features(rects,pixels);
+    feature_vals = [feature_vals,reshape([data.val],size(data))];
+    data = marks_features(rects,pixels);
     feature_vals = [feature_vals,reshape([data.val],size(data))];
 
     %data = [data,density_features(rects,pixels)];
