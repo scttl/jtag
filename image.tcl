@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.1 2003-07-07 15:44:48 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.2 2003-07-07 18:51:09 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.1  2003-07-07 15:44:48  scottl
+## Revision 1.2  2003-07-07 18:51:09  scottl
+## Added ability to read in .jtag data via function call.
+##
+## Revision 1.1  2003/07/07 15:44:48  scottl
 ## Initial revision.
 ##
 ##
@@ -91,7 +94,8 @@ namespace eval ::Jtag::Image {
 # ::Jtag::Image::create_image --
 #
 #    Attempts to open, validate and create the image given by the filename
-#    argument passed.
+#    argument passed.  Also attempts to load any selection data from an
+#    associated jtag file.
 #
 # Arguments:
 #    file_name    The name of the file to open
@@ -106,6 +110,9 @@ proc ::Jtag::Image::create_image {file_name} {
     variable Img
 
     # declare any local variables needed
+    variable JtagFile
+    variable JtagExtn {jtag}
+    variable Response
 
     debug {entering ::Jtag::Image::create_image}
 
@@ -126,6 +133,20 @@ proc ::Jtag::Image::create_image {file_name} {
     set Img(file_format) [$Img(orig_img) cget -format]
     set Img(zoom) 1.0
     set Img(created) 1
+
+    # check and see if a valid jtag file exists for this image
+    set JtagFile [string range $file_name 0 [string last "." $file_name]]
+    if {$JtagFile == ""} {
+        # doesn't have an extension, so add the extension to the end of the
+        # file
+        set JtagFile $file_name.
+    }
+    set JtagFile $JtagFile$JtagExtn
+
+    # open and read the selection data into the data variable
+    if {[catch {::Jtag::Config::read_data $JtagFile} Response]} {
+        debug "Failed to read contents of $JtagFile.  Reason:\n$Response"
+    }
 
 }
 
