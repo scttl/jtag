@@ -15,11 +15,14 @@ function res = marks_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: marks_features.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: marks_features.m,v 1.2 2004-06-28 16:22:38 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: marks_features.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-06-28 16:22:38  klaven
+% *** empty log message ***
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.2  2004/06/14 16:25:19  klaven
@@ -121,104 +124,107 @@ if get_names
     return;
 end
 
-% calculate the mark_map for this region.
+% % calculate the mark_map for this region.
+% 
+% left   = rect(1);
+% top    = rect(2);
+% right  = rect(3);
+% bottom = rect(4);
+% 
+% 
+% 
+% markmap = zeros(bottom-top+1,right-left+1);
+% mm = 0;
+% for j=top:bottom;
+%   for i=left:right;
+%     x = i - left + 1;
+%     y = j - top + 1;
+%     if (pixels(j,i) ~= bg);
+%       if (y == 1);
+%         if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
+%         p1 = 0; p2 = 0; p3 = 0;
+%       else;
+%         if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
+%         if (x == 1); p1 = 0; else; p1 = markmap(y-1,x-1); end;
+%         p2 = markmap(y-1,x);
+%         if (i == right); p3 = 0; else; p3 = markmap(y-1,x+1); end;
+%       end;
+%       markmap(y,x) = max([p0,p1,p2,p3]);
+%       if (markmap(y,x) == 0);
+%         mm = mm + 1;
+%         markmap(y,x) = mm;
+%       end;
+%     end;
+%   end;
+% end;
+% 
+% changed = true;
+% while changed;
+%     changed = false;
+%     oldmarkmap = markmap(:,:);
+%     for j=top:bottom;
+%       for i=left:right;
+%         x = i - left + 1;
+%         y = j - top + 1;
+%         if (pixels(j,i) ~= bg);
+%           if (y == 1);
+%             if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
+%             p1 = 0; p2 = 0; p3 = 0;
+%           else;
+%             if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
+%             if (x == 1); p1 = 0; else; p1 = markmap(y-1,x-1); end;
+%             p2 = markmap(y-1,x);
+%             if (i == right); p3 = 0; else; p3 = markmap(y-1,x+1); end;
+%           end;
+%           markmap(y,x) = max([p0,p1,p2,p3,markmap(y,x)]);
+%         end;
+%       end;
+%     end;
+% 
+%     for j=((bottom + top) - (top:bottom));
+%       for i=((right + left) - (left:right));
+%         x = i - left + 1;
+%         y = j - top + 1;
+%         if (pixels(j,i) ~= bg);
+%           if (j == bottom);
+%             if (i == right); p0 = 0; else; p0 = markmap(y,x+1); end;
+%             p1 = 0; p2 = 0; p3 = 0;
+%           else;
+%             if (i == right); p0 = 0; else; p0 = markmap(y,x+1); end;
+%             if (x == 1); p1 = 0; else; p1 = markmap(y+1,x-1); end;
+%             p2 = markmap(y+1,x);
+%             if (i == right); p3 = 0; else; p3 = markmap(y+1,x+1); end;
+%           end;
+%           markmap(y,x) = max([p0,p1,p2,p3,markmap(y,x)]);
+%         end;
+%       end;
+%     end;
+% 
+%     if (max(max(abs(oldmarkmap - markmap))) > 0);
+%       changed = true;
+%     end;
+% end;
+% 
+% nummarks = 0;
+% oldmarkmap = markmap;
+% markmap = zeros(size(markmap));
+% for i = 1:mm;
+%   [x,y] = find(oldmarkmap == i);
+%   if (length(x) > 0);
+%     nummarks = nummarks + 1;
+%     marks(nummarks).x = x + left - 1;
+%     marks(nummarks).y = y + top - 1;
+%     for (nn = 1:length(x));
+%       markmap(x(nn),y(nn)) = nummarks;
+%     end;
+%   end;
+% end;
+% 
+% % At this point, markmap and marks are both correct.
+% % Now we can start computing features.
 
-left   = rect(1);
-top    = rect(2);
-right  = rect(3);
-bottom = rect(4);
+[markmap, nummarks] = bwlabel(1-p3,8);
 
-
-
-markmap = zeros(bottom-top+1,right-left+1);
-mm = 0;
-for j=top:bottom;
-  for i=left:right;
-    x = i - left + 1;
-    y = j - top + 1;
-    if (pixels(j,i) ~= bg);
-      if (y == 1);
-        if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
-        p1 = 0; p2 = 0; p3 = 0;
-      else;
-        if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
-        if (x == 1); p1 = 0; else; p1 = markmap(y-1,x-1); end;
-        p2 = markmap(y-1,x);
-        if (i == right); p3 = 0; else; p3 = markmap(y-1,x+1); end;
-      end;
-      markmap(y,x) = max([p0,p1,p2,p3]);
-      if (markmap(y,x) == 0);
-        mm = mm + 1;
-        markmap(y,x) = mm;
-      end;
-    end;
-  end;
-end;
-
-changed = true;
-while changed;
-    changed = false;
-    oldmarkmap = markmap(:,:);
-    for j=top:bottom;
-      for i=left:right;
-        x = i - left + 1;
-        y = j - top + 1;
-        if (pixels(j,i) ~= bg);
-          if (y == 1);
-            if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
-            p1 = 0; p2 = 0; p3 = 0;
-          else;
-            if (x == 1); p0 = 0; else; p0 = markmap(y,x-1); end;
-            if (x == 1); p1 = 0; else; p1 = markmap(y-1,x-1); end;
-            p2 = markmap(y-1,x);
-            if (i == right); p3 = 0; else; p3 = markmap(y-1,x+1); end;
-          end;
-          markmap(y,x) = max([p0,p1,p2,p3,markmap(y,x)]);
-        end;
-      end;
-    end;
-
-    for j=((bottom + top) - (top:bottom));
-      for i=((right + left) - (left:right));
-        x = i - left + 1;
-        y = j - top + 1;
-        if (pixels(j,i) ~= bg);
-          if (j == bottom);
-            if (i == right); p0 = 0; else; p0 = markmap(y,x+1); end;
-            p1 = 0; p2 = 0; p3 = 0;
-          else;
-            if (i == right); p0 = 0; else; p0 = markmap(y,x+1); end;
-            if (x == 1); p1 = 0; else; p1 = markmap(y+1,x-1); end;
-            p2 = markmap(y+1,x);
-            if (i == right); p3 = 0; else; p3 = markmap(y+1,x+1); end;
-          end;
-          markmap(y,x) = max([p0,p1,p2,p3,markmap(y,x)]);
-        end;
-      end;
-    end;
-
-    if (max(max(abs(oldmarkmap - markmap))) > 0);
-      changed = true;
-    end;
-end;
-
-nummarks = 0;
-oldmarkmap = markmap;
-markmap = zeros(size(markmap));
-for i = 1:mm;
-  [x,y] = find(oldmarkmap == i);
-  if (length(x) > 0);
-    nummarks = nummarks + 1;
-    marks(nummarks).x = x + left - 1;
-    marks(nummarks).y = y + top - 1;
-    for (nn = 1:length(x));
-      markmap(x(nn),y(nn)) = nummarks;
-    end;
-  end;
-end;
-
-% At this point, markmap and marks are both correct.
-% Now we can start computing features.
 
 % Number of marks in the region.
 % res(rr,1).name  = 'num_marks';

@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.13 2004-01-19 01:44:57 klaven Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.14 2004-06-28 16:22:38 klaven Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.13  2004-01-19 01:44:57  klaven
+## Revision 1.14  2004-06-28 16:22:38  klaven
+## *** empty log message ***
+##
+## Revision 1.13  2004/01/19 01:44:57  klaven
 ## Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
 ##
 ## Revision 1.12  2003/09/19 15:24:52  scottl
@@ -254,6 +257,7 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
     variable data
     variable ::Jtag::Image::img
     variable ::Jtag::Image::can
+    variable ::Jtag::Config::cnfg
     variable hpre
     variable btpre
     variable blpre
@@ -277,6 +281,8 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
     variable ClassTime ""
     variable ClassAttempts ""
     variable ResizeAttempts ""
+    variable GlobalConfig {global}
+    variable LocalConfig {per_file}
     variable Colour
     variable FBuckets
     variable CkSumPos 3 ;# the line in the header the cksum field is to appear
@@ -331,8 +337,11 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
     }
 
     if {$I > 0 && $I <= [llength $Result]} {
-        # reset our config data
-        ::Jtag::Config::ResetCnfg [lrange $Result 0 [expr $I - 1]]
+        if {$cnfg(config_style) == $LocalConfig} {
+            # reset our config data
+            debug "Resetting config data"
+            ::Jtag::Config::ResetCnfg [lrange $Result 0 [expr $I - 1]]
+        }
         # update the buckets to reflect array changes
         if {[ catch {::Jtag::Classify::create_buckets {} {}} FBuckets]} {
             error "failed to re-create buckets.  Reason:\n$FBuckets"

@@ -20,11 +20,14 @@ function res = classify_pg(class_names, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.7 2004-06-19 00:25:17 klaven Exp $
+% $Id: classify_pg.m,v 1.8 2004-06-28 16:22:38 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.7  2004-06-19 00:25:17  klaven
+% Revision 1.8  2004-06-28 16:22:38  klaven
+% *** empty log message ***
+%
+% Revision 1.7  2004/06/19 00:25:17  klaven
 % Re-organizing files.  First step: delete from old locations.
 %
 % Revision 1.6  2004/06/01 21:56:54  klaven
@@ -93,10 +96,12 @@ s.jlog_file = strcat(img_file(1:dot_idx(length(dot_idx))), jlog_extn);
 try
     tmp_struct = parse_jtag(s.jtag_file);
     if size(tmp_struct.rects,1) < 1
+        fprintf('Found no rects in jtag file - rshould run xycuts.\n');
         error
     end
     s.rects = tmp_struct.rects;
 catch
+    fprintf('Running xycut segmentation algorithm.\n');
     rects = xycut(img_file);
     % rects = dist_img(img_file);
     % rects = dist_img_red(img_file);

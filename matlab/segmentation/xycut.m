@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.1 2004-06-19 00:27:28 klaven Exp $
+% $Id: xycut.m,v 1.2 2004-06-28 16:22:39 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.1  2004-06-19 00:27:28  klaven
+% Revision 1.2  2004-06-28 16:22:39  klaven
+% *** empty log message ***
+%
+% Revision 1.1  2004/06/19 00:27:28  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.8  2004/05/13 21:17:01  klaven
@@ -56,8 +59,8 @@ function m = xycut(img_file, varargin)
 %%%%%%%%%%%%%%
 
 % default horizontal threshold (if not passed above)
-%ht = 40;  % prefered ht for single-column layout
-ht = 20;  %prefered ht for double-column layout
+ht = 40;  % prefered ht for single-column layout
+% ht = 20;  %prefered ht for double-column layout
 
 vt = 18;  % default vertical threshold (if not passed above)
 wst = 0.009;  % minimum percent ink in whitespace to count as valley

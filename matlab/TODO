@@ -31,7 +31,7 @@ Normalize the features in each data set before saving (do some research to make 
   <DONE>-Area of largest mark (as fraction of total?)
   <DONE>-Pixels in largest mark
 
-Make the marks features reasonably quick to compute.
+<DONE> Make the marks features reasonably quick to compute.
 
 <DONE> Create a single train/test script
 
@@ -58,18 +58,18 @@ Figure out why the marks features are decreasing performance.
     Crammer01a
     Crammer03a
 
-Fix up "snapping" errors in test and training data
+<DONE>Fix up "snapping" errors in test and training data
 
 
 Check out "NCA" for KNN (talk to Jacob)
 
 Implement HMM
 
-Get ready to send stuff to Microsoft
+<DONE> Get ready to send stuff to Microsoft
 
 <DONE> Decide on consistent style for Inline Heading, Author List, and 
 References.
 
-Go over test data and training data, to make above items consistent.
+<DONE>Go over test data and training data, to make above items consistent.
 
 Think about inferring font size before doing segmentation, and using this.
