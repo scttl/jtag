@@ -1,106 +1,66 @@
 To Do
 ------
 
-<DONE>Create a memm_fn function so that memm can be called from JTAG.
 
-<DONE>Change the sorting function so that instead of actually rearranging
-the data, it just lists the correct indecies.
+<DONE>Investigate possible MEMM training bug: "end-of-page" is getting 0's 
+for all of the "follows X" features.
 
-<DONE>Change the memm_train function to account for the new sorting method.
+<DONE>Change the all-in-one script to let you tweak the segmentation.
 
-<DONE>Change the memm_predict function to account for the new sorting method.
+<DONE>Find a sample journal for Sam to try OCR on.
+    ***TAGGED/jmlr/Cancedda03a
 
-<DONE>Change the memm_add_td_label_features function to account for the new
-sorting method.
+<DONE>Tar up the existing .jtag and .jlog files for JMLR.
 
-<DONE>Change the lr_fn to accept the jtag_file as a parameter.
+<DONE>After that, merge all the figure caption/label pairs.
+    <DONE>TAGGED:
+        allwein
+        antos
+        Calif03a
+        Cancedda
+        CAruana
+        Chan02a
+        Chikering02b
+        Christensen03a
+        Crammer01a
+        Crammer03a
+    <DONE>TEST DATA:
+        BAch02a
+        Canon02a
+        Chickering02a
+        Collobert01a
+        Crammer03n
 
-<DONE>Change the knn_fn to accept the jtag_file as a parameter.
+<DONE>Fix the MEMM bug I found (skipping the end-of-page in training).
 
-<DONE>Test the new lr_fn
+<DONE>Re-run the MEMM parts of the test sets, with the new bug fix.
 
-<DONE>Test the new knn_fn
-
-<DONE>Test the new memm_predict function
-
-<DONE>Test the new memm_fn
-
-<DONE>Test the new memm_train function
-
-<DONE>Change run_all_features to accept the path to the pixels file, rather than
-the pixels.
-
-<DONE>Do something about the lack of a "figure" class label.  Guh, this will
-take a while.
-
-<DONE>Go through all the data to deal with the "figure" solution.
-    <DONE>Training:
-        <DONE>JMLR
-            AllWein
-            Antos02a
-            Calif03a
-            Cancedda03a
-            Caruana03a
-            Chan02a
-            Chickering02b
-            Christensen03a
-            Crammer01a
-            Crammer03a
-        <DONE>NIPS2001
-        <DONE>NIPS2002
-    <DONE>Test:
-        <DONE>JMLR
-            Back02a
-            Cannon02a
-            Chickering02a
-            Colbert01a
-            Crammer03b
-        <DONE>NIPS2001
-        <DONE>NIPS2002
-
-
-<DONE>Add features for:
-    <DONE>-Is first region on page
-    <DONE>-Is last region on page
-    <DONE>-Fraction of the way down the page, in terms of region order
-    <DONE>-Is first page
-    <DONE>-Is last page
-    <DONE>-In last 15% of document pages
-    <DONE>-Fraction of the way through the document, in terms of page #
-
-<DONE>Test page number based features
-
-<DONE>Include page number based features in run_all_features
-
-<DONE>Normalize the features in each data set before saving (do some research to make sure this is done right).
-
-<DONE>Test that the normalization is:
-    <DONE>1. Working.
-    <DONE>2. Begin done in the right places.
-
-<DONE>Re-extract all feature data.
-
-<DONE>Retrain all classifiers:
-    <DONE>lr
-    <DONE>knn
-    <DONE>memm
-
-Retest all classifiers:
-    <DONE>lr
-    <DONE>knn
-    memm
-
-Train all classifiers without the "snapped" features.
-Test all classifiers without the "snapped" features.
-
-Train all classifiers with the "marks" features.
-Test all classifiers with the "makrs" features.
-
-Write a script that goes from a URL to a segmented image.
-
-Test out LOO error for KNN on the training data.
+Finish the "Best Cuts" implementation of xycuts.
 
 Draft a TOC for my thesis.
+
+Buy a bar document scanner.
+
+Look into detecting lines in text regions.
+
+Look into inferring font size or line spacing from text regions.
+
+<DONE>Fix up the demo.
+
+Read Ben's thesis.
+
+Consider second reader for thesis:
+    -Rich Zemel
+    -Brendon Frye
+    -Aron Hertsmen
+    -<Ron Becker>
+
+Note MSC deadline: Jan 30th.
+
+Think about writing an algorithm for re-flowing a page with dif't margins.
+
+Think about an OCR pre-processor that blanks out the images, and says
+something like "see figure1.jpg'.
 
 
 Find error bars by randomly picking training and test cases for:
@@ -113,8 +73,6 @@ Find error bars by randomly picking training and test cases for:
         LR
         MEMM
 
-
-Figure out why the marks features are decreasing performance.
 
 Consider trying to infer font size for each region, and using this as a
 feature.

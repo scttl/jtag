@@ -21,7 +21,7 @@ if (pnum <= length(article.page) && (pnum >= 1));
     set(f,'Name',article.page{pnum}.jtag_file);
     set(f,'NumberTitle','off');
     title(['Page ' int2str(pnum) ' of ' int2str(length(article.page)) ...
-           '.  Press <- or -> to change pages']);
+           '.  Press <- or -> to change pages, or "e" to edit in JTAG']);
     article.curpage = pnum;
 else
     fprintf('Page %i does not exist.\n',pnum);
@@ -35,12 +35,16 @@ end;
 
 function keyPressed(obj,eventdata);
     lastChar = get(obj,'CurrentCharacter');
+    fprintf('lastChar = \n');
+    disp(lastChar);
     if ((lastChar == char(28)) || (lastChar == char(30)) || ...
         (lastChar=='p') || (lastChar=='P') || (lastChar=='<'));
         pp;
     elseif ((lastChar == char(29)) || (lastChar == char(31)) || ...
             (lastChar=='n') || (lastChar=='N') || (lastChar=='>'));
         np;
+    elseif (lastChar == 'e') || (lastChar == 'E');
+        jt_edit;
     end;
     
 

@@ -19,11 +19,14 @@ function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.5 2004-08-04 20:51:19 klaven Exp $
+% $Id: knn_fn.m,v 1.6 2004-08-16 22:38:31 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.5  2004-08-04 20:51:19  klaven
+% Revision 1.6  2004-08-16 22:38:31  klaven
+% *** empty log message ***
+%
+% Revision 1.5  2004/08/04 20:51:19  klaven
 % Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
 %
 % Revision 1.4  2004/07/29 20:41:56  klaven
@@ -59,6 +62,10 @@ function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 
 % LOCAL VARS %
 %%%%%%%%%%%%%%
+
+allow_perfect_match = false;  % Setting this to true will allow "perfect"
+                              % matches, which generally represent an item
+                              % matching itself.
 
 k = 1;  % default number of nearest neighbours to consider if k not passd as
         % an arg above.
@@ -138,7 +145,7 @@ for ff = 1:size(features,1);
 
             dist = sqrt(sum((data.pg{i}.features(j,:) - features(ff,:)).^2));
 
-            if dist < max_dist
+            if ((dist < max_dist) && (allow_perfect_match || (dist > 0)));
                 % add this element to the top k in the appropriate position.
                 pos = 1;
                 while pos < k & pos <= num_elems & dist >= distances(pos)
@@ -151,7 +158,7 @@ for ff = 1:size(features,1);
                     names{pos} = data.class_names{data.pg{i}.cid(j)};
                     if pos == k
                         max_dist = dist;
-            end
+                    end
                 elseif num_elems < k
                     % add the new element, and shift the rest down by 1
                     names(pos+1:num_elems+1) = names(pos:num_elems);

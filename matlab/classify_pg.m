@@ -20,11 +20,14 @@ function res = classify_pg(class_names, jtag_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.9 2004-07-27 22:06:15 klaven Exp $
+% $Id: classify_pg.m,v 1.10 2004-08-16 22:38:31 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.9  2004-07-27 22:06:15  klaven
+% Revision 1.10  2004-08-16 22:38:31  klaven
+% *** empty log message ***
+%
+% Revision 1.9  2004/07/27 22:06:15  klaven
 % classify_pg.m now passes the jtag file on to the classification functions.  This will allow these functions to use the file path of the image to determine what page number it is and how many pages are in the article.  This information can now be used as features.
 %
 % Revision 1.8  2004/06/28 16:22:38  klaven
@@ -55,13 +58,13 @@ function res = classify_pg(class_names, jtag_file, class_fn, varargin)
 %
 
 % Load paths
-startup;
+%startup;
 
 
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-disp('Trying to classify page');
+%disp('Trying to classify page');
 
 jtag_extn = 'jtag';  %jtag filename extension
 jlog_extn = 'jlog';  %jlog filename extension
@@ -97,17 +100,17 @@ try
     tmp_struct = parse_jtag(s.jtag_file);
     s.img_file = tmp_struct.img_file;
     if size(tmp_struct.rects,1) < 1
-        fprintf('Found no rects in jtag file - rshould run xycuts.\n');
+        %fprintf('Found no rects in jtag file - should run xycuts.\n');
         error
     end
     s.rects = tmp_struct.rects;
 catch
-    fprintf('Running xycut segmentation algorithm.\n');
+    %fprintf('Running xycut segmentation algorithm.\n');
     
     rects = xycut(s.img_file);
     % rects = dist_img(img_file);
     % rects = dist_img_red(img_file);
-    disp(strcat('Found ', int2str(size(rects,1)), ' rectangles'));
+    %disp(strcat('Found ', int2str(size(rects,1)), ' rectangles'));
     s.rects = rects;
 end
 
