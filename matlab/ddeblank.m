@@ -7,11 +7,14 @@ function sout = ddeblank(s)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: ddeblank.m,v 1.1 2003-07-23 14:54:43 scottl Exp $
+% $Id: ddeblank.m,v 1.2 2003-09-10 01:36:51 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: ddeblank.m,v $
-% Revision 1.1  2003-07-23 14:54:43  scottl
+% Revision 1.2  2003-09-10 01:36:51  scottl
+% Bugfix to ensure empty strings handled correctly.
+%
+% Revision 1.1  2003/07/23 14:54:43  scottl
 % Initial revision.
 %
 
@@ -20,13 +23,13 @@ function sout = ddeblank(s)
 %%%%%%%%%%%%%%
 
 error(nargchk(1, 1, nargin));
-if ~ischar(s)
-  error('Input must be a string (char array).');
-end
-
 if isempty(s)
     sout = s;
     return;
+end
+
+if ~ischar(s)
+  error('Input must be a string (char array).');
 end
 
 [r, c] = find( s ~= ' ' & s ~= 0 );
