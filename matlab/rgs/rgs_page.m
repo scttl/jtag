@@ -1,5 +1,6 @@
 function [segs,score] = rgs_page(jt,rgs_params);
 
+max_rec = 2;
 
 if (ischar(jt));
     jt = jt_load(jt,0);
@@ -15,16 +16,21 @@ end;
 startseg = [1,1,size(pix,2),size(pix,1)];
 startseg = seg_snap(pix,startseg);
 
-[segs,score] = rgs(pix,startseg,rgs_params,1,0);
+[segs,score] = rgs(pix,startseg,rgs_params,1,jt.img_file,0,max_rec);
 
 
 
 
-function [segs,score] = rgs(pix,seg_in,rgs_params,h,rec_lev);
+function [segs,score] = rgs(pix,seg_in,rgs_params,h,img_path,rec_lev,max_rec);
 
 scoremat = [];
 
-score_in = rgs_eval(pix,seg_in,rgs_params,h);
+score_in = rgs_eval(pix,seg_in,rgs_params,h,img_path);
+if (rec_lev == max_rec);
+    segs = seg_in;
+    score = score_in;
+    return;
+end;
 cuts = get_cut_cands(pix,seg_in,h);
 [subsegs,cuts] = cuts_to_segs(seg_in,cuts,pix,h,0); %This pads cuts as well
 numsubsegs = size(subsegs.rects,1);
@@ -40,11 +46,12 @@ if (numsubsegs > 0);
     scoremat = zeros(length(cuts));
 end;
 for i = 1:numsubsegs;
-    fprintf('Recursion_level=%i, seg %i of %i\n',rec_lev,i,numsubsegs);
+    %fprintf('Recursion_level=%i, seg %i of %i\n',rec_lev,i,numsubsegs);
     c1 = subsegs.cut_before(i);
     c2 = subsegs.cut_after(i);
     if (c1 ~= 1) || (c2 < numsubsegs);
-        [tmp1,tmp2] = rgs(pix,subsegs.rects(i,:),rgs_params,~h,rec_lev+1);
+        [tmp1,tmp2] = rgs(pix,subsegs.rects(i,:),rgs_params,~h, ...
+                          img_path,rec_lev+1,max_rec);
         %fprintf('Emerged from recursion on %i,%i.  tmp1=\n',c1,c2);
         %disp(tmp1);
         %fprintf('tmp2=\n');
@@ -89,17 +96,28 @@ end;
 
 
 
-function score = rgs_eval(pix,seg,rgs_params,h);
+function score = rgs_eval(pix,seg,rgs_params,h,img_path);
 global rgs_eval_count;
 rgs_eval_count = rgs_eval_count + 1;
-score = 1;
+
+global segs_considered;
+segs_considered = [segs_considered; seg];
+
+features = rgs_get_features(pix,seg,img_path);
+lls = rgs_region_ll(features.vals,rgs_params);
+score = max(lls);
+if (length(score) > 1);
+    error('ERROR in rgs_eval in rgs_page.m\n');
+end;
+
 return;
 
 %global class_names;
 %for i=1:length(class_names);
 %    ll(i)=
 %    
-%    feats = rgs_get_features(pix,seg);
+%    features = rgs_get_features(pix,seg,img_path);
+%    feats = features.values;
 %    means = rgs_params.means(i,:);
 %    sigma = rgs_params.variance(i);
 %    pix_on = sum(sum(1-pix(seg(2):seg(4),seg(1):seg(3))));

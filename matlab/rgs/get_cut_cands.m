@@ -1,7 +1,7 @@
 function cands = get_cut_cands(pix, seg, h);
 
-vlen_min_v = 15;
-vlen_min_h = 4;
+vlen_min_v = 7;
+vlen_min_h = 5;
 
 numcands = 0;
 
