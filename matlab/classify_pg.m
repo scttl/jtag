@@ -20,11 +20,14 @@ function res = classify_pg(class_names, jtag_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.10 2004-08-16 22:38:31 klaven Exp $
+% $Id: classify_pg.m,v 1.11 2004-10-06 20:21:29 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.10  2004-08-16 22:38:31  klaven
+% Revision 1.11  2004-10-06 20:21:29  klaven
+% *** empty log message ***
+%
+% Revision 1.10  2004/08/16 22:38:31  klaven
 % *** empty log message ***
 %
 % Revision 1.9  2004/07/27 22:06:15  klaven
@@ -120,7 +123,8 @@ pixels = imread(s.img_file);
 
 for i = 1:size(s.rects,1)
     % s.rects = [s.rects; line_detect(pixels, rects(i,:))];
-    s.rects(i,:) = get_sr(s.rects(i,:), pixels);
+    % s.rects(i,:) = get_sr(s.rects(i,:), pixels);
+    s.rects(i,:) = seg_snap(pixels, s.rects(i,:), 0);
 end
 
 %classify all rectangles

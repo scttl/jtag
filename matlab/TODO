@@ -1,16 +1,26 @@
 To Do
 ------
 
+----------------------------------------------------
+Thesis TOC Gaps:
+----------------
+1. Merge-based algorithms
+    1.1 Voronoi
+    1.2 Best-Merge
+    1.3 Learn-To-Merge
 
-<DONE>Finish the "Best Cuts" implementation of xycuts.
+2. Combined Segment/Label Evaluation
 
-<DONE>Gather papers to read and write parts of my thesis
-
-<DONE>Implement the Run-Length Smoothing Algorithm
+3. Applications
+    3.1 OCR Pre-Processing for searchable image-documents
+    3.2 OCR Pre-Processing for compression and storage
+    3.3 OCR Pre-Processing for HTML
+    
+----------------------------------------------------
 
 <DONE>Implement the Smearing segmentation algorithm
 
-Optimize and test the Smearing segmentation algorithm
+<DONE>Optimize and test the Smearing segmentation algorithm
 
 Implement the best-merge algorithm
 
@@ -18,47 +28,47 @@ Implement Voronoi Diagrams for best-merge
 
 Test Voronoi Diagrams for best-merge
 
-<DONE>Implement first version of Learn-To-Cut algorithm.
-    <DONE>Decide on "classes" of cuts.
-    <DONE>Decide on a way to order the cuts.
-    <DONE>Come up with the first basic features.
-    <DONE>Write code to generate training data.
-        <NOPE>Consider "optional" cuts while doing this
-    <DONE>Generate some training data.
-    <DONE>Train the classifier.
-    <DONE>Write the cutter that uses the classifier.
-    <DONE>Test the cutter and classifier.
-
 Make some changes to create the 2nd version of Learn-To-Cut
     <DONE>Make separate classifiers for vertical and horizontal cuts.
     Add features:
-        Does the cut slice the full page cleanly?
-        Ink densities for R0, R1, and R2.
-        Fraction of page Down and Right for center points of R0, R1, and R2.
-            Boolean vars for left20%, right20%, top20%, bot20%
-        Add a new rectangle: ws1 (whitespace before R1).
-        Last 20% of pages in article (boolean).
-        Width(r0) - Min(width(r1),width(r2))
-        Height(r0) - min(height(r1),height(r2))
-    Script to generate all training and test data sets.
+        <DONE>Does the cut slice the full page cleanly?
+        <DONE>Ink densities for R0, R1, and R2.
+        <DONE>Top, Left, Bottom, Right of R0, R1, and R2.
+            <NOPE>Boolean vars for left20%, right20%, top20%, bot20%
+        <NOPE>Add a new rectangle: ws1 (whitespace before R1).
+        <DONE>Last 20% of pages in article (boolean).
+        <DONE>Width(r0) - Min(width(r1),width(r2))
+        <DONE>Height(r0) - min(height(r1),height(r2))
+    <DONE>Script to generate all training and test data sets.
     Script to test all data (lr-style).
     Script to test all data (seg-style).
     Script to show results in some nice manner.
-        
 
-    
+<DONE>Script for large batch auto-tagging (pre-processor)
 
-Buy a bar document scanner.
+<DONE>Tag some more data
+
+<NOPE>Buy a bar document scanner.
+
+<DONE>Look into detecting lines in text regions.
+
+<DONE>Code reflowing of a text region.
+
+<DONE>Code reflowing of a page.
+
+<DONE>Code reflowing of a document.
+
+<DONE>Code changing a single-column doc into a double-column.
 
 
 
-Look into detecting lines in text regions.
 
-Look into inferring font size or line spacing from text regions.
 
-<DONE>Fix up the demo.
 
-<DONE>Skim Ben's thesis.
+
+
+
+
 
 Consider second reader for thesis:
     -Rich Zemel
@@ -67,8 +77,6 @@ Consider second reader for thesis:
     -<Ron Becker>
 
 Note MSC deadline: Jan 30th.
-
-Think about writing an algorithm for re-flowing a page with dif't margins.
 
 Think about an OCR pre-processor that blanks out the images, and says
 something like "see figure1.jpg'.
