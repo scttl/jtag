@@ -1,0 +1,42 @@
+IDEAS FOR SEGMENTATION
+----------------------
+
+1. Create a generalized "BEST CUT" algorithm:
+-While some cut gets the minimum score:
+    -Create a list of possible cuts
+    -Evaluate each cut based on some criteria
+    -Make the best cut
+
+2. Implement the original XYCUT evaluation criteria for the
+   BESTCUT algorithm:
+-Score is the "width" of the valley in the horizontal or
+ vertical projection.
+-Minimum score is MINY for vertical and MINX for
+ horizontal.
+
+3. Improve XYCUT in the following manner:
+-Score is:
+    -For horizontal projection, "width"/H
+    -For vertical projection, "width"/V
+-Find the optimal settings so that minimum score is 1.
+
+4. Learn the values of H and V for a given journal:
+-H and V can also be expressed as SIZE and RATIO.
+    -H = SIZE * COS(RATIO)
+    -V = SIZE * SIN(RATIO)
+-For any given RATIO value, you can test all SIZE values
+ concurrently, by recording the status after each cut.
+-Test out a collection of reasonable RATIO values, and
+ select the best one
+
+
+5. Turn the problem into a Boltzmann machine:
+-Find all the individual marks
+-Possibly do some pre-processing to merge together or eliminate
+ any marks that are too small
+-Create boolean variables for whether it should be connected
+ with its upper, lower, left, and right neighbours.
+-Try to optimize for some score by changing these boolean variables.
+    -Would the topic of Simon's talk be appropriate/helpful?
+
+

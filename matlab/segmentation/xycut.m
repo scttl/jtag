@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.2 2004-06-28 16:22:39 klaven Exp $
+% $Id: xycut.m,v 1.3 2004-07-27 22:04:34 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.2  2004-06-28 16:22:39  klaven
+% Revision 1.3  2004-07-27 22:04:34  klaven
+% First run at code to find the optimal parameters for the xycut algorithm
+%
+% Revision 1.2  2004/06/28 16:22:39  klaven
 % *** empty log message ***
 %
 % Revision 1.1  2004/06/19 00:27:28  klaven
@@ -59,10 +62,12 @@ function m = xycut(img_file, varargin)
 %%%%%%%%%%%%%%
 
 % default horizontal threshold (if not passed above)
-ht = 40;  % prefered ht for single-column layout
+%ht = 40;  % prefered ht for single-column layout
+ht = 60;  % optimized ht for jmlr
 % ht = 20;  %prefered ht for double-column layout
 
 vt = 18;  % default vertical threshold (if not passed above)
+vt = 26; % optimized vt for jmlr
 wst = 0.009;  % minimum percent ink in whitespace to count as valley
 
 
