@@ -7,7 +7,7 @@ if($argc != 2){
   print "Usage: levenshtein string1 string2\n";
   exit(0);
 }
-
+ print levenshtein(@ARGV[0], @ARGV[1]), "\n";
  exit(levenshtein(@ARGV[0], @ARGV[1]));
 
   # Return the Levenshtein distance (also called Edit distance)
