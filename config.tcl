@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.5 2003-07-16 16:51:05 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.6 2003-07-16 20:27:12 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.5  2003-07-16 16:51:05  scottl
+## Revision 1.6  2003-07-16 20:27:12  scottl
+## Renamed classifier references to class references to avoid confusion.
+##
+## Revision 1.5  2003/07/16 16:51:05  scottl
 ## Removed colour element from writeout of each selection.  Also implemented
 ## ability to read config information from a jtag file, and have it override any
 ## information already read (from config files).
@@ -56,8 +59,8 @@ namespace eval ::Jtag::Config {
     # Name of the configuration file
     variable config_file {.jconfig}
 
-    # name of the configuration variable denoting the classifiers list
-    variable class_name {classifiers}
+    # name of the configuration variable denoting the classes list
+    variable class_name {classes}
 
     # Configuration file data array.  Note that any of the default values for
     # the settings listed below will be overwritten if found in the 
@@ -81,7 +84,7 @@ namespace eval ::Jtag::Config {
     # 'data' array.
 
     # Array containing all selection data.  Each element name will be a
-    # classifier, and each of its element will be an array giving its colour
+    # class, and each of its element will be an array giving its colour
     # and its selections.  Each of its selections will be an array giving its
     # id, co-ordinates, and metrics.  See specifcation.txt in the associated
     # documentation directory for more info.
@@ -457,13 +460,13 @@ proc ::Jtag::Config::DumpConfig {{pre ""}} {
 #         name), followed by one or more values (stored as a list).  The
 #         exception is if the name of the config item corresponds to
 #         $class_name.  In this case we are dealing with a list of
-#         classifiers, and these will be used to created the 'data' array.
+#         classes, and these will be used to created the 'data' array.
 #
 # Results:
 #    The cnfg array is reset so that its only elements & values are those that
 #    are passed in by l.  All previous elements and values are lost.  If
 #    $class_name is one of the elements in l, then the data array is reset to
-#    contain classifiers specified by the values in the $class_name element.
+#    contain classes specified by the values in the $class_name element.
 
 proc ::Jtag::Config::ResetCnfg {l} {
 
@@ -483,24 +486,24 @@ proc ::Jtag::Config::ResetCnfg {l} {
         set Name [string tolower [lindex $ElemList 0]]
 
         if {$Name == $class_name} {
-            # classifiers are handled differently in that their information is
+            # classes are handled differently in that their information is
             # stored in the 'data' array instead of the 'cnfg' array
 
             # elements of the list after the name should be in pairs, the
-            # first element gives the classifier name and the second its
+            # first element gives the class name and the second its
             # colour.
 
             # ensure that there are an even number of elements for pairing
             if {! [llength [lrange $ElemList 1 end]] %2} {
-                debug "Found classifier with no colour pair specified"
-                debug "Loading hard-coded classifier defaults instead"
+                debug "Found class with no colour pair specified"
+                debug "Loading hard-coded class defaults instead"
                 return
             }
 
-            # reset the array to destroy any existing classifier data
+            # reset the array to destroy any existing class data
             array unset data
 
-            # add the new classifier and colour to the list
+            # add the new class and colour to the list
             for {set I 1} {$I < [llength $ElemList]} {incr I 2} {
                 set data([lindex $ElemList $I],colour) \
                                            [lindex $ElemList [expr $I + 1]]
