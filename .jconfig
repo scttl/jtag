@@ -5,7 +5,7 @@
 %% DESCRIPTION: Sample configuration file to be distributed with jtag
 %%              application.
 %%
-%% CVS: $Id: .jconfig,v 1.5 2003-07-31 15:11:20 scottl Exp $
+%% CVS: $Id: .jconfig,v 1.6 2003-09-05 14:21:42 scottl Exp $
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -61,6 +61,27 @@ bucket_size = 50 50
 % being passed over when snapping it to text.  This value must lie in the
 % range [0...100] and can take on fractions if neccessary
 snap_threshold = 1
+
+% td_loc:
+% Gives the path to a valid ASCII training data file to be used when the user
+% wants the application to "predict" an initial classification of rectangles.
+% If this path does not point to a valid file, then prediction functionality
+% will not be used.  See the matlab/README file for more information.
+td_loc =
+
+% learner:
+% The name of the learning algorithm to be used during automatic "prediction"
+% by the application.  See the matlab/README file for more information on
+% available learners.
+learner = knn_fn
+
+% learner_args:
+% Any additional arguments that the learning algorithm expects to be passed to
+% perform classification.  Ex. the value for "k" in the k-nearest neighbours
+% algorithm would be specified here.  Each argument should be separated by
+% whitespace.  For more information see the matlab file associated with the
+% learner specified above and the matlab/README file.
+learner_args = 
 
 % classes:
 % List of possible classification types based on the component of the journal
