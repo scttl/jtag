@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.3 2003-07-14 15:09:17 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.4 2003-07-14 19:06:58 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.3  2003-07-14 15:09:17  scottl
+## Revision 1.4  2003-07-14 19:06:58  scottl
+## Implemented "simple" mode, made resizing more robust.
+##
+## Revision 1.3  2003/07/14 15:09:17  scottl
 ## Created add procedure to update the contents of the data array and optionally
 ## create rectangles if neccessary.
 ##
@@ -61,6 +64,7 @@ namespace eval ::Jtag::Classify {
     set sel(parent) {}
     set sel(id) {}
     set sel(modifying) 0
+    set sel(pos) {}
     set sel(x1) {}
     set sel(y1) {}
     set sel(x2) {}
@@ -68,6 +72,9 @@ namespace eval ::Jtag::Classify {
     set sel(start_timer) 0.
     set sel(sl_time) 0.
     set sel(cl_time) 0.
+
+    # the proximity to an exact pixel you must be
+    variable pad 3
 
 }
 
@@ -190,7 +197,8 @@ proc ::Jtag::Classify::bind_selection {w} {
     set sel(parent) $w
 
     bind $sel(parent) <ButtonPress-1> {::Jtag::Classify::PressDecide  %W %x %y}
-    bind $sel(parent) <B1-Motion>     {::Jtag::Classify::MotionDecide %W %x %y}
+    bind $sel(parent) <B1-Motion>   {::Jtag::Classify::B1MotionDecide %W %x %y}
+    bind $sel(parent) <Motion>       {::Jtag::Classify::MotionDecide  %W %x %y}
     bind $sel(parent) <ButtonRelease-1> {::Jtag::Classify::RelDecide  %W %x %y}
 
     # register the window passed as a drag & drop source (but don't bind any
@@ -297,6 +305,7 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
 proc ::Jtag::Classify::PressDecide {c x y} {
 
     # link any namespace variables needed
+    variable ::Jtag::Config::cnfg
     variable sel
 
     # declare any local variables needed
@@ -310,24 +319,13 @@ proc ::Jtag::Classify::PressDecide {c x y} {
     if {[llength $Coords] != 4} {
         # outside a rectangle, start a selection in the appropriate mode,
         # first converting x,y into canvas co-ords
-
-        # for now just do crop start
-        ::Jtag::Classify::CropStart $c [$c canvasx $x] [$c canvasy $y]
-
+        ::Jtag::Classify::SelStart $c [$c canvasx $x] [$c canvasy $y] \
+                                   $cnfg(mode)
     } else {
         # check if we clicked on the border (and thus allow resizing to start)
-        if {[lindex $Coords 0] == $x || [lindex $Coords 1] == $y} {
-            # start the resize on R, first flipping x1<->x2 and y1<->y2
-            ::Jtag::Classify::ResizeStart $c $R [lindex $Coords 2] \
-                                                [lindex $Coords 3] \
-                                                [lindex $Coords 0] \
-                                                [lindex $Coords 1]
-        } elseif {[lindex $Coords 2] == $x || [lindex $Coords 3] == $y} {
-            # start the resize on R (no flipping necessary)
-            ::Jtag::Classify::ResizeStart $c $R [lindex $Coords 0] \
-                                                [lindex $Coords 1] \
-                                                [lindex $Coords 2] \
-                                                [lindex $Coords 3]
+        set Pos [eval ::Jtag::Classify::DeterminePos [join $Coords] $x $y]
+        if {$Pos != ""} {
+            ::Jtag::Classify::ResizeStart $c $R $Pos
         } else {
             # allow the canvas to perform drag & drop operation
             ::blt::drag&drop source $c -button 1
@@ -340,7 +338,7 @@ proc ::Jtag::Classify::PressDecide {c x y} {
 }
 
 
-# ::Jtag::Classify::MotionDecide --
+# ::Jtag::Classify::B1MotionDecide --
 #
 #    Determines course of action to take when the user has the left mouse
 #    button depressed and drags the mouse over the canvas
@@ -354,9 +352,10 @@ proc ::Jtag::Classify::PressDecide {c x y} {
 #    Appropriate helper is called depending on the mode, and if we are in the
 #    middle of a drag & drop
 
-proc ::Jtag::Classify::MotionDecide {c x y} {
+proc ::Jtag::Classify::B1MotionDecide {c x y} {
 
     # link any namespace variables needed
+    variable ::Jtag::Config::cnfg
 
     # declare any local variables needed
 
@@ -365,9 +364,54 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
         return
     }
 
-    # for now just do crop expand
-    ::Jtag::Classify::CropExpand $c [$c canvasx $x] [$c canvasy $y]
+    ::Jtag::Classify::SelExpand $c [$c canvasx $x] [$c canvasy $y] $cnfg(mode)
+
 }
+
+
+# ::Jtag::Classify::MotionDecide --
+#
+#    Determines the course of action to take when the user moves the mouse
+#    over the canvas.
+#
+# Arguments:
+#    c    The canvas upon which we have clicked
+#    x    The current x co-ord of the mouse (relative to visible window)
+#    y    The current y co-ord of the mouse (relative to visible window)
+#
+# Results:
+#    If we are over the edge of a selection window the appropriate cursor
+#    image is displayed, to ease with resizing
+
+proc ::Jtag::Classify::MotionDecide {c x y} {
+    
+    # link any namespace variables needed
+    variable pad
+    
+    # declare any local variables needed
+    variable R
+    variable Coords
+    variable X1
+    variable Y1
+    variable X2
+    variable Y2
+
+    set R [$c find withtag current]
+    set Coords [$c coords $R]
+
+    if {[llength $Coords] == 4} {
+        #inside a rectangle
+        set X1 [lindex $Coords 0]
+        set Y1 [lindex $Coords 1]
+        set X2 [lindex $Coords 2]
+        set Y2 [lindex $Coords 3]
+        $c configure -cursor [::Jtag::Classify::DeterminePos $X1 $Y1 $X2 $Y2 \
+                                                             $x $y]
+    } else {
+        $c configure -cursor left_ptr
+    }
+}
+
 
 
 # ::Jtag::Classify::RelDecide --
@@ -387,12 +431,12 @@ proc ::Jtag::Classify::RelDecide {c x y} {
 
     # link any namespace variables needed
     variable sel
+    variable ::Jtag::Config::cnfg
 
     # declare any local variables needed
 
     if {$sel(modifying)} {
-        # for now just do crop end
-        ::Jtag::Classify::CropEnd $c [$c canvasx $x] [$c canvasy $y]
+        ::Jtag::Classify::SelEnd $c [$c canvasx $x] [$c canvasy $y] $cnfg(mode)
         return
     }
 
@@ -402,20 +446,22 @@ proc ::Jtag::Classify::RelDecide {c x y} {
 }
 
 
-# ::Jtag::Classify::CropStart --
+# ::Jtag::Classify::SelStart --
 #
-#    This procedure starts a crop mode style selection rectangle.
+#    This procedure starts creation of a selection rectangle in the mode
+#    passed.
 #
 # Arguments:
 #    c    The canvas upon which we are making the selection
 #    x    The x co-ord of the mouse at the start of the selection
 #    y    The y co-ord of the mouse at the start of the selection
+#    m    The mode (must be a string containing either "crop" or "simple"
 #
 # Results:
 #    Begins the creation of the rectangle that will expand as the user drags
 #    the mouse.
 
-proc ::Jtag::Classify::CropStart {c x y} {
+proc ::Jtag::Classify::SelStart {c x y m} {
 
     # link any namespace variables needed
     variable sel
@@ -423,14 +469,24 @@ proc ::Jtag::Classify::CropStart {c x y} {
     # declare any local variables needed
 
     # create a rectangle at the origin:
-    set sel(id) [$c create rectangle $x $y $x $y]
-    # remember origin:
-    set sel(x1) $x
     set sel(y1) $y
-    set sel(x2) $x
     set sel(y2) $y
+    if {$m == "crop"} {
+        set sel(x1) $x
+        set sel(x2) $x
+    } elseif {$m == "simple"} {
+        set sel(x1) 0.
+        set sel(x2) [lindex [::Jtag::Image::get_current_dimensions] 0]
+    } else {
+        debug "Unknown selection mode passed. Ignoring creation of rectangle"
+        return
+    }
+
+    set sel(id) [$c create rectangle $sel(x1) $sel(y1) $sel(x2) $sel(y2)]
+
     # set flag to declare that we are modifying our selection rectangle
     set sel(modifying) 1
+    set sel(pos) ""
     # record current time (in seconds) to determine selection time
     set sel(start_timer) [clock clicks -milliseconds]
     set sel(sl_time) 0.
@@ -444,29 +500,28 @@ proc ::Jtag::Classify::CropStart {c x y} {
 # Arguments:
 #    c    The canvas upon which we are making the resize
 #    r    The rectangle we are resizing
-#    x1    The x co-ord of the anchor position (won't be resized)
-#    y1    The y co-ord of the anchor position (won't be resized)
-#    x2    The x co-ord of the mouse (resizing position)
-#    y2    The y co-ord of the mouse (resizing position)
+#    pos  The corner/side to resize (anchor all other co-ords)
 #
 # Results:
 #    Begins the modification of the rectangle that will expand/contract anchored
 #    about (x1,y1) as the user drags the mouse.
 
-proc ::Jtag::Classify::ResizeStart {c r x1 y1 x2 y2} {
+proc ::Jtag::Classify::ResizeStart {c r pos} {
 
     # link any namespace variables needed
     variable sel
 
     # declare any local variables needed
+    variable Coords [$c coords $r]
 
     # create a rectangle at the origin:
     set sel(id) $r
     # remember origin:
-    set sel(x1) $x1
-    set sel(y1) $y1
-    set sel(x2) $x2
-    set sel(y2) $y2
+    set sel(x1) [lindex $Coords 0]
+    set sel(y1) [lindex $Coords 1]
+    set sel(x2) [lindex $Coords 2]
+    set sel(y2) [lindex $Coords 3]
+    set sel(pos) $pos
     # set flag to declare that we are modifying our selection rectangle
     set sel(modifying) 1
     # record current time (in seconds) to determine selection time
@@ -474,19 +529,22 @@ proc ::Jtag::Classify::ResizeStart {c r x1 y1 x2 y2} {
 }
 
 
-# ::Jtag::Classify::CropExpand --
+# ::Jtag::Classify::SelExpand --
 #
-#    Expands an existing crop mode style selection rectangle
+#    Expands an existing selection rectangle appropriately depending on the
+#    mode passed.
 #
 # Arguments:
 #    c    The canvas upon which we are making the selection
 #    x    The x co-ord of the mouse currently
 #    y    The y co-ord of the mouse currently
+#    m    The mode (must be a string containing either "crop" or "simple"
 # 
 # Results:
-#    The rectangle size is increased to that of the current mouse position
+#    The rectangle size is increased to that of the current mouse position in
+#    height (and in width if mode is "crop")
 
-proc ::Jtag::Classify::CropExpand {c x y} {
+proc ::Jtag::Classify::SelExpand {c x y m} {
 
     # link any namespace variables needed
     variable sel
@@ -495,33 +553,64 @@ proc ::Jtag::Classify::CropExpand {c x y} {
 
     # set the opposite corner of the selection rectangle
     # to the current cursor location:
-    set sel(x2) $x
-    set sel(y2) $y
+    if {$sel(pos) == ""} {
+        # not a resize
+        if {$m == "crop"} {
+            set sel(x2) $x
+            set sel(y2) $y
+        } elseif {$m == "simple"} {
+            set sel(y2) $y
+        } else {
+            debug "Mode passed is invalid.  Ignoring expand."
+            return
+        }
+    } elseif {$sel(pos) == "top_left_corner"} {
+        set sel(x1) $x
+        set sel(y1) $y
+    } elseif {$sel(pos) == "top_side"} {
+        set sel(y1) $y
+    } elseif {$sel(pos) == "top_right_corner"} {
+        set sel(x2) $x
+        set sel(y1) $y
+    } elseif {$sel(pos) == "right_side"} {
+        set sel(x2) $x
+    } elseif {$sel(pos) == "bottom_right_corner"} {
+        set sel(x2) $x
+        set sel(y2) $y
+    } elseif {$sel(pos) == "bottom_side"} {
+        set sel(y2) $y
+    } elseif {$sel(pos) == "bottom_left_corner"} {
+        set sel(x1) $x
+        set sel(y2) $y
+    } elseif {$sel(pos) == "left_side"} {
+        set sel(x1) $x
+    }
+
     $c coords $sel(id) $sel(x1) $sel(y1) $sel(x2) $sel(y2)
 }
 
 
-# ::Jtag::Classify::CropEnd --
+# ::Jtag::Classify::SelEnd --
 #
-#    Finishes an existing crop mode style selection rectangle 
+#    Finishes creation of an existing selection rectangle.
 #
 # Arguments:
 #    c    The canvas upon which we are making the selection
 #    x    The x co-ord of the mouse currently
 #    y    The y co-ord of the mouse currently
+#    m    The mode (must be a string containing either "crop" or "simple"
 #  
 # Results:
 #   Completes the rectangle (drawn in black)
 
-proc ::Jtag::Classify::CropEnd {c x y} {
+proc ::Jtag::Classify::SelEnd {c x y m} {
 
     #link any namespace variables
     variable sel
 
     # declare any local variables
     # the amount of pixels used for thresholds during selection creation
-    # (min*2 is actual number of pixels)
-    variable Min 2
+    variable Min 6
 
     # stop the clock timer and adjust to seconds
     set sel(sl_time) [expr ($sel(sl_time) + \
@@ -529,8 +618,8 @@ proc ::Jtag::Classify::CropEnd {c x y} {
                       / 1000.]
 
     # first ensure that the selection area is larger than a minimum threshold
-    if {$sel(x1) >= $x - $Min && $sel(x1) <= $x + $Min && \
-        $sel(y1) >= $y - $Min && $sel(y1) <= $y + $Min} {
+    # only check in the y direction since we may using "simple" mode
+    if {(abs ($sel(y2) - $sel(y1))) <= $Min} {
        # cancel the selection (area selected too small)
        $c delete $sel(id)
        set sel(modifying) 0
@@ -538,7 +627,7 @@ proc ::Jtag::Classify::CropEnd {c x y} {
     }
 
     # adjust selection rectangle to the current position:
-    CropExpand $c $x $y
+    SelExpand $c $x $y $m
 
     # hack to create transparent rectangles
     ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
@@ -548,7 +637,6 @@ proc ::Jtag::Classify::CropEnd {c x y} {
 
     # set flag to end the modification of the selection rectangle
     set sel(modifying) 0
-
 
 } 
 
@@ -684,6 +772,71 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     #puts [parray data]
 
 }
+
+
+
+# ::Jtag::Classify::DeterminePos --
+#
+#    Helper that determines what corner/side the x and y co-ords passed are
+#    closest to given that they lie within the rectangle passed.
+#
+# Arguments:
+#    rx1    The left rectangle co-ordinate
+#    ry1    The top rectangle co-ordinate
+#    rx2    The right rectangle co-ordinate
+#    ry2    The bottom rectangle co-ordinate
+#    x      The x position to determine
+#    y      The y position to determine
+#
+# Results:
+#    Returns one of: top_left_corner, top_side, top_right_corner, right_side,
+#    bottom_right_corner, bottom_side, bottom_left_corner, left_side, ""
+#    depending on what best fits the x and y co-ords passed.  If x or y lies
+#    outside of the rectangle "" is returned.  Makes use of the namespace
+#    variable pad to allow for proximity matches
+
+proc ::Jtag::Classify::DeterminePos {rx1 ry1 rx2 ry2 x y} {
+
+    # link any namespace variables
+    variable pad
+
+    # declare any local variables
+
+    if {($rx1 + $pad >= $x && $rx1 - $pad <= $x) &&
+        ($ry1 + $pad >= $y && $ry1 - $pad <= $y)} {
+        # upper-left corner
+        return top_left_corner
+    } elseif {($rx1 + $pad >= $x && $rx1 - $pad <= $x) &&
+              ($ry2 + $pad >= $y && $ry2 - $pad <= $y)} {
+        # bottom-left corner
+        return bottom_left_corner
+    } elseif {($rx2 + $pad >= $x && $rx2 - $pad <= $x) &&
+              ($ry1 + $pad >= $y && $ry1 - $pad <= $y)} {
+        # upper-right corner
+        return top_right_corner
+    } elseif {($rx2 + $pad >= $x && $rx2 - $pad <= $x) &&
+              ($ry2 + $pad >= $y && $ry2 - $pad <= $y)} {
+        # bottom-right corner
+        return bottom_right_corner
+    } elseif {($rx1 + $pad >= $x && $rx1 - $pad <= $x)} {
+        # left side
+        return left_side
+    } elseif {($ry1 + $pad >= $y && $ry1 - $pad <= $y)} {
+        # top side
+        return top_side
+    } elseif {($rx2 + $pad >= $x && $rx2 - $pad <= $x)} {
+        # right side
+        return right_side
+    } elseif {($ry2 + $pad >= $y && $ry2 - $pad <= $y)} {
+        # bottom side
+        return bottom_side
+    } else {
+        # either x and y are in the middle of the selection or at least one of
+        # x or y lies outside of the selection.
+        return ""
+    }
+}
+
 
 
 # ::Jtag::Classify::CheckReclassify --
