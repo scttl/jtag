@@ -22,11 +22,14 @@ function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.5 2004-08-16 22:38:10 klaven Exp $
+% $Id: run_all_features.m,v 1.6 2004-11-12 22:28:19 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.5  2004-08-16 22:38:10  klaven
+% Revision 1.6  2004-11-12 22:28:19  klaven
+% Minor debugging.
+%
+% Revision 1.5  2004/08/16 22:38:10  klaven
 % Functions that extract features now work with a bunch of boolean variables to turn the features off and on.
 %
 % Revision 1.4  2004/08/04 20:51:19  klaven
@@ -125,6 +128,11 @@ if get_names
         feature_vals = [feature_vals,{data.name}];
         f_norm = [f_norm, [data.norm]];
     end;
+    if (use.ocr);
+        data = ocr_features(use);
+        feature_vals = [feature_vals,{data.name}];
+        f_norm = [f_norm, [data.norm]];
+    end;
 else
     data = distance_features(use,rects,pixels);
     feature_vals = reshape([data.val],size(data));
@@ -141,6 +149,11 @@ else
     end;
     if (use.mark);
         data = marks_features(rects,pixels);
+        feature_vals = [feature_vals,reshape([data.val],size(data))];
+        f_norm = [f_norm [data.norm]];
+    end;
+    if (use.ocr);
+        data = ocr_features(use,rects,pixels);
         feature_vals = [feature_vals,reshape([data.val],size(data))];
         f_norm = [f_norm [data.norm]];
     end;
