@@ -5,7 +5,7 @@
 %% DESCRIPTION: Sample configuration file to be distributed with jtag
 %%              application.
 %%
-%% CVS: $Id: .jconfig,v 1.11 2004-11-02 23:46:53 klaven Exp $
+%% CVS: $Id: .jconfig,v 1.12 2004-11-10 22:21:13 klaven Exp $
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -84,7 +84,7 @@ learner = lr_fn
 % whitespace.  For more information see the matlab file associated with the
 % learner specified above and the matlab/README file.
 % learner_args = '/h/40/klaven/jtag/matlab/features/nips-train-nomarks.knn.mat'
-learner_args = '/h/40/klaven/jtag/matlab/logisticregression/jmlr-train-nomarks.lr.mat'
+learner_args = '/h/40/klaven/jtag/matlab/results/withmarks/marks-nips-train.lr.mat'
 % learner_args = '/h/40/klaven/jtag/matlab/memm/memm-jmlr.memm.mat'
 
 % classes:
