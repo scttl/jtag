@@ -1,6 +1,6 @@
 function [s1,s2,s3] = eval_seg_and_label_file(jt_cor, jt_pred, eval_method);
 
-if (nargin < 3) || strcmp(eval_methd,'all');
+if (nargin < 3) || strcmp(eval_method,'all');
     s1 = eval_regs_correct(jt_cor,jt_pred);
     s2 = eval_regs_errors(jt_cor,jt_pred);
     s3 = eval_pix_correct(jt_cor,jt_pred);
@@ -26,7 +26,7 @@ cid_pred = get_cid(jt_pred.class_name(jt_pred.class_id));
 num_cor = 0;
 for i = 1:size(seg_cor,1);
     for j = 1:size(seg_pred,1);
-        if (cid_cor(i) == cid_pred(j)) &&
+        if (cid_cor(i) == cid_pred(j)) && ...
            (max(abs(seg_pred(j,:) - seg_cor(i,:))) < 5);
             num_cor = num_cor + 1;
             break;
@@ -47,7 +47,7 @@ p_matched = zeros(size(seg_pred,1),1);
 for i = 1:size(seg_cor,1);
     matched = false;
     for j = 1:size(seg_pred,1);
-        if (cid_cor(i) == cid_pred(j)) &&
+        if (cid_cor(i) == cid_pred(j)) && ...
            (max(abs(seg_pred(j,:) - seg_cor(i,:))) < 5);
             matched = true;
             c_matched(i,1) = c_matched(i,1) + 1;
@@ -66,7 +66,7 @@ seg_cor = jt_cor.rects;
 seg_pred = jt_pred.rects;
 cid_cor = get_cid(jt_cor.class_name(jt_cor.class_id));
 cid_pred = get_cid(jt_pred.class_name(jt_pred.class_id));
-pix = imread(jt.imgfile);
+pix = imread(jt_cor.img_file);
 regmap_pred = zeros(size(pix));
 regmap_cor = zeros(size(pix));
 
@@ -80,6 +80,6 @@ for i=1:length(cid_pred);
     regmap_pred(r(2):r(4),r(1):r(3)) = cid_pred(i);
 end;
 
-score = - length(find(regmap_pred ~= regmap(cor)));
+score = - length(find(regmap_pred ~= regmap_cor));
 
 

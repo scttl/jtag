@@ -33,5 +33,5 @@ for tnum=1:length(Td1);
                 j, min([maxits, data.num_pages]), s, score(tnum)); 
         allscores(tnum,j) = s;
     end;
-    save Voronoi_Optimization_in_progress.mat Td1 Td2 score allscores;
+    save Voronoi_Optimization2_in_progress.mat Td1 Td2 score allscores;
 end;

@@ -57,7 +57,7 @@ end;
 
 function edges = edge_coords(r,pix);
     edges = [];
-    for i = r(1):r(3);
+    for i = r(1):3:r(3);
         subpix = pix(r(2):r(4),i);
         ink = find((1-subpix)>0);
         if (length(ink) > 0);
@@ -69,7 +69,7 @@ function edges = edge_coords(r,pix);
         end;
     end;
 
-    for i = r(2):r(4);
+    for i = r(2):3:r(4);
         subpix = pix(i,r(1):r(3));
         ink = find((1-subpix)>0);
         if (length(ink) > 0);

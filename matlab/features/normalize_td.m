@@ -4,7 +4,6 @@ if (isfield(td_in,'already_normalized') && td_in.already_normalized);
     fprintf('ERROR - training data with %i pages is already normalized',td.num_pages);
 end; 
 
-fprintf('Normalizing training data with %i pages.\n',td_in.num_pages);
 
 td = td_in;
 td.norm_add = norm.norm_add;

@@ -12,6 +12,7 @@ s2=0;
 s3=0;
 
 for j=1:data.num_pages; 
+    fprintf('        Pg %i of %i.\n',j,data.num_pages);
     jt=jt_load(char(data.pg_names(j)),0);
     pix = imread(jt.img_file);
     if (strcmp(cutmethod,'xycuts') || strcmp(cutmethod,'xycut'));
@@ -26,7 +27,7 @@ for j=1:data.num_pages;
         segs = ltc3_cut_file(jt,p1,pix);
     end;
     
-    [t1,t2,t3] = seg_eval_all(pix,segs,jt.rects,jt.class_id);
+    [t1,t2,t3] = seg_eval_all_ways(pix,segs,jt.rects,jt.class_id);
     s1 = s1 + t1;
     s2 = s2 + t2;
     s3 = s3 + t3;

@@ -1,7 +1,7 @@
-function cands = ltc3_find_cand(pix, seg, reg_map);
+function cands = ltc3_find_cand(pix,seg,reg_map,vlen_min_v,vlen_min_h);
 
-vlen_min_v = 10;
-vlen_min_h = 1;
+vlen_min_v = 7;
+vlen_min_h = 5;
 
 numcands = 0;
 

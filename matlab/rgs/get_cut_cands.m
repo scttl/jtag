@@ -1,7 +1,12 @@
-function cands = get_cut_cands(pix, seg, h);
+function cands = get_cut_cands(pix, seg, h,vlen_min_v,vlen_min_h);
 
-vlen_min_v = 7;
-vlen_min_h = 5;
+if (nargin < 4);
+    vlen_min_v = 7;  %Optimized value for NIPS
+    vlen_min_h = 5;  %Optimized value for NIPS
+    %vlen_min_v = 15; %Speedy value
+    %vlen_min_h = 5;  %Speedy value
+end;
+
 
 numcands = 0;
 

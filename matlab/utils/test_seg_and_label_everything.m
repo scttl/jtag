@@ -1,27 +1,34 @@
 function res = test_seg_and_tabel_everything(workdir);
 
+diary test_seg_and_label_everything_diary.txt
+diary on;
 %Test all segmentation and labelling combinations.
 
 %Paramater assignments:
 
 global seg_method_names;
 seg_method_names = {'xycut','smear','voronoi','ltc3','rgs'};
-lab_method_names = {'knn','lr','memm'};
+global lab_method_names;
+lab_method_names = {'knn','lr','memm','rgs'};
 
 nips.trn = ...
     parse_training_data('./results/2004-10-04/2004-10-04-nips-train.knn.mat');
+%nips.trn = ...
+%    parse_training_data('./nips-minitd.knn.mat');
 nips.tst = ....
     parse_training_data('./results/2004-10-04/2004-10-04-nips-test.knn.mat');
-nips.xycut.ht = 0;
-nips.xycut.vt = 0;
-nips.smear.hs = 0;
-nips.smear.vs = 0;
-nips.voronoi.Td1 = 0;
-nips.voronoi.Td2 = 0;
+%nips.tst = ...
+%    parse_training_data('./nips-minitd2.knn.mat');
+nips.xycut.ht = 14;
+nips.xycut.vt = 45;
+nips.smear.hs = 35;
+nips.smear.vs = 14;
+nips.voronoi.Td1 = 30;
+nips.voronoi.Td2 = 50;
 load ./results/ltc3/test3/ltc3-test3-nips-train.lr.mat;
 nips.ltc3.ww = savedweightvar;
-load ./results/rgs/;
-nips.rgs.params = savedweightvar;
+load ./results/rgs/nips-train-params.rgs.mat;
+nips.rgs.params = params;
 nips.knn.td = nips.trn;
 nips.lr.ww = ...
     parse_lr_weights('./results/2004-10-04/2004-10-04-nips-train.lr.mat');
@@ -30,17 +37,21 @@ nips.memm.ww = ...
 
 jmlr.trn = ...
     parse_training_data('./results/2004-10-04/2004-10-04-jmlr-train.knn.mat');
+%jmlr.trn = ...
+%    parse_training_data('./jmlr-minitd.knn.mat');
 jmlr.tst = ...
     parse_training_data('./results/2004-10-04/2004-10-04-jmlr-test.knn.mat');
-jmlr.xycut.ht = 0;
-jmlr.xycut.vt = 0;
-jmlr.smear.hs = 0;
-jmlr.smear.vs = 0;
-jmlr.voronoi.Td1 = 0;
-jmlr.voronoi.Td2 = 0;
+%jmlr.tst = ...
+%    parse_training_data('./jmlr-minitd.knn.mat');
+jmlr.xycut.ht = 18;
+jmlr.xycut.vt = 70;
+jmlr.smear.hs = 60;
+jmlr.smear.vs = 14;
+jmlr.voronoi.Td1 = 30;
+jmlr.voronoi.Td2 = 50;
 load ./results/ltc3/test3/ltc3-test3-jmlr-train.lr.mat;
 jmlr.ltc3.ww = savedweightvar;
-load ./results/rgs/;
+load ./results/rgs/jmlr-train-params.rgs.mat;
 jmlr.rgs.params = savedweightvar;
 jmlr.knn.td = jmlr.trn;
 jmlr.lr.ww = ...
@@ -49,18 +60,23 @@ jmlr.memm.ww = ...
     parse_lr_weights('./results/2004-10-04/2004-10-04-jmlr-train.memm.mat');
 
 
+fprintf('For NIPS:\n');
 nips = run_everything(nips,[workdir '/nips']);
-save TestSegAndLabelEverythingNips.mat;
+save TestSegAndLabelEverythingNips.mat nips;
 
-jmlr = run_everything(jmlr,[workdir'/jmlr']);
-save TestSegAndLabelEverythingJmlr.mat;
+fprintf('For JMLR:\n');
+jmlr = run_everything(jmlr,[workdir '/jmlr']);
+save TestSegAndLabelEverythingJmlr.mat jmlr;
 
-save TestSegAndLabelEverythingAll.mat;
+save TestSegAndLabelEverythingAll.mat nips jmlr;
+
+diary off;
 
 
 
 function [d,scores] = run_everything(d,workdir);
-
+global seg_method_names;
+global lab_method_names;
 %Create workdir if it doesn't exist
 forcedir(workdir);
 
@@ -69,7 +85,7 @@ forcedir(workdir);
 %First, for the training data:
 td = d.trn;
 pred_jt = [];
-scores 
+scores = [];
 segs = [];
 for i=1:length(seg_method_names);
     for j=1:length(lab_method_names);
@@ -81,34 +97,43 @@ for i=1:length(seg_method_names);
 end;
 %For each jtag file in the training data
 for i=1:length(td.pg);
+    fprintf('Training %i of %i.',i,length(td.pg));
     %Load the jtag and the pixels
     jt = jt_load(char(td.pg_names{i}),0);
     pix = imread(jt.img_file);
     %Segment them by each segmentation method
     segs(1).rects = xycut(pix,d.xycut.ht,d.xycut.vt);
+    fprintf('.');
     segs(2).rects = smear(pix,d.smear.hs,d.smear.vs);
+    fprintf('.');
     segs(3).rects = voronoi1(pix,d.voronoi.Td1,d.voronoi.Td2);
+    fprintf('.');
     segs(4).rects = ltc3_cut_file(jt,d.ltc3.ww,pix);
+    fprintf('.');
     segs(5).rects = rgs_page(jt,d.rgs.params);
+    fprintf('.  segmented.');
 
     %For each segmentation
     for j=1:length(segs);
         rects = segs(j).rects;
         %Run it through each labelling method, storing the results of each
         %as a jt structure (saving the jt file in workdir)
-        [knn,lr,memm] = predict_labels(jt,segs.xycut,d, ...
-                                       [workdir '\train\' char(seg_method_names(j)]);
+        [knn,lr,memm,rgs] = predict_labels(jt,segs(j).rects,d, ...
+                               [workdir '/train/' char(seg_method_names(j))]);
+        fprintf('  predicted.');
         pred_jt(j,1).jts = [pred_jt(j,1).jts; knn];
         pred_jt(j,2).jts = [pred_jt(j,2).jts; lr];
         pred_jt(j,3).jts = [pred_jt(j,3).jts; memm];
+        pred_jt(j,4).jts = [pred_jt(j,4).jts; rgs];
 
         %Call eval_seg_and_label_file, and store the resulting scores.
         for k = 1:size(pred_jt,2);
-            [s1,s2,s3]=eval_seg_and_label_file(jt,pred_jf(j,k).jts(end));
+            [s1,s2,s3]=eval_seg_and_label_file(jt,pred_jt(j,k).jts(end));
             scores(j,k,1) = scores(j,k,1) + s1;
             scores(j,k,2) = scores(j,k,2) + s2;
             scores(j,k,3) = scores(j,k,3) + s3;
         end;
+        fprintf('  scored.\n');
     end;
 end;
 d.scores.trn = scores;
@@ -119,7 +144,7 @@ d.pred_jts.trn = pred_jt;
 %Second, for the test data:
 td = d.tst;
 pred_jt = [];
-scores 
+scores = [];
 segs = [];
 for i=1:length(seg_method_names);
     for j=1:length(lab_method_names);
@@ -146,15 +171,16 @@ for i=1:length(td.pg);
         rects = segs(j).rects;
         %Run it through each labelling method, storing the results of each
         %as a jt structure (saving the jt file in workdir)
-        [knn,lr,memm] = predict_labels(jt,segs.xycut,d, ...
-                                       [workdir '\train\' char(seg_method_names(j)]);
+        [knn,lr,memm,rgs] = predict_labels(jt,segs(j).rects,d, ...
+                              [workdir '/test/' char(seg_method_names(j))]);
         pred_jt(j,1).jts = [pred_jt(j,1).jts; knn];
         pred_jt(j,2).jts = [pred_jt(j,2).jts; lr];
         pred_jt(j,3).jts = [pred_jt(j,3).jts; memm];
+        pred_jt(j,4).jts = [pred_jt(j,4).jts; rgs];
 
         %Call eval_seg_and_label_file, and store the resulting scores.
         for k = 1:size(pred_jt,2);
-            [s1,s2,s3]=eval_seg_and_label_file(jt,pred_jf(j,k).jts(end));
+            [s1,s2,s3]=eval_seg_and_label_file(jt,pred_jt(j,k).jts(end));
             scores(j,k,1) = scores(j,k,1) + s1;
             scores(j,k,2) = scores(j,k,2) + s2;
             scores(j,k,3) = scores(j,k,3) + s3;
@@ -166,7 +192,7 @@ d.pred_jts.tst = pred_jt;
 
 
 
-function [knn,lr,memm] = predict_labels(jt,rects,d,workdir);
+function [knn,lr,memm,rgs] = predict_labels(jt,rects,d,workdir);
 
 global class_names;
 
@@ -178,6 +204,7 @@ forcedir(workdir);
 forcedir([workdir '/knn']);
 forcedir([workdir '/lr']);
 forcedir([workdir '/memm']);
+forcedir([workdir '/rgs']);
 
 jt.rects = rects;
 jt.class_id = ones(size(rects,1));
@@ -191,7 +218,9 @@ jtname = jtpath(slash_idx(end)+1:end);
 knn = jt;
 knn.jtag_file = [workdir '/knn/' jtname];
 knn.jlog_file = [workdir '/knn/' jtname(1:end-4) 'jlog'];
-knn.class_id = knn_fn(class_names,feats,'null',d.knn.td);
+knn.norms = find_norms(d.knn.td);
+td_norm = normalize_td(d.knn.td,knn.norms);
+knn.class_id = knn_fn(class_names,feats,'null',td_norm);
 jt_save(knn);
 
 lr = jt;
@@ -209,12 +238,18 @@ td.pg_names = jt.jtag_file;
 [td.feat_names,td.feat_normalized] = run_all_features;
 td.isSorted = false;
 td.pg = {};
-td.pg{1}.cid = ones(size(rects,1));
+td.pg{1}.cid = ones(1,size(rects,1));
 td.pg{1}.features = feats;
 td.pg{1}.rects = rects;
 td = memm_predict_2(td,d.memm.ww);
 memm.class_id = td.pg{1}.cid;
 jt_save(knn);
+
+rgs = jt;
+rgs.jtag_file = [workdir '/rgs/' jtname];
+rgs.jlog_file = [workdir '/rgs/' jtname(1:end-4) 'jlog'];
+rgs.class_id = rgs_classify_page(jt,d.rgs.params);
+jt_save(rgs);
 
 
 

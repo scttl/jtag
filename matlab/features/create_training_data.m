@@ -37,11 +37,14 @@ function s = create_training_data(file_list, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.7 2004-09-22 21:58:42 klaven Exp $
+% $Id: create_training_data.m,v 1.8 2004-12-15 00:52:00 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.7  2004-09-22 21:58:42  klaven
+% Revision 1.8  2004-12-15 00:52:00  klaven
+% *** empty log message ***
+%
+% Revision 1.7  2004/09/22 21:58:42  klaven
 % *** empty log message ***
 %
 % Revision 1.6  2004/07/29 20:41:56  klaven
@@ -83,7 +86,7 @@ jtag_extn = 'jtag';
 
 
 % first do some argument sanity checking on the argument passed
-error(nargchk(1,1,nargin));
+error(nargchk(1,2,nargin));
 
 if ~ iscellstr(file_list)
     error('FILE_LIST must be a cell array, each element of which is a string');

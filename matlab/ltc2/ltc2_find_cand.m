@@ -1,8 +1,8 @@
 function cands = ltc2_find_cand(pix, seg, reg_map);
 
 numcands = 0;
-vlen_min_h = 1;  %Minimum valley length for horizontal cut
 vlen_min_v = 10; %Minimum valley length for vertical cut
+vlen_min_h = 5;  %Minimum valley length for horizontal cut
 
 ws_thresh = 0.00;
 

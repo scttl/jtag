@@ -19,11 +19,14 @@ function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.6 2004-08-16 22:38:31 klaven Exp $
+% $Id: knn_fn.m,v 1.7 2004-12-15 00:52:00 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.6  2004-08-16 22:38:31  klaven
+% Revision 1.7  2004-12-15 00:52:00  klaven
+% *** empty log message ***
+%
+% Revision 1.6  2004/08/16 22:38:31  klaven
 % *** empty log message ***
 %
 % Revision 1.5  2004/08/04 20:51:19  klaven
@@ -99,9 +102,9 @@ end
 %disp(data);
 
 %Normalize the features based on the norm values in data
-fprintf('Normalizing features based on data with %i files.\n', data.num_pages);
+%fprintf('Normalizing features based on data with %i files.\n', data.num_pages);
 features = normalize_feats(features,data);
-fprintf('Done normalizing the features.\n');
+%fprintf('Done normalizing the features.\n');
 
 if (ischar(jtag_file) || iscell(jtag_file));
     jt_path = jtag_file;

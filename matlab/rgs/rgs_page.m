@@ -1,9 +1,10 @@
-function [segs,score] = rgs_page(jt,rgs_params);
+function [segs,score] = rgs_page(jt,rgs_params,start_seg);
 
 max_rec = 2;
 
+
 if (ischar(jt));
-    jt = jt_load(jt,0);
+    jt = jt_load(jt);
 end;
 pix = imread(jt.img_file);
 
@@ -13,11 +14,27 @@ if (ischar(rgs_params));
     rgs_params = savedweightvar;
 end;
 
-startseg = [1,1,size(pix,2),size(pix,1)];
-startseg = seg_snap(pix,startseg);
+if (nargin >2);
+    startseg = start_seg;
+else;
+    startseg = [1,1,size(pix,2),size(pix,1)];
+    startseg = seg_snap(pix,startseg);
+end;
 
-[segs,score] = rgs(pix,startseg,rgs_params,1,jt.img_file,0,max_rec);
+%First, check for "obvious cuts" - cuts where the valley is so big that
+%it is unquestionably a cut.
+segs = xycut(jt.img_file,60,30);
+%fprintf('In %s, found %i segs using obvious cuts.\n',jt.img_file,size(segs,1));
 
+allsegs = [];
+score = 0;
+for i=1:size(segs,1);
+    [sg,sc] = rgs(pix,segs(i,:),rgs_params,1,jt.img_file,0,max_rec);
+    %fprintf('Block %i has %i rects, sc=%i, score=%i.\n',i,size(sg,1),sc,score);
+    allsegs = [allsegs;sg];
+    score = score + sc;
+end;
+segs = allsegs;
 
 
 
@@ -73,6 +90,14 @@ if numsubsegs > 0;
     %fprintf('Constructing best path with %i subsegs.  Scoremat = \n', ...
     %        numsubsegs);
     %disp(scoremat);
+    if (rec_lev ==0);
+        global gscoremat;
+        global gsegmat;
+        gscoremat = scoremat;
+        gsegmat = segmat;
+        global gsubsegs;
+        gsubsegs = subsegs;
+    end;
     [path,pathscore] = best_path(scoremat);
     
     segs = [];
@@ -97,11 +122,16 @@ end;
 
 
 function score = rgs_eval(pix,seg,rgs_params,h,img_path);
+
 global rgs_eval_count;
 rgs_eval_count = rgs_eval_count + 1;
 
 global segs_considered;
 segs_considered = [segs_considered; seg];
+
+if (size(seg,1) > 1);
+    fprintf('ERROR in rgs_eval: more than 1 seg passed.\n');
+end;
 
 features = rgs_get_features(pix,seg,img_path);
 lls = rgs_region_ll(features.vals,rgs_params);
@@ -110,7 +140,6 @@ if (length(score) > 1);
     error('ERROR in rgs_eval in rgs_page.m\n');
 end;
 
-return;
 
 %global class_names;
 %for i=1:length(class_names);
