@@ -1,6 +1,8 @@
 function cands = ltc2_find_cand(pix, seg, reg_map);
 
 numcands = 0;
+vlen_min_h = 1;  %Minimum valley length for horizontal cut
+vlen_min_v = 10; %Minimum valley length for vertical cut
 
 ws_thresh = 0.00;
 
@@ -50,8 +52,10 @@ for i = 1:length(x_valleys);
             cand.fullpage = false;
         end;
     end;
-    numcands = numcands + 1;
-    cands(numcands) = cand;
+    if (cand.val_len >= vlen_min_v);
+        numcands = numcands + 1;
+        cands(numcands) = cand;
+    end;
 end;
 
 for i = 1:length(y_valleys);
@@ -87,8 +91,10 @@ for i = 1:length(y_valleys);
             cand.fullpage = false;
         end;
     end;
-    numcands = numcands + 1;
-    cands(numcands) = cand;
+    if (cand.val_len >= vlen_min_h);
+        numcands = numcands + 1;
+        cands(numcands) = cand;
+    end;
 end;
     
 if (numcands == 0);

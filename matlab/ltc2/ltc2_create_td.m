@@ -1,10 +1,10 @@
-function samples = ltc2_create_td(file_list, outfile);
+function [samples,featnames] = ltc2_create_td(file_list, outfile);
 % CREATE_TRAINING_DATA    Builds up a struct containing all necessary training
 %                         data information, from the list of image files passed 
 %                         in.  If outfile is given, saves the structure to
 %                         this file.
 %
-%   S = CREATE_TRAINING_DATA(FILE_LIST)  Attempts to build up a corpus of
+%   [S,FN] = CREATE_TRAINING_DATA(FILE_LIST)  Attempts to build up a corpus of
 %   training data on the list of valid image files passed in FILE_LIST (one
 %   file per cell array element).  Each of these files must have an associated 
 %   jtag file containing the image name and rectangle information at a minimum. 
@@ -58,7 +58,7 @@ for i = 1:length(file_list);
   jt = parse_jtag(strcat(file_list{i}(1:dot_idx(length(dot_idx))), ...
                            jtag_extn));
 
-  samps = ltc2_create_samples_from_file(jt);
+  [samps,featnames] = ltc2_create_samples_from_file(jt);
 
 %  fprintf('Adding samps:\n');
 %  disp(samps);
@@ -68,7 +68,7 @@ for i = 1:length(file_list);
 end;
 
 if (nargin >= 2);
-  evalstr = ['save ' char(outfile) ' samples;'];
+  evalstr = ['save ' char(outfile) ' samples featnames;'];
   eval(evalstr);
 end;
 

@@ -16,7 +16,7 @@ end;
 function score = score_using(samp,ww);
 %The "score" should be the log-likelihood of the "yes" label.
 
-fnames = samp.feat_names;
+fnames = ww.feature_names;
 fvals = reshape([samp.feat_vals],length(samps_hf(1).feat_vals),1);
 cnames = ww.class_names;
 fvals = fvals + ww.norm_add;

@@ -1,6 +1,6 @@
-function samps = ltc2_make_samples_from_cands(seg_cands, pix, jt, h, f, cs);
+function [samps,fn] = ltc2_make_samples_from_cands(seg_cands,pix,jt,h,f,cs);
 %
-% function samps = ltc2_make_samples_from_cands(seg_cands, pix, jt, h, f);
+% function [samps,fn] = ltc2_make_samples_from_cands(seg_cands,pix,jt,h,f,cs);
 %
 % h = boolean: are the cuts horizontal?
 % f = boolean: is this a run of full-page cuts?
@@ -10,7 +10,49 @@ samps = [];
 
 %First, calculate features that appy to all samples on this page.
 fakerect = [1 2 3 4];
-pnum_feats = pnum_features(fakerect, pix, char(jt.img_file));
+if (nargin > 0);
+    pnum_feats = pnum_features(fakerect, pix, char(jt.img_file));
+else;
+    pnum_feats = pnum_features();
+end;
+
+fn = {};
+%List the feature names.
+fn{1} = 's0_height';
+fn{2} = 's1_height';
+fn{3} = 'ws1_height';
+fn{4} = 'ws2.height';
+fn{5} = 's0_width';
+fn{6} = 's1_width';
+fn{7} = 'ws1_width';
+fn{8} = 'ws2_width';
+fn{9} = 's0_area';
+fn{10} = 's1_area';
+fn{11} = 'ws1_area';
+fn{12} = 'ws2_area';
+fn{13} = 'ws1_cuts_full_page';
+fn{14} = 'ws2_cuts_full_page';
+fn{15} = 's0.dens';
+fn{16} = 's1.dens';
+fn{17} = 'h_reduction';
+fn{18} = 'v_reduction';
+fn{19} = 's0.l';
+fn{20} = 's0.r';
+fn{21} = 's0.t';
+fn{22} = 's0.b';
+fn{23} = 's1.l';
+fn{24} = 's1.r';
+fn{25} = 's1.t';
+fn{26} = 's1.b';
+for j=1:size(pnum_feats,2);
+    fn{26 + j} = pnum_feats(j).name;
+end;
+
+if (nargin == 0);
+    samps = fn;
+    return;
+end;
+
 
 if ~(length(seg_cands.segs_valid) == size(seg_cands.rects,1));
     fprintf('ERROR - seg_cands does not have same size rects and valids.\n');
@@ -72,34 +114,34 @@ for i=1:length(seg_cands.segs_valid);
     samp.ws1 = ws1;
     samp.ws2 = ws2;
 
-    samp.feat_names{1} = 's0_height';
+    %fn{1} = 's0_height';
     samp.feat_vals(1) = s0.b - s0.t + 1;
-    samp.feat_names{2} = 's1_height';
+    %fn{2} = 's1_height';
     samp.feat_vals(2) = s1.b - s1.t + 1;
-    samp.feat_names{3} = 'ws1_height';
+    %fn{3} = 'ws1_height';
     samp.feat_vals(3) = ws1.b - ws1.t + 1;
-    samp.feat_names{4} = 'ws2.height';
+    %fn{4} = 'ws2.height';
     samp.feat_vals(4) = ws2.b - ws2.t + 1;
     
-    samp.feat_names{5} = 's0_width';
+    %fn{5} = 's0_width';
     samp.feat_vals(5) = s0.r - s0.l + 1;
-    samp.feat_names{6} = 's1_width';
+    %fn{6} = 's1_width';
     samp.feat_vals(6) = s1.r - s1.l + 1;
-    samp.feat_names{7} = 'ws1_width';
+    %fn{7} = 'ws1_width';
     samp.feat_vals(7) = ws1.r - ws1.l + 1;
-    samp.feat_names{8} = 'ws2_width';
+    %fn{8} = 'ws2_width';
     samp.feat_vals(8) = ws2.r - ws2.l + 1;
 
-    samp.feat_names{9} = 's0_area';
+    %fn{9} = 's0_area';
     samp.feat_vals(9) = (s0.b - s0.t + 1) * (s0.r - s0.l + 1);
-    samp.feat_names{10} = 's1_area';
+    %fn{10} = 's1_area';
     samp.feat_vals(10) = (s1.b - s1.t + 1) * (s1.r - s1.l + 1);
-    samp.feat_names{11} = 'ws1_area';
+    %fn{11} = 'ws1_area';
     samp.feat_vals(11) = (ws1.b - ws1.t + 1) * (ws1.r - ws1.l + 1);
-    samp.feat_names{12} = 'ws2_area';
+    %fn{12} = 'ws2_area';
     samp.feat_vals(12) = (ws2.b - ws2.t + 1) * (ws2.r - ws2.l + 1);
 
-    samp.feat_names{13} = 'ws1_cuts_full_page';
+    %fn{13} = 'ws1_cuts_full_page';
     if (samp.horizontal);
         wsbox = pix(ws1.t:ws1.b, 1:size(pix,2));
         if (min(max(1-wsbox')) == 0);
@@ -116,7 +158,7 @@ for i=1:length(seg_cands.segs_valid);
         end;
     end;
 
-    samp.feat_names{14} = 'ws2_cuts_full_page';
+    %%fn?14} = 'ws2_cuts_full_page';
     if (samp.horizontal);
         wsbox = pix(ws2.t:ws2.b, 1:size(pix,2));
         if (min(max(1-wsbox')) == 0);
@@ -133,37 +175,37 @@ for i=1:length(seg_cands.segs_valid);
         end;
     end;
 
-    samp.feat_names{15} = 's0.dens';
+    %fn?15} = 's0.dens';
     samp.feat_vals(15) = mean(mean(1-pix(s0.t:s0.b,s0.l:s0.r)));
-    samp.feat_names{16} = 's1.dens';
+    %fn?16} = 's1.dens';
     samp.feat_vals(16) = mean(mean(1-pix(s1.t:s1.b,s1.l:s1.r)));
     
-    samp.feat_names{17} = 'h_reduction';
+    %fn?17} = 'h_reduction';
     samp.feat_vals(17) = (s0.r-s0.l+1) - min([(s1.r-s1.l+1),(ws1.r-ws1.l+1)]);
 
-    samp.feat_names{18} = 'v_reduction';
+    %fn?18} = 'v_reduction';
     samp.feat_vals(18) = (s0.b-s0.t+1) - min([(s1.b-s1.t+1),(ws1.b-ws1.t+1)]);
 
-    samp.feat_names{19} = 's0.l';
+    %fn?19} = 's0.l';
     samp.feat_vals(19) = s0.l;
-    samp.feat_names{20} = 's0.r';
+    %fn?20} = 's0.r';
     samp.feat_vals(20) = s0.r;
-    samp.feat_names{21} = 's0.t';
+    %fn?21} = 's0.t';
     samp.feat_vals(21) = s0.t;
-    samp.feat_names{22} = 's0.b';
+    %fn?22} = 's0.b';
     samp.feat_vals(22) = s0.b;
 
-    samp.feat_names{23} = 's1.l';
+    %fn?23} = 's1.l';
     samp.feat_vals(23) = s1.l;
-    samp.feat_names{24} = 's1.r';
+    %fn?24} = 's1.r';
     samp.feat_vals(24) = s1.r;
-    samp.feat_names{25} = 's1.t';
+    %fn?25} = 's1.t';
     samp.feat_vals(25) = s1.t;
-    samp.feat_names{26} = 's1.b';
+    %fn?26} = 's1.b';
     samp.feat_vals(26) = s1.b;
 
     for j=1:size(pnum_feats,2);
-        samp.feat_names{26 + j} = pnum_feats(j).name;
+        %fn?26 + j} = pnum_feats(j).name;
         samp.feat_vals(26 + j) = pnum_feats(j).val;
     end;
     samps = [samps;samp];

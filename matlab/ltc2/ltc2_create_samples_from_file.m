@@ -1,10 +1,11 @@
-function samples = ltc2_create_samples_from_file(jt,pix);
+function [samples,featnames] = ltc2_create_samples_from_file(jt,pix);
 
-%function samples = ltc2_create_samples_from_file(jt,pix);
+%function [samples,featnames] = ltc2_create_samples_from_file(jt,pix);
 %
 % -pix are the result of imread(filepath).
 %      -pix(y,x)
 
+featnames = ltc2_make_samples_from_cands();
 
 %------------------------------------------
 %Prepare variables
