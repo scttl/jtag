@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.5 2003-07-15 16:44:27 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.6 2003-07-16 19:08:37 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.5  2003-07-15 16:44:27  scottl
+## Revision 1.6  2003-07-16 19:08:37  scottl
+## Increased default size of rectangles.
+##
+## Revision 1.5  2003/07/15 16:44:27  scottl
 ## - Renamed CheckReclassify method to get_selection and exported it for
 ##   availability to other namespaces
 ## - Implemented unbind_selection method to control bindings when opening
@@ -140,7 +143,7 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     # and packing it to its frame.  Also add a drag&drop receiver for each
     # button
     set Count 1
-    foreach I [array names data -regexp {(.*)(,)(colour)}] {
+    foreach I [lsort -dictionary [array names data -regexp {(.*)(,)(colour)}]] {
         set Item(colour) $data($I)
         regexp (.*)(,)(colour) $I Match Name
         if {$Count % 2} {
@@ -308,8 +311,8 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
         set attmpts 1
         # hack to create transparent rectangles
         ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
-        $c itemconfigure $id -activewidth 2 -fill black -stipple null1 \
-           -outline $data($class,colour)
+        $c itemconfigure $id -width 2 -activewidth 4 -fill black \
+           -stipple null1 -outline $data($class,colour)
     }
 
     if {$sl_time == ""} {
@@ -778,7 +781,7 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
     ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
 
     # set options (ex outline colour etc.)
-    $c itemconfigure $sel(id) -activewidth 2 -fill black -stipple null1
+    $c itemconfigure $sel(id) -width 2 -activewidth 4 -fill black -stipple null1
 
     # set flag to end the modification of the selection rectangle
     set sel(modifying) 0
