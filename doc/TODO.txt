@@ -1,0 +1,49 @@
+                        JTAG TODO LIST
+                       ****************
+
+$Id: TODO.txt,v 1.1 2003-06-25 15:28:58 scottl Exp $
+
+Config File Reading
+-------------------
+ * Write File::parse method to read a config file, creating a list of its
+   elements
+ * Complete Config::read_config to locate the config file (curr dir or home)
+ * Config::read_config must then set the values for the variables based on
+   what was read
+
+.jatg File Reading
+------------------
+ * When opening an image must look for and load <img_file>.jtag if it exists
+ * Need to parse that file to display selections made
+ * Must work to keep it correct during resize / scrolling
+
+Menu Completion
+---------------
+ * Need to create buttons and commands in the file menu to open a file.
+ * Need to create buttons and commands for the zoom menu (different presets)
+ * Need the ability to flip between pages (if multi-page tiff for ex.)
+ * Create a status bar giving info on # of pages, current page, selection mode
+
+Multiple page files
+-------------------
+ * this may be handled externally (ex via tiffsplit), and we will only load
+   multiple page files if they are named in a certain format (ex file1-1.tif, 
+   file1-2.tif)
+
+Selections
+----------
+ * Must implement dragging over a selection once complete to place it in a 
+   bucket
+ * Must keep a list of current selections, ability to modify arbitrary
+   elements inside the list, and the ability to write the list to a file
+   (.jtag) must be implemented.
+
+Function Call Hardening
+-----------------------
+ * Each call should be enclosed in a catch (except for trivial things).  The
+   receiver should display a debug message, and in the case of showstopping
+   errors (not safe to continue), throw an error of its own.  This repeats
+   all the way up the call chain until it is safe to stop, or the app
+   terminates
+ * same goes for library/internal calls.  Guard against unexpected errors with
+   catches
