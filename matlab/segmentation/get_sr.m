@@ -13,11 +13,14 @@ function s = get_sr(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: get_sr.m,v 1.1 2004-06-19 00:27:28 klaven Exp $
+% $Id: get_sr.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: get_sr.m,v $
-% Revision 1.1  2004-06-19 00:27:28  klaven
+% Revision 1.2  2004-07-01 16:45:50  klaven
+% Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
+%
+% Revision 1.1  2004/06/19 00:27:28  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.8  2004/04/22 16:51:03  klaven
@@ -81,23 +84,25 @@ top    = rect(2);
 right  = rect(3);
 bottom = rect(4);
 
-while left < right & isempty(find(pixels(top:bottom, left) ~= bg))
+while left <= right & isempty(find(pixels(top:bottom, left) ~= bg))
     left = left + 1;
 end
 
-while right > left & isempty(find(pixels(top:bottom, right) ~= bg))
+while right >= left & isempty(find(pixels(top:bottom, right) ~= bg))
     right = right - 1;
 end
 
-while top < bottom & isempty(find(pixels(top, left:right) ~= bg))
+while top <= bottom & isempty(find(pixels(top, left:right) ~= bg))
     top = top + 1;
 end
 
-while bottom > top & isempty(find(pixels(bottom, left:right) ~= bg))
+while bottom >= top & isempty(find(pixels(bottom, left:right) ~= bg))
     bottom = bottom - 1;
 end
 
-if left >= right | top >= bottom
+if left > right | top > bottom
+    fprintf('Empty rect at L=%i,R=%i,T=%i,B=%i', rect(1), rect(3), ...
+            rect(2),rect(4));
     warning('Empty rect passed.  Returning orig. subrectangle');
     s = rect;
     return;
@@ -112,7 +117,7 @@ b_done = false;
 
 while ~ (l_done & t_done & r_done & b_done)
 
-    if left >= right | top >= bottom
+    if left > right | top > bottom
         warning('Did not find sufficient ink.  Returning orig. subrectangle');
         s = rect;
         return;

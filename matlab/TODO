@@ -60,10 +60,16 @@ Figure out why the marks features are decreasing performance.
 
 <DONE>Fix up "snapping" errors in test and training data
 
+Check out OCR from http://rcat.utoronto.ca/
 
 Check out "NCA" for KNN (talk to Jacob)
 
 Implement HMM
+
+Read about CRF's (Conditional Random Fields)
+Implement CRF's
+
+Make changes requested by Sam for MS package
 
 <DONE> Get ready to send stuff to Microsoft
 

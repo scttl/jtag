@@ -1,7 +1,8 @@
-function s = create_training_data(file_list)
+function s = create_training_data(file_list, outfile)
 % CREATE_TRAINING_DATA    Builds up a struct containing all necessary training
 %                         data information, from the list of image files passed 
-%                         in.
+%                         in.  If outfile is given, saves the structure to
+%                         this file.
 %
 %   S = CREATE_TRAINING_DATA(FILE_LIST)  Attempts to build up a corpus of
 %   training data on the list of valid image files passed in FILE_LIST (one
@@ -33,11 +34,14 @@ function s = create_training_data(file_list)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.1 2004-06-19 00:27:26 klaven Exp $
+% $Id: create_training_data.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.1  2004-06-19 00:27:26  klaven
+% Revision 1.2  2004-07-01 16:45:50  klaven
+% Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
+%
+% Revision 1.1  2004/06/19 00:27:26  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.4  2004/06/08 00:56:49  klaven
@@ -121,6 +125,10 @@ for i = 1:length(file_list)
   s.pg{i}.features = feats;
 
 end
+
+if (nargin == 2);
+    dump_training_data(s,outfile);
+end;
 
 
 

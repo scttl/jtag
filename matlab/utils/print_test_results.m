@@ -1,6 +1,11 @@
 function rr = print_test_results(results,labels,fpath);
+%function rr = print_test_results(results,labels,fpath);
 
 fid = fopen(fpath,'w');
+
+if (size(results,2) > size(results,1));
+    results = results';
+end;
 
 for i=1:length(labels);
   fprintf(fid,',%s',labels{i});

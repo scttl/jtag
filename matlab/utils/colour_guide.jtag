@@ -1,0 +1,51 @@
+% FILE: /h/40/klaven/jtag/matlab/utils/colour_guide.jtag
+% DUMPED: Fri Jun 25 11:39:22 2004
+
+% IMAGE INFO:
+img = /h/40/klaven/jtag/matlab/utils/colour_guide.jpg
+type = jpeg
+resolution = 500x700
+cksum = 3199520892
+
+% CONFIGURATION INFO:
+ bucket_size = 50 50
+ learner_args = '/h/40/klaven/klaven/Journals/TRAINING_DATA/nips-2004-06-21.knn.data'
+ learner = knn_fn
+ window_pos = 0 0
+ mode = crop
+ snap_threshold = 0.001
+ canvas_size = 620 825
+ window_size = 900 900
+ config_style = global
+ classes = (
+    section_heading #B8006E
+    subsection_heading #940000
+    footer #0058DC
+    references #5C00B8
+    bullet_item #33FF00
+    table_label #1D9400
+    end_notes #FF0099
+    header #B80000
+    authour_list #FFE600
+    code_block #00FFB3
+    main_title #00B881
+    figure_label #00DC9A
+    image #B8A500
+    text #003B94
+    toc #4A0094
+    equation_no_number #DC0000
+    footnote #6E00DC
+    inline_heading #24B800
+    figure_caption #2CDC00
+    decoration #0066FF
+    abstract #FF0000
+    table #948500
+    graph #DC0084
+    eq_number #A37C90
+    editor_list #8000FF
+    table_caption #009467
+    equation_numbered #DCC600
+    pg_number #0049B8
+ )
+
+% CLASSIFICATION INFO:

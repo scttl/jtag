@@ -1,4 +1,4 @@
-function w = create_lr_weights(data, sigma, maxevals)
+function w = create_lr_weights(data, sigma, maxevals, outfile)
 % CREATE_LR_WEIGHTS    Builds up a struct containing coefficient weights for
 %                      use in a logistical regression classifier.
 %
@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: create_lr_weights.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-01 16:45:50  klaven
+% Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.6  2004/06/18 21:58:30  klaven
@@ -91,3 +94,8 @@ C = max(cc(:));
 
 w.loglikelihoods = llprogress;
 w.weights = reshape(weightmatrix(:),M+1,C);
+
+if (nargin == 4);
+    dump_lr_weights(w,outfile);
+end;
+

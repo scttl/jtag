@@ -1,7 +1,7 @@
 
-function [correct,total] = lr_test_file(filePath,tdPath);
+function [correct,total] = knn_test_file(filePath,tdPath);
 
-%function [correct,total] = lr_test_file(filePath,tdPath);
+%function [correct,total] = knn_test_file(filePath,tdPath);
 %
 %Tests a single .jtag file using K Nearest Neighbours, with the
 %training data stored in the file at tdPath.
@@ -29,7 +29,7 @@ for ii=1:size(jt.rects,1);
   total = total + 1;
   features = all_features(ii,:);
   predID = knn_fn(classes,features,tdPath);
-  if (strcmp(jt.class_name(jt.class_id(ii)), classes(predID)));
+  if (strcmp(jt.class_names(jt.class_id(ii)), classes(predID)));
     correct = correct + 1;
   end;
 end;

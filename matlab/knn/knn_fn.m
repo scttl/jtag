@@ -18,11 +18,14 @@ function class_id = knn_fn(class_names, features, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: knn_fn.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-01 16:45:50  klaven
+% Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.5  2004/04/22 16:51:03  klaven
@@ -101,109 +104,80 @@ for i = 1:size(data.class_names,2)
     end
 end
 
-% loop through each training data element, calculating the euclidian distance
-% and potentially adding it to the top k
-for i = 1:data.num_pages
-    for j = 1:size(data.pg{i}.features, 1)
+class_id = zeros(size(features,1),1);
+for ff = 1:size(features,1);
 
-        dist = sqrt(sum((data.pg{i}.features(j,:) - features).^2));
+    distances = [];
+    names = {};
+    max_dist = inf;
 
-        if dist < max_dist
-            % add this element to the top k in the appropriate position.
-            pos = 1;
-            while pos < k & pos <= num_elems & dist >= distances(pos)
-                pos = pos + 1;
+    % for each training data element, calculate the euclidian distance
+    % and potentially add it to the top k
+    for i = 1:data.num_pages
+        for j = 1:size(data.pg{i}.features, 1)
+
+            dist = sqrt(sum((data.pg{i}.features(j,:) - features(ff,:)).^2));
+
+            if dist < max_dist
+                % add this element to the top k in the appropriate position.
+                pos = 1;
+                while pos < k & pos <= num_elems & dist >= distances(pos)
+                    pos = pos + 1;
+                end
+
+                if (pos > num_elems & pos <= k) | pos == k
+                %add this item to the end of the list
+                    distances(pos) = dist;
+                    names{pos} = data.class_names{data.pg{i}.cid(j)};
+                    if pos == k
+                        max_dist = dist;
             end
-
-            if (pos > num_elems & pos <= k) | pos == k
-	        %add this item to the end of the list
-		%fprintf('Sticking element on end of list.\n');
-		%fprintf('Before: length(names)=%i,pos=%i,num_elems=%i,k=%i.\n',length(names),pos,num_elems,k);
-                distances(pos) = dist;
-                names{pos} = data.class_names{data.pg{i}.cid(j)};
-                if pos == k
-                    max_dist = dist;
-		end
-            elseif num_elems < k
-                % add the new element, and shift the rest down by 1
-		%fprintf('Inserting element into non-full list.\n');
-		%fprintf('Before: length(names)=%i,pos=%i,num_elems=%i,k=%i.\n',length(names),pos,num_elems,k);
-		names(pos+1:num_elems+1) = names(pos:num_elems);
-		names{pos} = data.class_names{data.pg{i}.cid(j)};
-		distances(pos+1:num_elems+1) = distances(pos:num_elems);
-		distances(pos) = dist;
-                %distances = [distances(1:pos-1), dist, distances(pos:end)];
-                %names = {names(1:pos-1), ...
-                %         data.class_names{data.pg{i}.cid(j)}, names(pos:end)};
-            else
-                % shift every element at pos down 1, to allow room for the new
-                % element (and remove the last element)
-		%fprintf('Inserting element into full list.\n');
-		%fprintf('Before: length(names)=%i,pos=%i,num_elems=%i,k=%i.\n',length(names),pos,num_elems,k);
-		%disp(names{pos+1:end});
-		names(pos+1:end) = names(pos:end-1);
-		names{pos} = data.class_names{data.pg{i}.cid(j)};
-		distances(pos+1:end) = distances(pos:end-1);
-		distances(pos) = dist;
-
-		%if (pos > 1)
-		%  dd2 = [distances(1:pos-1),dist];
-		%  nn2 = {names(1:pos-1),data.class_names{data.pg{i}.cid(j)}};
-		%else
-		%  dd2 = [dist];
-		%  nn2 = {data.class_names{data.pg{i}.cid(j)}};
-		%end
-		%distances = [dd2,distances(pos:end-1)];
-		%names = {nn2,names{pos:end-1}};
-
-                %distances = [distances(1:pos-1), dist, distances(pos:end-1)];
-                %names = {names(1:pos-1), ...
-                %         data.class_names{data.pg{i}.cid(j)}, names(pos:end-1)};
-                max_dist = distances(end);
+                elseif num_elems < k
+                    % add the new element, and shift the rest down by 1
+                    names(pos+1:num_elems+1) = names(pos:num_elems);
+                    names{pos} = data.class_names{data.pg{i}.cid(j)};
+                    distances(pos+1:num_elems+1) = distances(pos:num_elems);
+                    distances(pos) = dist;
+                else
+                    names(pos+1:end) = names(pos:end-1);
+                    names{pos} = data.class_names{data.pg{i}.cid(j)};
+                    distances(pos+1:end) = distances(pos:end-1);
+                    distances(pos) = dist;
+                    max_dist = distances(end);
+                end
+                num_elems = num_elems + 1;
             end
-	    num_elems = num_elems + 1;
-	    %fprintf('After: length(names)=%i,pos=%i,num_elems=%i,k=%i,names:\n',length(names),pos,num_elems,k);
-	    %disp(names);
-	    %fprintf('\n');
         end
-
-        % num_elems = num_elems + 1;
     end
-end
 
-% now determine the majority class_id (from our input list of class_names),
-% and output it
-max_count = 1;
-% added by Kevin:
-%disp('Displaying names on the next line');
-%disp(names);
 
-names = sort(names);
-curr_name = names{1};
-curr_count = 1;
-class_name = curr_name;
+    % now determine the majority class_id (from our input list of class_names),
+    % and output it
+    max_count = 1;
 
-for i = 2:length(names)
-    if strcmp(names{i}, curr_name)
-        curr_count = curr_count + 1;
-        if curr_count > max_count
-            max_count = curr_count;
-            class_name = curr_name;
+    names = sort(names);
+    curr_name = names{1};
+    curr_count = 1;
+    class_name = curr_name;
+
+    for i = 2:length(names)
+        if strcmp(names{i}, curr_name)
+            curr_count = curr_count + 1;
+            if curr_count > max_count
+                max_count = curr_count;
+                class_name = curr_name;
+            end
+        else
+            curr_name = names{i};
+            curr_count = 1;
         end
-    else
-        curr_name = names{i};
-        curr_count = 1;
     end
-end
 
-% find the class_id for our majority name
-for i = 1:length(class_names)
-    if strcmp(class_name, class_names{i})
-        class_id = i;
-        break;
+    % find the class_id for our majority name
+    for i = 1:length(class_names)
+        if strcmp(class_name, class_names{i})
+            class_id(ff) = i;
+            break;
+        end
     end
-end
-
-
-% SUBFUNCITON DECLARATIONS %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end;
