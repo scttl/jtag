@@ -5,11 +5,16 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.2 2003-07-07 18:51:09 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.3 2003-07-09 21:11:59 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.2  2003-07-07 18:51:09  scottl
+## Revision 1.3  2003-07-09 21:11:59  scottl
+## Renamed exported namespace variables Img Can and Scroll to be inline with
+## coding conventions for other namespace variables.
+## Implemented GetFormat proc to determine the image type if possible.
+##
+## Revision 1.2  2003/07/07 18:51:09  scottl
 ## Added ability to read in .jtag data via function call.
 ##
 ## Revision 1.1  2003/07/07 15:44:48  scottl
@@ -25,6 +30,7 @@
 package require Tk 8.3
 package require Img 1.3
 package require BLT 2.4
+package require cksum 1.0.1
 
 
 # NAMESPACE DECLARATION #
@@ -38,52 +44,58 @@ namespace eval ::Jtag::Image {
     # NAMESPACE VARIABLES #
     #######################
 
-    variable Can
-    variable Img
-    variable Scroll
+    variable can
+    variable img
+    variable scrl
     
     # the canvas upon which the image sits
-    set Can(created) 0
-    set Can(path) {}
-    set Can(attribs) {-borderwidth 3 -relief groove}
-    set Can(img_tag) {}
+    set can(created) 0
+    set can(path) {}
+    set can(attribs) {-borderwidth 3 -relief groove}
+    set can(img_tag) {}
 
     # the scroll region for the canvas
-    set Scroll(left) 0
-    set Scroll(top) 0
-    set Scroll(right) 0
-    set Scroll(bottom) 0
+    set scrl(left) 0
+    set scrl(top) 0
+    set scrl(right) 0
+    set scrl(bottom) 0
 
     # the x and y path
-    set Scroll(xpath) {}
-    set Scroll(ypath) {}
+    set scrl(xpath) {}
+    set scrl(ypath) {}
 
     # Have scrollbars been created yet?
-    set Scroll(created) 0
+    set scrl(created) 0
 
     # has a valid image been created yet?
-    set Img(created) 0
+    set img(created) 0
 
     # the name of the file
-    set Img(file_name) {}
+    set img(file_name) {}
 
     # its original and current resolution (in pixels)
-    set Img(actual_height) 0
-    set Img(actual_width) 0
-    set Img(height) 0
-    set Img(width) 0
+    set img(actual_height) 0
+    set img(actual_width) 0
+    set img(height) 0
+    set img(width) 0
 
     # its format (tiff, bmp etc.)
-    set Img(file_format) {}
+    set img(file_format) {}
 
     # original image reference (used when resizing)
-    set Img(orig_img) {}
+    set img(orig_img) {}
 
     # current image reference
-    set Img(img) {}
+    set img(img) {}
 
     # the current zoom factor
-    set Img(zoom) 1.
+    set img(zoom) 1.
+
+    # the checksum value for the image file
+    set img(cksum) {}
+
+    # the name of the associated jtag file for this image
+    set img(jtag_name) {}
 
 }
 
@@ -107,7 +119,7 @@ namespace eval ::Jtag::Image {
 proc ::Jtag::Image::create_image {file_name} {
 
     # link any namespace variables
-    variable Img
+    variable img
 
     # declare any local variables needed
     variable JtagFile
@@ -120,19 +132,24 @@ proc ::Jtag::Image::create_image {file_name} {
     # if the file is invalid (not found, not an image etc.) an error is
     # returned to the caller.
 
-    catch {image delete $Img(orig_img)}
+    catch {image delete $img(orig_img)}
 
-    set Img(orig_img) [image create photo -file $file_name]
+    set img(orig_img) [image create photo -file $file_name]
 
     # open, validation and creation all succeeded, set all attribs
-    set Img(file_name) $file_name
-    set Img(actual_height) [image height $Img(orig_img)]
-    set Img(actual_width) [image width $Img(orig_img)]
-    set Img(height) $Img(actual_height)
-    set Img(width) $Img(actual_width)
-    set Img(file_format) [$Img(orig_img) cget -format]
-    set Img(zoom) 1.0
-    set Img(created) 1
+    set img(file_name) $file_name
+    set img(actual_height) [image height $img(orig_img)]
+    set img(actual_width) [image width $img(orig_img)]
+    set img(height) $img(actual_height)
+    set img(width) $img(actual_width)
+    set img(zoom) 1.0
+    set img(created) 1
+    set img(cksum) [::crc::cksum -file $file_name]
+
+    set img(file_format) [::Jtag::Image::GetFormat $file_name]
+    if {$img(file_format) == 0} {
+        set img(file_format) {}
+    }
 
     # check and see if a valid jtag file exists for this image
     set JtagFile [string range $file_name 0 [string last "." $file_name]]
@@ -141,11 +158,11 @@ proc ::Jtag::Image::create_image {file_name} {
         # file
         set JtagFile $file_name.
     }
-    set JtagFile $JtagFile$JtagExtn
+    set img(jtag_name) $JtagFile$JtagExtn
 
     # open and read the selection data into the data variable
-    if {[catch {::Jtag::Config::read_data $JtagFile} Response]} {
-        debug "Failed to read contents of $JtagFile.  Reason:\n$Response"
+    if {[catch {::Jtag::Config::read_data $img(jtag_name)} Response]} {
+        debug "Failed to read contents of $img(jtag_name).  Reason:\n$Response"
     }
 
 }
@@ -163,13 +180,13 @@ proc ::Jtag::Image::create_image {file_name} {
 proc ::Jtag::Image::exists {} {
 
     # link any namespace variables
-    variable Img
+    variable img
 
     # declare any local variables needed
 
     debug {entering ::Jtag::Image::exists}
 
-    return $Img(created)
+    return $img(created)
 
 }
 
@@ -190,17 +207,17 @@ proc ::Jtag::Image::exists {} {
 proc ::Jtag::Image::get_current_dimensions {} {
 
     # link any namespace variables
-    variable Img
+    variable img
 
     # declare any local variables needed
 
     debug {entering ::Jtag::Image::get_current_dimensions}
 
-    if {! $Img(created)} {
-        error {Can't get dimensions of a non-existent image}
+    if {! $img(created)} {
+        error {can't get dimensions of a non-existent image}
     }
 
-    return [list $Img(width) $Img(height)]
+    return [list $img(width) $img(height)]
 
 }
 
@@ -219,17 +236,17 @@ proc ::Jtag::Image::get_current_dimensions {} {
 proc ::Jtag::Image::get_actual_dimensions {} {
 
     # link any namespace variables
-    variable Img
+    variable img
 
     # declare any local variables needed
 
     debug {entering ::Jtag::Image::get_actual_dimensions}
 
-    if {! $Img(created} {
-        error {Can't get dimensions of a non-existent image}
+    if {! $img(created)} {
+        error {can't get dimensions of a non-existent image}
     }
 
-    return [list $Img(actual_width) $Img(actual_height)]
+    return [list $img(actual_width) $img(actual_height)]
 
 }
 
@@ -257,8 +274,8 @@ proc ::Jtag::Image::get_actual_dimensions {} {
 proc ::Jtag::Image::create_canvas {w width height {args {}}} {
 
     # link any namespace variables
-    variable Img
-    variable Can
+    variable img
+    variable can
 
     # declare any local variables needed
     variable Name {c}
@@ -266,26 +283,28 @@ proc ::Jtag::Image::create_canvas {w width height {args {}}} {
     debug {entering ::Jtag::Image::create_canvas}
 
     # do some sanity checking on the height and width passed
-    #@@ to do 
+    if {$height <= 0 || $width <= 0} {
+        error "Non-positive height or width specified for canvas size"
+    }
 
     # create the canvas
-    set Can(path) $w.$Name
-    eval canvas $Can(path) -width $width -height $height $Can(attribs) $args
+    set can(path) $w.$Name
+    eval canvas $can(path) -width $width -height $height $can(attribs) $args
 
     # see if there is an image to add to the canvas
-    if {$Img(created)} {
-        set Can(img_tag) [$Can(path) create image 0 0 -image $Img(img) \
+    if {$img(created)} {
+        set can(img_tag) [$can(path) create image 0 0 -image $img(img) \
                           -anchor nw]
     } else {
-        # create a dummy image for now??@@
-        set Can(img_tag) [$Can(path) create image 0 0 -image {} -anchor nw]
+        # create a dummy image for now
+        set can(img_tag) [$can(path) create image 0 0 -image {} -anchor nw]
     }
 
     # make this namespace aware that a canvas has been created
-    set Can(created) 1
+    set can(created) 1
 
     # return the path of the canvas to the caller
-    return $Can(path)
+    return $can(path)
     
 }
 
@@ -308,8 +327,8 @@ proc ::Jtag::Image::create_canvas {w width height {args {}}} {
 proc ::Jtag::Image::add_scrollbars {region} {
 
     # link any namespace variables
-    variable Can
-    variable Scroll
+    variable can
+    variable scrl
 
     # declare any local variables needed
     variable PrePath
@@ -317,42 +336,42 @@ proc ::Jtag::Image::add_scrollbars {region} {
     debug {entering ::Jtag::Image::add_scrollbars}
 
     # first ensure that a canvas widget exists
-    if {! $Can(created)} {
+    if {! $can(created)} {
         error {No canvas to add scrollbars to}
     }
 
     # now ensure that region passed is a list of exactly 4 integer variables
     if {[llength $region] != 4} {
-        error {Scrollbar region argument must be a list containing 4 integers}
+        error {scrlbar region argument must be a list containing 4 integers}
     }
 
-    set Scroll(left)   [lindex $region 0]
-    set Scroll(top)    [lindex $region 1]
-    set Scroll(right)  [lindex $region 2]
-    set Scroll(bottom) [lindex $region 3]
+    set scrl(left)   [lindex $region 0]
+    set scrl(top)    [lindex $region 1]
+    set scrl(right)  [lindex $region 2]
+    set scrl(bottom) [lindex $region 3]
 
     # the path to the scrollbars is the same as that to the canvas widget, 
     # minus the canvas widgets name, plus the addition of cs_x or cs_y 
     # depending on which scrollbar we are dealing with
-    set PrePath [string range $Can(path) 0 [string last "." $Can(path)]]
-    set Scroll(xpath) [join "$PrePath cs_x" {}]
-    set Scroll(ypath) [join "$PrePath cs_y" {}]
+    set PrePath [string range $can(path) 0 [string last "." $can(path)]]
+    set scrl(xpath) [join "$PrePath cs_x" {}]
+    set scrl(ypath) [join "$PrePath cs_y" {}]
 
     # update the canvas to prepare it for the scrollbars
-    $Can(path) configure -xscrollcommand [list $Scroll(xpath) set] \
-                         -yscrollcommand [list $Scroll(ypath) set] \
+    $can(path) configure -xscrollcommand [list $scrl(xpath) set] \
+                         -yscrollcommand [list $scrl(ypath) set] \
                          -confine 1 -scrollregion $region
 
     # create the horizontal and vertical scrollbars
-    scrollbar $Scroll(xpath) -orient horizontal \
-              -command [list $Can(path) xview]
-    scrollbar $Scroll(ypath) -orient vertical \
-              -command [list $Can(path) yview]
+    scrollbar $scrl(xpath) -orient horizontal \
+              -command [list $can(path) xview]
+    scrollbar $scrl(ypath) -orient vertical \
+              -command [list $can(path) yview]
 
-    set Scroll(created) 1
+    set scrl(created) 1
 
     # return the scrollbars created as a list
-    return [list $Scroll(xpath) $Scroll(ypath)]
+    return [list $scrl(xpath) $scrl(ypath)]
 
 }
 
@@ -368,19 +387,19 @@ proc ::Jtag::Image::add_scrollbars {region} {
 #
 # Results:
 #    If no previous image exists, or the factor specified is 0.0, an error is 
-#    thrown, otherwise sets Img(img) to contain a reference to the newly 
-#    scaled image, and updates Img(height) and Img(width) to reflect 
+#    thrown, otherwise sets img(img) to contain a reference to the newly 
+#    scaled image, and updates img(height) and img(width) to reflect 
 #    the new image resolution.  actual_height and actual_width remain unchanged.
 
 proc ::Jtag::Image::resize {{factor 1.}} {
 
     # link any namespace variables
-    variable Can
-    variable Img
-    variable Scroll
+    variable can
+    variable img
+    variable scrl
 
     # declare any local variables needed
-    variable OldZoom $Img(zoom)
+    variable OldZoom $img(zoom)
     variable ShrinkZoom
     variable NextItem {}
 
@@ -390,65 +409,65 @@ proc ::Jtag::Image::resize {{factor 1.}} {
     # keyboard bindings with busy (from the BLT package)
     ::blt::busy hold .
 
-    if {! $Img(created) } {
+    if {! $img(created) } {
         error {Trying to resize a non-existent image}
     }
 
     # set the new zoom factor 
-    set Img(zoom) [expr {$Img(zoom) * $factor}]
+    set img(zoom) [expr {$img(zoom) * $factor}]
 
     # delete the previous image (if one exists)
-    if {$Img(img) != ""} {
-        if {$Can(created)} {
+    if {$img(img) != ""} {
+        if {$can(created)} {
             # first see if we can locate an item above the image
-            set NextItem [$Can(path) find above $Can(img_tag)]
-            $Can(path) delete $Img(img)
+            set NextItem [$can(path) find above $can(img_tag)]
+            $can(path) delete $img(img)
         }
-        image delete $Img(img)
+        image delete $img(img)
     }
 
     # create the new image
-    set Img(img) [image create photo -format $Img(file_format)]
+    set img(img) [image create photo -format $img(file_format)]
 
     # resize and copy the original one to the new
-    if {$Img(zoom) == 0.} {
-        set $Img(zoom) $OldZoom
+    if {$img(zoom) == 0.} {
+        set $img(zoom) $OldZoom
         error {Trying to resize to infinity}
-    } elseif {$Img(zoom) >= 1.} {
+    } elseif {$img(zoom) >= 1.} {
         # zoom in to magnify image
-        set ShrinkZoom [expr int($Img(zoom))]
-        set Img(zoom) $ShrinkZoom
-        debug "magnifying original image by a factor of $Img(zoom)"
-        $Img(img) copy $Img(orig_img) -zoom $ShrinkZoom $ShrinkZoom
+        set ShrinkZoom [expr int($img(zoom))]
+        set img(zoom) $ShrinkZoom
+        debug "magnifying original image by a factor of $img(zoom)"
+        $img(img) copy $img(orig_img) -zoom $ShrinkZoom $ShrinkZoom
     } else {
         # zoom out to shrink image
-        set ShrinkZoom [expr round(1./$Img(zoom))]
-        set Img(zoom) [expr 1. / $ShrinkZoom]
-        debug "shrinking original image by a factor of $Img(zoom)"
-        $Img(img) copy $Img(orig_img) -subsample $ShrinkZoom $ShrinkZoom
+        set ShrinkZoom [expr round(1./$img(zoom))]
+        set img(zoom) [expr 1. / $ShrinkZoom]
+        debug "shrinking original image by a factor of $img(zoom)"
+        $img(img) copy $img(orig_img) -subsample $ShrinkZoom $ShrinkZoom
     }
 
     # set the new image attributes
-    set Img(height) [image height $Img(img)]
-    set Img(width) [image width $Img(img)]
-    if {$Can(created)} {
-        set Can(img_tag) [$Can(path) create image 0 0 -image $Img(img) \
+    set img(height) [image height $img(img)]
+    set img(width) [image width $img(img)]
+    if {$can(created)} {
+        set can(img_tag) [$can(path) create image 0 0 -image $img(img) \
                           -anchor nw]
         # scale the canvas (and everything on it) to fit the new image
         # first restore the original scale
-        $Can(path) scale all 0 0 [expr 1.0 / $OldZoom] [expr 1.0 / $OldZoom]
+        $can(path) scale all 0 0 [expr 1.0 / $OldZoom] [expr 1.0 / $OldZoom]
         # now rescale to the new image size
-        $Can(path) scale all 0 0 $Img(zoom) $Img(zoom)
+        $can(path) scale all 0 0 $img(zoom) $img(zoom)
         # put the image as low on the canvas as possible
         if {$NextItem != ""} {
-            $Can(path) lower $Can(img_tag) $NextItem
+            $can(path) lower $can(img_tag) $NextItem
         }
-        if {$Scroll(created)} {
+        if {$scrl(created)} {
             # reset the scroll region to that of the new image
-            set Scroll(right) [expr $Img(width) - $Scroll(left)]
-            set Scroll(bottom) [expr $Img(height) - $Scroll(top)]
-            $Can(path) configure -scrollregion [list $Scroll(left) \
-                       $Scroll(top) $Scroll(right) $Scroll(bottom)]
+            set scrl(right) [expr $img(width) - $scrl(left)]
+            set scrl(bottom) [expr $img(height) - $scrl(top)]
+            $can(path) configure -scrollregion [list $scrl(left) \
+                       $scrl(top) $scrl(right) $scrl(bottom)]
         }
     }
 
@@ -460,3 +479,87 @@ proc ::Jtag::Image::resize {{factor 1.}} {
 
 # PRIVATE PROCEDURES #
 ######################
+
+
+# ::Jtag::Image::GetFormat --
+#
+#    Attempts to determine the format of a valid image passed in by file name.
+#
+# Arguments:
+#    file_name    The name of the file pointing to the image to identify.
+#
+# Results:
+#    Returns a string giving the image format if it could be found, otherwise
+#    returns 0.
+
+proc ::Jtag::Image::GetFormat {file_name} {
+
+    # link the appdir global variable
+    global appdir
+
+    # declare any local variables necessary
+    variable IdentPath $appdir/bin/identify
+    variable IdentArg1 {-format}
+    variable IdentArg2 {"%m"}
+    variable DotPos
+    variable Extn
+
+    # check to see if the 'identify' program exists in the appropriate dir.
+    if {[file executable $IdentPath]} {
+        # use the tool to determine the image type
+        set Result [exec $IdentPath $IdentArg1 $IdentArg2 $file_name]
+
+        switch -regexp -- $Result {
+            TIFF|TIF {
+                return "tiff"
+            }
+            BMP {
+                return "bmp"
+            }
+            JPEG|JPG {
+                return "jpeg"
+            }
+            PNG {
+                return "png"
+            }
+            GIF|GIF87 {
+                return "gif"
+            }
+            XBM {
+                return "xbm"
+            }
+
+        }
+    }
+
+    # attempt to get the format from the filename extension
+    set DotPos [string last "." $file_name]
+    if {$DotPos != -1} {
+        set Extn [string range $file_name [expr $DotPos + 1] end]
+
+        switch -regexp -- $Extn {
+            (t|T)(i|I)(f|F){1,2} {
+                return "tiff"
+            }
+            (b|B)(m|M)(p|P) {
+                return "bmp"
+            }
+            (j|J)(p|P)(g|G) {
+                return "jpeg"
+            }
+            (p|P)(n|N)(g|G) {
+                return "png"
+            }
+            (g|G)(i|I)(f|F) {
+                return "gif"
+            }
+            (x|X)(b|B)(m|M) {
+                return "xbm"
+            }
+        }
+    }
+
+    # can't determine image format
+    return 0
+
+}
