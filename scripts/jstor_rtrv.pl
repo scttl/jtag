@@ -3,7 +3,7 @@
 ##
 ## FILE: jstor_rtrv.pl
 ##
-## CVS: $Id: jstor_rtrv.pl,v 1.3 2003-06-05 15:56:45 scottl Exp $
+## CVS: $Id: jstor_rtrv.pl,v 1.4 2003-06-05 16:48:09 scottl Exp $
 ##
 ## DESCRIPTION: Perl script to parse a list of Stable URL's taken from
 ##              STDIN  and download the appropriate format of article.
@@ -176,7 +176,7 @@ sub process_url {
     } else {
 
         # failed to find the filename in the link
-        print "Download link didn't list a proper filename\n";
+        print "Download link: " . $link . " didn't list a proper filename\n";
         undef $req;
         return 0;
 
