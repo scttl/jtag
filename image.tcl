@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.9 2003-07-21 21:33:43 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.10 2003-07-28 19:56:19 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.9  2003-07-21 21:33:43  scottl
+## Revision 1.10  2003-07-28 19:56:19  scottl
+## Implemented jlog reading/writing functionality.
+##
+## Revision 1.9  2003/07/21 21:33:43  scottl
 ## Implemented multi-page handling even when loading a middle-page first.
 ##
 ## Revision 1.8  2003/07/18 17:56:36  scottl
@@ -124,6 +127,9 @@ namespace eval ::Jtag::Image {
     # the name of the associated jtag file for this image
     set img(jtag_name) {}
 
+    # the name of the associated jlog file for this image
+    set img(jlog_name) {}
+
 }
 
 
@@ -151,11 +157,12 @@ proc ::Jtag::Image::create_image {file_name} {
     # link any namespace variables
     variable img
     variable can
+    variable ::Jtag::Config::jtag_ext
+    variable ::Jtag::Config::jlog_ext
 
     # declare any local variables needed
     variable FileBase {}
     variable DotPos
-    variable JtagExtn {jtag}
     variable Response
     variable ScaleW
     variable ScaleH
@@ -194,7 +201,7 @@ proc ::Jtag::Image::create_image {file_name} {
     # see if we are dealing with the first page of a multi-page image
     set DotPos [string last "." $file_name]
     if {$DotPos == -1} {
-        set FileBase $file_name.
+        set FileBase $file_name
         set img(multi_page) 0
     } else {
         set FileBase [string range $file_name 0 [expr $DotPos - 1]]
@@ -215,7 +222,6 @@ proc ::Jtag::Image::create_image {file_name} {
                           %c] - 96]
             set img(curr_page) [expr (26 * ($A1 - 1)) + $A2]
         }
-        set FileBase $FileBase.
     }
 
     # scale and add the image to the canvas
@@ -227,11 +233,13 @@ proc ::Jtag::Image::create_image {file_name} {
     ::Jtag::Classify::bind_selection $can(path)
 
     # check and see if a valid jtag file exists for this image
-    set img(jtag_name) ${FileBase}$JtagExtn
+    set img(jtag_name) ${FileBase}$jtag_ext
+    set img(jlog_name) ${FileBase}$jlog_ext
 
     # open and read the selection (and poss. config) data into the 'data' var
-    if {[catch {::Jtag::Config::read_data $img(jtag_name)} Response]} {
-        debug "Failed to read contents of $img(jtag_name).  Reason:\n$Response"
+    if {[catch {::Jtag::Config::read_data $img(jtag_name) $img(jlog_name)} \
+        Response]} {
+        debug "Failed to read contents of jtag/jlog file.  Reason:\n$Response"
     }
 }
 
