@@ -5,11 +5,16 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.12 2003-07-23 20:12:07 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.13 2003-07-28 19:55:19 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.12  2003-07-23 20:12:07  scottl
+## Revision 1.13  2003-07-28 19:55:19  scottl
+## - Cleaned up timers.
+## - Implemented jlog functionality.
+## - Added snapped parameter to data structure.
+##
+## Revision 1.12  2003/07/23 20:12:07  scottl
 ## rounded co-ords to remove sligt decimal numbers that sometimes occured.
 ##
 ## Revision 1.11  2003/07/21 21:35:18  scottl
@@ -104,6 +109,7 @@ namespace eval ::Jtag::Classify {
     set sel(y1) {}
     set sel(x2) {}
     set sel(y2) {}
+    set sel(snapped) 0
     set sel(start_timer) 0.
     set sel(sl_time) 0.
     set sel(cl_time) 0.
@@ -137,8 +143,8 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
 
     # link any namespace variables needed
     variable ::Jtag::Config::data
-    variable lBuckets
-    variable rBuckets
+    variable lBuckets {}
+    variable rBuckets {}
     variable f_attribs
     variable b_attribs
 
@@ -159,6 +165,8 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     debug {entering ::Jtag::Classify::create_buckets}
 
     # create the left and right frames
+    catch {destroy $wl.left}
+    catch {destroy $wl.right}
     set LF [eval frame $wl.left $f_attribs]
     set RF [eval frame $wr.right $f_attribs]
 
@@ -299,6 +307,7 @@ proc ::Jtag::Classify::unbind_selection {} {
 #    x2      The actual image resolution normalized right edge selection pixel
 #    y2      The actual image resolution normalized bottom edge selection pixel
 #    mode    The selection mode used (crop or simple)
+#    snapped 1 if the image rectangle was created by snapping, 0 otherwise
 #    id      (optional) The full path to the selection rectangle if one has
 #            already been created.  Specify "" to create a new one
 #    sl_time (optional) The total time in seconds to create the rectangle
@@ -311,8 +320,8 @@ proc ::Jtag::Classify::unbind_selection {} {
 #    Adds the data passed to the 'data' array, creating a new rectangle
 #    selection if neccessary.  
 
-proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
-                            {cl_time ""} {attmpts ""}} {
+proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode snapped {id ""} \
+                            {sl_time ""} {cl_time ""} {attmpts ""}} {
 
     # link any namespace variables needed
     variable ::Jtag::Config::data
@@ -325,7 +334,7 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
     # create rectangle if neccessary
     if {$id == ""} {
         # since co-ords are in actual image size, we must multiply them by 
-        # the current zoom factor to create corect sized rectangle
+        # the current zoom factor to create correct sized rectangle
         set id [$c create rectangle [expr $img(zoom) * $x1] \
                            [expr $img(zoom) * $y1] [expr $img(zoom) * $x2] \
                            [expr $img(zoom) * $y2]]
@@ -351,7 +360,7 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
     # update the data array
     set data($class,$data($class,num_sels)) [list $id [expr round($x1)] \
                   [expr round($y1)] [expr round($x2)] [expr round($y2)] \
-                  $mode $sl_time $cl_time $attmpts]
+                  $mode $snapped $sl_time $cl_time $attmpts]
     incr data($class,num_sels)
 
 }
@@ -837,6 +846,7 @@ proc ::Jtag::Classify::SelStart {c x y m} {
 
     # set flag to declare that we are modifying our selection rectangle
     set sel(modifying) 1
+    set sel(snapped) 0
     set sel(pos) ""
     # record current time (in seconds) to determine selection time
     set sel(start_timer) [clock clicks -milliseconds]
@@ -873,6 +883,7 @@ proc ::Jtag::Classify::ResizeStart {c r pos} {
     set sel(x2) [lindex $Coords 2]
     set sel(y2) [lindex $Coords 3]
     set sel(pos) $pos
+    set sel(snapped) 0
     # set flag to declare that we are modifying our selection rectangle
     set sel(modifying) 1
     # record current time (in seconds) to determine selection time
@@ -968,9 +979,8 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
     variable Coords
 
     # stop the clock timer and adjust to seconds
-    set sel(sl_time) [expr ($sel(sl_time) + \
-                     [expr [clock click -milliseconds] - $sel(start_timer)]) \
-                      / 1000.]
+    set sel(sl_time) [expr $sel(sl_time) + (([clock clicks -milliseconds] \
+                      - $sel(start_timer)) / 1000.)]
 
     # first ensure that the selection area is larger than a minimum threshold
     # only check in the y direction since we may using "simple" mode
@@ -993,6 +1003,7 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
 
         # snap our selection
         ::Jtag::Classify::snap_selection $sel(id)
+        set sel(snapped) 1
 
         # update our sel(x1) ... sel(y2) co-ords to the now snapped co-ords
         set Coords [$c coords $sel(id)]
@@ -1011,6 +1022,8 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
        # update the data array to give the new dimensions of the rectangle
        set Class [string range $ResizeRef 0 [expr \
                                     [string last "," $ResizeRef] -1]]
+       set sel(start_timer) [clock clicks -milliseconds]
+       set sel(cl_time) 0 ;# don't add any additional time to classification
        ::Jtag::Classify::AddToClass $c $Class $data($Class,colour)
     }
 
@@ -1076,10 +1089,18 @@ proc ::Jtag::Classify::PackageSel {c t} {
 proc ::Jtag::Classify::AddToBucket {c b} {
 
     # link any namespace variables
+    variable sel
 
     # declare any local variables
     variable Class [string range $b [expr 1 + [string last "." $b]] \
                    [string length $b]]
+
+    # check if we are reclassifying or doing the initial classification
+    if {[::Jtag::Classify::get_selection $sel(id)] != ""} {
+        # reclassification, set sl_time to 0 (to ensure we don't add any
+        # additional time)
+        set sel(sl_time) 0.
+    }
 
     # let the AddToClass helper do all the work
     ::Jtag::Classify::AddToClass $c $Class [$b cget -foreground]
@@ -1120,8 +1141,8 @@ proc ::Jtag::Classify::AddToClass {c class colour} {
     variable Attmpt 0
 
     # stop the classification timer, and adjust to seconds
-    set sel(cl_time) [expr ($sel(cl_time) + [expr [clock clicks -milliseconds] \
-                      - $sel(start_timer)]) / 1000.]
+    set sel(cl_time) [expr $sel(cl_time) + (([clock clicks -milliseconds] \
+                      - $sel(start_timer)) / 1000.)]
 
     # ensure that the button belongs to a valid class
     if {$class == ""} {
@@ -1135,9 +1156,9 @@ proc ::Jtag::Classify::AddToClass {c class colour} {
     set  ReclassRef [::Jtag::Classify::get_selection $sel(id)]
     if {$ReclassRef != ""} {
         # reclassification attempt
-        set SelTime [lindex $data($ReclassRef) 6]
-        set ClsTime [lindex $data($ReclassRef) 7]
-        set Attmpt  [lindex $data($ReclassRef) 8]
+        set SelTime [lindex $data($ReclassRef) 7]
+        set ClsTime [lindex $data($ReclassRef) 8]
+        set Attmpt  [lindex $data($ReclassRef) 9]
 
         # remove the original's 'data' entry
         ::Jtag::Classify::remove $ReclassRef
@@ -1146,16 +1167,20 @@ proc ::Jtag::Classify::AddToClass {c class colour} {
     # update metrics
     set SelTime [expr $SelTime + $sel(sl_time)]
     set ClsTime [expr $ClsTime + $sel(cl_time)]
-    set Attmpt [expr $Attmpt + 1]
+    if {$sel(cl_time) != 0.} {
+        # only increment Attmpt, if we have actually changed the class
+        # (instead of manually resizing the same classified selection)
+        incr Attmpt
+    }
 
     # highlight the selection in the classes colour
     $c itemconfigure $sel(id) -outline $colour
 
     # now update the data structure to reflect our new classification
     ::Jtag::Classify::add $c $class [expr $sel(x1) / $img(zoom)] \
-               [expr $sel(y1) / $img(zoom)] [expr $sel(x2) / $img(zoom)] \
-               [expr $sel(y2) / $img(zoom)] $cnfg(mode) $sel(id) \
-               $SelTime $ClsTime $Attmpt
+              [expr $sel(y1) / $img(zoom)] [expr $sel(x2) / $img(zoom)] \
+              [expr $sel(y2) / $img(zoom)] $cnfg(mode) $sel(snapped) $sel(id) \
+              $SelTime $ClsTime $Attmpt
 
     # uncomment the following line to dump the data array contents (for
     # debugging purposes)
