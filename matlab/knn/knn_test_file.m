@@ -18,12 +18,10 @@ classes = ss.class_names;
 
 jt = parse_jtag(filePath);
 
-pixels = imread(jt.img_file);
-
 correct = 0;
 total = 0;
 
-all_features = run_all_features(jt.rects,pixels);
+all_features = run_all_features(jt.rects,jt.img_file);
 
 for ii=1:size(jt.rects,1);
   total = total + 1;

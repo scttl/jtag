@@ -1,7 +1,8 @@
-function class_id = knn_fn(class_names, features, in_data, varargin)
+function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 % KNN_FN    Implements the k-nearest neighbour classification algorithm.
 %
-%   CLASS_ID = KNN_FN(CLASS_NAMES, FEATURES, IN_DATA, {K})  This function runs
+%   CLASS_ID = KNN_FN(CLASS_NAMES, FEATURES, JTAG_FILE, IN_DATA, {K})  
+%   This function runs
 %   an implementation of the k-nearest neighbours algorithm using the training
 %   DATA, CLASS_NAMES,  and FEATURES passed.  DATA should either be a string
 %   specifying the path to a valid  ASCII training data file, or it can be
@@ -18,11 +19,14 @@ function class_id = knn_fn(class_names, features, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
+% $Id: knn_fn.m,v 1.3 2004-07-27 21:59:36 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.2  2004-07-01 16:45:50  klaven
+% Revision 1.3  2004-07-27 21:59:36  klaven
+% changed knn_fn so that it accepts the jtag file (or path to it).  This will allow us to extract features based on the file name (such as which page number it is).
+%
+% Revision 1.2  2004/07/01 16:45:50  klaven
 % Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -68,9 +72,9 @@ persistent data;  % so we don't have to recalculate data after each call
 
 
 % first do some sanity checking on the arguments passed
-error(nargchk(3,4,nargin));
+error(nargchk(4,5,nargin));
 
-if nargin == 4
+if nargin == 5
     k = varargin{1};
 end
 %fprintf('Value of K is %i\n',k);
@@ -81,6 +85,12 @@ if ischar(in_data) & isempty(data)
 elseif isempty(data)
     data = in_data;
 end
+
+if (ischar(jtag_file) || iscell(jtag_file));
+    jt_path = jtag_file;
+else;
+    jt_path = jtag_file.jtag_file;
+end;
 
 if ~isfield(data, 'num_pages') | data.num_pages <= 0 | ~isfield(data, 'pg') ...
     | size(features,2) ~= size(data.pg{1}.features,2)
