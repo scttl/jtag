@@ -6,11 +6,16 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.4 2003-07-15 16:40:44 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.5 2003-07-16 16:51:05 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.4  2003-07-15 16:40:44  scottl
+## Revision 1.5  2003-07-16 16:51:05  scottl
+## Removed colour element from writeout of each selection.  Also implemented
+## ability to read config information from a jtag file, and have it override any
+## information already read (from config files).
+##
+## Revision 1.4  2003/07/15 16:40:44  scottl
 ## Removed a couple of temporary statements that should not have been in place.
 ##
 ## Revision 1.3  2003/07/14 15:11:53  scottl
@@ -135,15 +140,10 @@ proc ::Jtag::Config::read_config {} {
 
     # link any namespace variables needed
     variable config_file
-    variable class_name
-    variable cnfg
-    variable data
 
     # declare any local variables needed
     variable ConfigPath ""
     variable Result
-    variable ElemList
-    variable Name
 
     # get access to tcl internal global variables
     global appdir
@@ -173,35 +173,7 @@ proc ::Jtag::Config::read_config {} {
     # The contents of the file are returned in a big list (Result), each 
     # element of which is also a list representing a setting name element
     # followed by one or more value elements.
-    foreach ElemList $Result {
-        set Name [string tolower [lindex $ElemList 0]]
-
-        if {$Name == $class_name} {
-            # classifiers are handled differently in that their information is
-            # stored in the 'data' array instead of the 'cnfg' array
-
-            # elements of the list after the name should be in pairs, the
-            # first element gives the classifier name and the second its
-            # colour.
-
-            # ensure that there are an even number of elements for pairing
-            if {! [llength [lrange $ElemList 1 end]] %2} {
-                debug "Found classifier with no colour pair specified"
-                debug "Loading ard-coded classifier defaults instead"
-                return
-            }
-
-            # add the new classifier and colour to the list
-            for {set I 1} {$I < [llength $ElemList]} {incr I 2} {
-                set data([lindex $ElemList $I],colour) \
-                                           [lindex $ElemList [expr $I + 1]]
-                set data([lindex $ElemList $I],num_sels) 0
-            }
-
-        } else {
-            set cnfg($Name) [lrange $ElemList 1 end]
-        }
-    }
+    ::Jtag::Config::ResetCnfg $Result
 }
 
 
@@ -271,14 +243,32 @@ proc ::Jtag::Config::read_data {jtag_file} {
        error "$jtag_file specifies data for a different or non-existent image"
     }
 
-    # ensure that the total number of elements returned is a multiple of 4
-    # the first 4 fields are headers (like cksum etc.) and then each multiple
-    # of 4 after that specifies a complete selection
-    if {[llength $Result] % 4 } {
+    # trim the first 4 elements from result (header data) since it has already
+    # served its purpose in verifying the image
+    set Result [lrange $Result 4 end]
+
+    # any items from here until the first $btpre(class) are config elements
+    set I 0
+    while {[lindex [lindex $Result $I] 0] != $btpre(class) &&
+           $I < [llength $Result]} {
+        incr I
+    }
+
+    if {$I > 0 && $I <= [llength $Result]} {
+        # reset our config data
+        ::Jtag::Config::ResetCnfg [lrange $Result 0 [expr $I - 1]]
+        #@@ to do -- update the buckets to reflect array changes
+        #::Jtag::Classify::create_buckets {} {}
+        set Result [lrange $Result $I end]
+    }
+
+    # ensure that the total number of elements remaining is a multiple of 3
+    # since each specifies a complete selection
+    if {[llength $Result] % 3 } {
         error "$jtag_file has an incorrect number of fields"
     }
 
-    for {set I 4} {$I < [llength $Result]} {incr I 4} {
+    for {set I 0} {$I < [llength $Result]} {incr I 3} {
         set ElemList [lindex $Result $I]
         if {[llength $ElemList] != 2 || \
             [lindex $ElemList 0] != $btpre(class)} {
@@ -310,16 +300,6 @@ proc ::Jtag::Config::read_data {jtag_file} {
             error "Corrupt data in file $jtag_file at line:\n$ElemList"
         } else {
             set Mode [lindex $ElemList 1]
-        }
-
-        set ElemList [lindex $Result [expr $I + 3]]
-
-        if {[llength $ElemList] != 2 || \
-            [lindex $ElemList 0] != $btpre(colour)} {
-            error "Corrupt data in file $jtag_file at line:\n$ElemList"
-        } elseif {$data($Class,colour) != [lindex $ElemList 1]} {
-            debug \
-               "Overwriting selection colour since it doesn't match classifier"
         }
 
         # since everything was found ok, add the selection
@@ -390,7 +370,7 @@ proc ::Jtag::Config::write_data {} {
     # now add commented out version of the config data used
     set ConfigHeader {CONFIGURATION INFO:}
     lappend DList ${CommentPre}$ConfigHeader
-    set DList [concat $DList [::Jtag::Config::DumpConfig $CommentPre]]
+    set DList [concat $DList [::Jtag::Config::DumpConfig]]
     lappend DList ""
 
     # now add the selection data
@@ -400,12 +380,10 @@ proc ::Jtag::Config::write_data {} {
         regexp {(.*)(,)([0-9]+)} $I M Class Comma Num
         set Pos [join [lrange $data($I) 1 4] " "]
         set Mode [lindex $data($I) 5]
-        set Colour $data($Class,colour)
         lappend DList $separator \
                       "${btpre(class)} = $Class" \
                       "${btpre(pos)} = $Pos" \
-                      "${btpre(mode)} = $Mode" \
-                      "${btpre(colour)} = $Colour"
+                      "${btpre(mode)} = $Mode"
     }
 
     # now send the data off to the file for writing (catching any errors)
@@ -463,4 +441,75 @@ proc ::Jtag::Config::DumpConfig {{pre ""}} {
     }
     return $List
 
+}
+
+
+# ::Jtag::Config::ResetCnfg --
+#
+#    Updates the cnfg array setting the name and value pairs passed.  If the
+#    special element $class_name is found, the data array is also set to its
+#    values as appropriate.
+#
+# Arguments:
+#    l    The list containing elements each of which is a list.  These lists
+#         represent single config items.  Each config item's first element
+#         will be its name (which matches that of the cnfg array element
+#         name), followed by one or more values (stored as a list).  The
+#         exception is if the name of the config item corresponds to
+#         $class_name.  In this case we are dealing with a list of
+#         classifiers, and these will be used to created the 'data' array.
+#
+# Results:
+#    The cnfg array is reset so that its only elements & values are those that
+#    are passed in by l.  All previous elements and values are lost.  If
+#    $class_name is one of the elements in l, then the data array is reset to
+#    contain classifiers specified by the values in the $class_name element.
+
+proc ::Jtag::Config::ResetCnfg {l} {
+
+    # link any namespace variables needed
+    variable class_name
+    variable cnfg
+    variable data
+
+    # declare any local variables necessary
+    variable ElemList {}
+    variable Name {}
+
+    # reset the cnfg array
+    array unset cnfg
+
+    foreach ElemList $l {
+        set Name [string tolower [lindex $ElemList 0]]
+
+        if {$Name == $class_name} {
+            # classifiers are handled differently in that their information is
+            # stored in the 'data' array instead of the 'cnfg' array
+
+            # elements of the list after the name should be in pairs, the
+            # first element gives the classifier name and the second its
+            # colour.
+
+            # ensure that there are an even number of elements for pairing
+            if {! [llength [lrange $ElemList 1 end]] %2} {
+                debug "Found classifier with no colour pair specified"
+                debug "Loading hard-coded classifier defaults instead"
+                return
+            }
+
+            # reset the array to destroy any existing classifier data
+            array unset data
+
+            # add the new classifier and colour to the list
+            for {set I 1} {$I < [llength $ElemList]} {incr I 2} {
+                set data([lindex $ElemList $I],colour) \
+                                           [lindex $ElemList [expr $I + 1]]
+                set data([lindex $ElemList $I],num_sels) 0
+            }
+
+        } else {
+            # regular cnfg variable, set its values
+            set cnfg($Name) [lrange $ElemList 1 end]
+        }
+    }
 }
