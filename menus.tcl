@@ -5,11 +5,16 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.3 2003-07-18 18:01:36 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.4 2003-07-28 21:37:56 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.3  2003-07-18 18:01:36  scottl
+## Revision 1.4  2003-07-28 21:37:56  scottl
+## - Fully implemented delete command.
+## - Added save to the file menu
+## - Added pg movement entries to the edit menu
+##
+## Revision 1.3  2003/07/18 18:01:36  scottl
 ## - Fixed bug in OpenCmd where 'data' array elements not being removed properly
 ## - Implemented multiple page previous and next buttons.
 ##
@@ -75,7 +80,7 @@ namespace eval ::Jtag::Menus {
 
     # the default filetypes to show in the open dialog
     variable types { {{jtag image formats} \
-                      {.tif .tiff .jpg .jpeg .png .gif} \
+                      {.tif .tiff .jpg .jpeg .bmp .png .gif} \
                      } }
      
 
@@ -147,6 +152,7 @@ proc ::Jtag::Menus::create {w} {
     ::Jtag::Menus::ZoomMenu $zoom(m)
 
     # create the help menu and its commands
+    ::Jtag::Menus::HelpMenu $help(m)
 
     # return the path of the frame back to the caller
     return $f(path)
@@ -208,9 +214,21 @@ proc ::Jtag::Menus::multi_page_functions {on} {
 
         pack $edit(next_btn) $edit(prev_btn) -side left
 
+        # add the next and prev pg commands to the edit menu too
+        $edit(m) add command -label "Next Page" -accelerator "<Pg-down>" \
+                             -command {::Jtag::Image::go_to_pg  \
+                             [expr $::Jtag::Image::img(curr_page) + 1]}
+        $edit(m) add command -label "Prev Page" -accelerator "<Pg-up>" \
+                             -command {::Jtag::Image::go_to_pg  \
+                             [expr $::Jtag::Image::img(curr_page) - 1]}
+
     } else {
         destroy $edit(next_btn)
         destroy $edit(prev_btn)
+
+        # remove them from the edit menu if they exist
+        $edit(m) delete "Next Page"
+        $edit(m) delete "Prev Page"
     }
 }
 
@@ -246,14 +264,17 @@ proc ::Jtag::Menus::FileMenu {path} {
     # now add its commands
     $M add command -label "Open" -accelerator "<Ctrl-o>" -command \
                               {::Jtag::Menus::OpenCmd}
+    $M add command -label "Save" -accelerator "<Ctrl-s>" -command \
+                              {::Jtag::Config::write_data}
     $M add command -label "Quit" -accelerator "<Ctrl-q>" -command \
                               {::Jtag::Menus::QuitCmd}
 
     # now set any global bindings (these work even outside of this widget so
     # care must be taken to ensure the bindings don't overwrite other widget
     # bindings
-    bind . <Control-q> {::Jtag::Menus::QuitCmd}
     bind . <Control-o> {::Jtag::Menus::OpenCmd}
+    bind . <Control-s> {::Jtag::Config::write_data}
+    bind . <Control-q> {::Jtag::Menus::QuitCmd}
 
 }
 
@@ -287,10 +308,6 @@ proc ::Jtag::Menus::EditMenu {path} {
                                {::Jtag::Menus::DeleteCmd}
 
     bind . <Control-x> {::Jtag::Menus::DeleteCmd}
-
-    # next page (if multi-page)
-
-    # previous page (if multi-page)
 
 }
 
@@ -331,6 +348,41 @@ proc ::Jtag::Menus::ZoomMenu {path} {
     # bindings
     bind . + "$zoom(in_btn) invoke"
     bind . - "$zoom(out_btn) invoke"
+
+}
+
+
+# ::Jtag::Menus::HelpMenu --
+#
+#    Private helper to create the Help menu and bind appropriate commands to 
+#    its items.
+#
+# Arguments:
+#    path    The full Tk widget heirarchy path where this widget will be
+#            created within.
+#
+# Results:
+#    An error is returned if there is a problem at any point during menu
+#    creation or binding, otherwise nothing is returned.
+
+proc ::Jtag::Menus::HelpMenu {path} {
+
+    # link any namespace variables needed
+    variable help
+
+    # declare any local variables needed
+    # the menu reference
+    variable M
+
+    # create the menu
+    set M [menu $path]
+
+    # now add its commands
+    $M add command -label "About" -command {tk_dialog .dialog "About JTAG" \
+                                   "JTAG - A journal image tagger\n \
+                                   AUTHOR:  Scott Leishman\n \
+                                   DATE: summer 2003" \
+                                   "" 0 "Ok"}
 
 }
 
@@ -418,7 +470,10 @@ proc ::Jtag::Menus::OpenCmd {} {
 #
 # Results:
 #    If the mouse is over a rectangle, then it is removed and the 'data' array
-#    is updated.  Otherwise nothing happens
+#    is updated.  Otherwise, the mouse changes into a crosshair until the user
+#    clicks with the left mouse button.  If they are over a rectangle when
+#    they do click, the rectangle is deleted.  If they click elsewhere, the
+#    cursor changes back and nothing else happens.
 
 proc ::Jtag::Menus::DeleteCmd {} {
 
@@ -428,6 +483,8 @@ proc ::Jtag::Menus::DeleteCmd {} {
     # declare any local variables needed
     variable Rect
     variable SelRef
+    variable OldBtnBind
+    variable OldMtnBind
 
     if {! $can(created)} {
         return
@@ -435,6 +492,23 @@ proc ::Jtag::Menus::DeleteCmd {} {
 
     set Rect [$can(path) find withtag current]
     if {$Rect == "" || $Rect == $can(img_tag)} {
+        # change the cursor and wait for the user to click with the mouse
+        $can(path) configure -cursor crosshair
+        ::Jtag::Classify::unbind_selection
+        bind $can(path) <ButtonPress-1> {
+            set Rect [$::Jtag::Image::can(path) find withtag current]
+            if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
+                # delete the rectangle we are currently over
+                set SelRef [::Jtag::Classify::get_selection $Rect]
+                $::Jtag::Image::can(path) delete $Rect
+                if {$SelRef != ""} {
+                    ::Jtag::Classify::remove $SelRef
+                }
+            }
+            # restore the old settings
+            ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
+            $::Jtag::Image::can(path) configure -cursor left_ptr
+        }
         return
     }
 
