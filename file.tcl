@@ -4,11 +4,14 @@
 ##
 ## DESCRIPTION: Responsible for all things file related within the application
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/file.tcl,v 1.3 2003-07-10 21:04:51 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/file.tcl,v 1.4 2003-07-31 19:17:09 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: file.tcl,v $
-## Revision 1.3  2003-07-10 21:04:51  scottl
+## Revision 1.4  2003-07-31 19:17:09  scottl
+## Changed comment prefix to a % symbol.
+##
+## Revision 1.3  2003/07/10 21:04:51  scottl
 ## Removed hard coded magic from separator string (now accessed from config file)
 ##
 ## Revision 1.2  2003/07/10 16:22:06  scottl
@@ -83,7 +86,7 @@ proc ::Jtag::File::parse {fileToRead} {
     # loop over each line, one at a time
     while {! [eof $FID]} {
         set Line [string trimleft [gets $FID]]
-        set CommentPos [string first "#" $Line]
+        set CommentPos [string first "%" $Line]
         if {$CommentPos != -1} {
             set Line [string range $Line 0 [expr $CommentPos -1]]
         }
