@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.5 2004-09-15 14:58:30 klaven Exp $
+% $Id: xycut.m,v 1.6 2004-10-06 20:12:16 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.5  2004-09-15 14:58:30  klaven
+% Revision 1.6  2004-10-06 20:12:16  klaven
+% Fixed a minor bug in xycut that occasionally added a region to the list incorrectly.
+%
+% Revision 1.5  2004/09/15 14:58:30  klaven
 % *** empty log message ***
 %
 % Revision 1.4  2004/08/16 22:34:34  klaven
@@ -69,24 +72,30 @@ function m = xycut(img_file, varargin)
 
 % default horizontal threshold (if not passed above)
 %ht = 40;  % prefered ht for single-column layout
-ht = 40;  % optimized ht for jmlr
+%ht = 40;  % optimized ht for jmlr
 % ht = 20;  %prefered ht for double-column layout
-%ht = 45; %optimized ht for nips
+ht = 45; %optimized ht for nips
 
 %vt = 18;  % default vertical threshold (if not passed above)
-vt = 16; % optimized vt for jmlr
-%ht = 14; % optimized vt for nips
+%vt = 16; % optimized vt for jmlr
+vt = 16; % optimized vt for nips
 
 
 %wst = 0.009;  % minimum percent ink in whitespace to count as valley
-wst = 0;
+wst = 0.0000001;
 
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,3,nargin));
 
-if iscell(img_file) | ~ ischar(img_file) | size(img_file,1) ~= 1
-    error('IMG_FILE must contain a single string.');
-end
+if (ischar(img_file));
+    p = imread(img_file);
+else;
+    p = img_file;
+end;
+
+%if iscell(img_file) | ~ ischar(img_file) | size(img_file,1) ~= 1
+%    error('IMG_FILE must contain a single string.');
+%end
 
 if nargin >= 2
     ht = varargin{1};
@@ -96,7 +105,7 @@ if nargin >= 2
 end
 
 % attempt open the file and read in its pixel data
-p = imread(img_file);
+%p = imread(img_file);
 
 % determine the initial page bounding box co-ords
 %x1 = 1;
@@ -145,7 +154,7 @@ if vrunlength > vt & vrunlength >= hrunlength
     if (rect_comes_before(newseg2, newseg1));
         res = ...
          [segment(p,newseg2(1),newseg2(2),newseg2(3),newseg2(4),ht,vt,wst); ...
-          segment(p,newseg1(1),newseg1(1),newseg1(3),newseg1(4),ht,vt,wst)];
+          segment(p,newseg1(1),newseg1(2),newseg1(3),newseg1(4),ht,vt,wst)];
     else;
         res = ...
          [segment(p,newseg1(1),newseg1(2),newseg1(3),newseg1(4),ht,vt,wst); ...
@@ -165,7 +174,7 @@ elseif hrunlength > ht & hrunlength >= vrunlength
     if (rect_comes_before(newseg2, newseg1));
         res = ...
          [segment(p,newseg2(1),newseg2(2),newseg2(3),newseg2(4),ht,vt,wst); ...
-          segment(p,newseg1(1),newseg1(1),newseg1(3),newseg1(4),ht,vt,wst)];
+          segment(p,newseg1(1),newseg1(2),newseg1(3),newseg1(4),ht,vt,wst)];
     else;
         res = ...
          [segment(p,newseg1(1),newseg1(2),newseg1(3),newseg1(4),ht,vt,wst); ...
