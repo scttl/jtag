@@ -2,7 +2,7 @@ function s = parse_jtag(file)
 % PARSE_JTAG    Reads the contents of the jtag file passed into a structure
 %               array.
 %
-%   S = PARSE_JTAG(FILE)  Attempts to validate and open FILE passed, reading its 
+%   S = PARSE_JTAG(FILE)  Attempts to validate and open FILE passed, reading its
 %   header and selection information into fields of structure S as follows:
 %
 %     s.jtag_file  -> the full path and name to the .jtag file used to create s
@@ -18,8 +18,8 @@ function s = parse_jtag(file)
 %     s.mode       -> n x 1 matrix listing 'simple' if the rectangle was
 %                     selected in simple mode or 'crop' if selected in crop mode
 %     s.snapped    -> n x 1 matrix listing a 1 if the rectangle was created by
-%                     snapping its bounding box to ink, or a 0 if it was manually
-%                     sized by the user
+%                     snapping its bounding box to ink, or a 0 if it was 
+%                     manually sized by the user
 %
 %   If there is a problem at any point during file parsing or structure
 %   creation, an appropriate error is returned to the caller.
@@ -27,11 +27,14 @@ function s = parse_jtag(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jtag.m,v 1.3 2003-07-29 21:01:06 scottl Exp $
+% $Id: parse_jtag.m,v 1.4 2003-08-12 22:21:13 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jtag.m,v $
-% Revision 1.3  2003-07-29 21:01:06  scottl
+% Revision 1.4  2003-08-12 22:21:13  scottl
+% Made error handling more robust, changed comment char to percent symbol.
+%
+% Revision 1.3  2003/07/29 21:01:06  scottl
 % Added snapped and mode fields to structure created.
 %
 % Revision 1.2  2003/07/24 19:12:49  scottl
@@ -89,10 +92,26 @@ s.mode       = [];
 s.snapped    = [];
 while ~ feof(fid)
 
-    class_line = parse_line(fgetl(fid));
-    pos_line = parse_line(fgetl(fid));
-    mode_line = parse_line(fgetl(fid));
-    snapped_line = parse_line(fgetl(fid));
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    class_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    pos_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    mode_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    snapped_line = line;
 
     class_name = deblank(class_line(2,:));
     data = str2num([pos_line(2:5,:)]);
@@ -120,7 +139,17 @@ while ~ feof(fid)
     s.rects(size(s.rects,1) + 1, :) = data;
 
     % next line must be a separator (if more lines exist)
-    fgetl(fid);
+    if ~ feof(fid)
+        line = parse_line(fgetl(fid));
+    else
+        break;
+    end
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    if ~ strcmp(deblank(line(1,:)), separator)
+        error('separator not found between selections');
+    end
 
 end
 
@@ -150,7 +179,7 @@ else
 end
 
 % strip all characters after (and including) the comment char
-commentpos = regexp(in, '#', 'once');
+commentpos = regexp(in, '%', 'once');
 if ~ isempty(commentpos)
     if commentpos > 1
        in = ddeblank(in(1 : commentpos - 1));
