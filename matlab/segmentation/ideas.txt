@@ -48,5 +48,17 @@ IDEAS FOR SEGMENTATION
 
 7. Learn To Merge Algorithm:
 -Same as learn the cuts, but learns the merges instead.
+-This could be slow, given that many pages have over 2,500 marks...
+
+
+8. RLSA as a pre-processing step:
+-Group lines together via the Run Length Smoothing Algorithm.
+-This should reduce the number of marks, allowing for faster implementations
+ of a merging algorithm.
+
+
+9. XYCUT as a pre-processing step:
+-Run a version of XYCUT that severely over-segments
+-Then run a merging algorithm
 
 

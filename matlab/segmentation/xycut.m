@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.3 2004-07-27 22:04:34 klaven Exp $
+% $Id: xycut.m,v 1.4 2004-08-16 22:34:34 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.3  2004-07-27 22:04:34  klaven
+% Revision 1.4  2004-08-16 22:34:34  klaven
+% New best_cuts algorithm core complete, and an implementation for xycuts.  The best_cuts implementation of xycuts produces identical results to xycuts.m.
+%
+% Revision 1.3  2004/07/27 22:04:34  klaven
 % First run at code to find the optimal parameters for the xycut algorithm
 %
 % Revision 1.2  2004/06/28 16:22:39  klaven
@@ -63,13 +66,17 @@ function m = xycut(img_file, varargin)
 
 % default horizontal threshold (if not passed above)
 %ht = 40;  % prefered ht for single-column layout
-ht = 60;  % optimized ht for jmlr
+ht = 80;  % optimized ht for jmlr
 % ht = 20;  %prefered ht for double-column layout
+%ht = 65; %optimized ht for nips
 
-vt = 18;  % default vertical threshold (if not passed above)
-vt = 26; % optimized vt for jmlr
-wst = 0.009;  % minimum percent ink in whitespace to count as valley
+%vt = 18;  % default vertical threshold (if not passed above)
+vt = 24; % optimized vt for jmlr
+%ht = 22; % optimized vt for nips
 
+
+%wst = 0.009;  % minimum percent ink in whitespace to count as valley
+wst = 0;
 
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,3,nargin));
@@ -89,10 +96,16 @@ end
 p = imread(img_file);
 
 % determine the initial page bounding box co-ords
-x1 = 1;
-y1 = 1;
-x2 = size(p,2);
-y2 = size(p,1);
+%x1 = 1;
+%y1 = 1;
+%x2 = size(p,2);
+%y2 = size(p,1);
+start_seg = [1 1 size(p,2) size(p,1)];
+start_seg = seg_snap(p,start_seg,wst);
+x1 = start_seg(1);
+y1 = start_seg(2);
+x2 = start_seg(3);
+y2 = start_seg(4);
 
 % recursively segment the bounding box to create the list of segments
 m = segment(p, x1, y1, x2, y2, ht, vt, wst);
@@ -104,6 +117,8 @@ m = segment(p, x1, y1, x2, y2, ht, vt, wst);
 function res = segment(p, x1, y1, x2, y2, ht, vt, wst)
 % SEGMENT  Recursive subfunction that segments the rectangle passed into
 %          smaller pieces using the XY cut algorithm.
+
+oldseg = [x1 y1 x2 y2];
 
 % start by determining the sum of all non-background pixels in the horizontal
 % and vertical directions within the co-ord box passed -- note we must use 1-
@@ -120,154 +135,142 @@ if vrunlength > vt & vrunlength >= hrunlength
     vrunstart = vrunpos - floor(vrunlength / 2);
     vrunend = vrunpos + floor(vrunlength / 2);
     % make a horizontal cut along the vertical midpoint
-    res = [segment(p, x1, y1, x2, (y1 + vrunpos), ht, vt, wst); ...
-           segment(p, x1, (y1 + vrunpos), x2, y2, ht, vt, wst)];
+    newseg1 = [x1 y1 x2 (y1 + vrunpos)];
+    newseg1 = seg_snap(p,newseg1,wst);
+    newseg2 = [x1 (y1 + vrunpos) x2 y2];
+    newseg2 = seg_snap(p,newseg2,wst);
+    if (rect_comes_before(newseg2, newseg1));
+        res = ...
+         [segment(p,newseg2(1),newseg2(2),newseg2(3),newseg2(4),ht,vt,wst); ...
+          segment(p,newseg1(1),newseg1(1),newseg1(3),newseg1(4),ht,vt,wst)];
+    else;
+        res = ...
+         [segment(p,newseg1(1),newseg1(2),newseg1(3),newseg1(4),ht,vt,wst); ...
+          segment(p,newseg2(1),newseg2(2),newseg2(3),newseg2(4),ht,vt,wst)];
+    end;
+    %res = [segment(p, x1, y1, x2, (y1 + vrunpos), ht, vt, wst); ...
+    %       segment(p, x1, (y1 + vrunpos), x2, y2, ht, vt, wst)];
 
 elseif hrunlength > ht & hrunlength >= vrunlength
     hrunstart = hrunpos - floor(hrunlength / 2);
     hrunend = hrunpos + floor(hrunlength / 2);
     % make a vertical cut along the horizontal midpoint
-    res = [segment(p, x1, y1, (x1 + hrunpos), y2, ht, vt, wst); ...
-           segment(p, (x1 + hrunpos), y1, x2, y2, ht, vt, wst)];
+    newseg1 = [x1 y1 (x1 + hrunpos) y2];
+    newseg1 = seg_snap(p,newseg1,wst);
+    newseg2 = [(x1 + hrunpos) y1 x2 y2];
+    newseg2 = seg_snap(p,newseg2,wst);
+    if (rect_comes_before(newseg2, newseg1));
+        res = ...
+         [segment(p,newseg2(1),newseg2(2),newseg2(3),newseg2(4),ht,vt,wst); ...
+          segment(p,newseg1(1),newseg1(1),newseg1(3),newseg1(4),ht,vt,wst)];
+    else;
+        res = ...
+         [segment(p,newseg1(1),newseg1(2),newseg1(3),newseg1(4),ht,vt,wst); ...
+          segment(p,newseg2(1),newseg2(2),newseg2(3),newseg2(4),ht,vt,wst)];
+    end;
+    %res = [segment(p, x1, y1, (x1 + hrunpos), y2, ht, vt, wst); ...
+    %       segment(p, (x1 + hrunpos), y1, x2, y2, ht, vt, wst)];
 else
     % non-recursive case, don't split anything
-    [x1,y1,x2,y2] = snap(p,x1, y1, x2, y2,wst);
-    res = [x1,y1,x2,y2];
+    res = seg_snap(p,oldseg,wst);
+    %[x1,y1,x2,y2] = snap(p,x1, y1, x2, y2,wst);
+    %res = [x1,y1,x2,y2];
 end
 
 
-function [left,top,right,bottom] = snap(pixels, x1, y1, x2, y2, wst)
-% loop over the 4 sides, trimming our current bounding box until we have met
-% our ink thresholds
-
-bg = 1;           % default value for background pixels
-
-left=x1; top = y1; right=x2; bottom=y2;
-
-l_done = false;
-t_done = false;
-r_done = false;
-b_done = false;
-
-l_markstart = left;
-t_markstart = top;
-r_markstart = right;
-b_markstart = bottom;
-
-
-while ~ (l_done & t_done & r_done & b_done)
-
-    if left >= right | top >= bottom
-        warning('Did not find sufficient ink.  Returning orig. subrectangle');
-        return;
-    end
-
-    if ~ l_done
-        %count = 0;
-        %for i = top:bottom
-        %    if pixels(i, left) ~= bg
-        %        count = count + 1;
-        %    end
-        %end
-	count = sum(sum(bg - pixels(top:bottom,left)));
-	if (count == 0)
-	    l_markstart = left;
-	    left = left + 1;
-	else
-	    count = sum(sum((bg - pixels(top:bottom,l_markstart:left))>0));
-            if count > (wst * (bottom - top + 1))
-	        left = l_markstart;
-                l_done = true;
-            else
-                left = left + 1;
-            end
-	end
-    end
-
-    if ~ t_done
-        %count = 0;
-        %for i = left:right
-        %    if pixels(top,i) ~= bg
-        %        count = count + 1;
-        %    end
-        %end
-	count = sum(sum(bg - pixels(top,left:right)));
-	if (count == 0)
-	    t_markstart = top;
-	    top = top + 1;
-	else
-	    count = sum(sum((bg - pixels(t_markstart:top,left:right))>0));
-            if count > (wst * (right - left + 1))
-	        top = t_markstart;
-                t_done = true;
-            else
-                top = top + 1;
-            end
-	end
-    end
-
-    if ~ r_done
-        %count = 0;
-        %for i = top:bottom
-        %    if pixels(i, right) ~= bg
-        %        count = count + 1;
-        %    end
-        %end
-        %if count > (wst * (bottom - top + 1))
-        %    r_done = true;
-        %else
-        %    right = right - 1;
-        %end
-	count = sum(sum(bg - pixels(top:bottom,right)));
-	if (count == 0)
-	    r_markstart = right;
-	    right = right - 1;
-	else
-	    count = sum(sum((bg - pixels(top:bottom,right:r_markstart))>0));
-            if count > (wst * (bottom - top + 1))
-	        right = r_markstart;
-                r_done = true;
-            else
-                right = right - 1;
-            end
-	end
-    end
-
-    if ~ b_done
-        %count = 0;
-        %for i = left:right
-        %    if pixels(bottom, i) ~= bg
-        %        count = count + 1;
-        %    end
-        %end
-        %if count > (wst * (right - left + 1))
-        %    b_done = true;
-        %else
-        %    bottom = bottom - 1;
-        %end
-
-	count = sum(sum((bg - pixels(bottom,left:right))>0));
-
-	if (count == 0)
-	    b_markstart = bottom;
-	    bottom = bottom - 1;
-	    %fprintf('no area count, bottom = %i, b_markstart = %i ',bottom, b_markstart);
-	else
-	    %fprintf('Bottom count = %i, ', count);
-	    count = sum(sum((bg - pixels(bottom:b_markstart,left:right))>0));
-	    %fprintf('area count = %i, bottom = %i, b_markstart = %i, ',count, bottom, b_markstart);
-	    if count > (wst * (right - left + 1))
-	        %fprintf('done.\n');
-	        bottom = b_markstart;
-                b_done = true;
-            else
-	        %fprintf('not done.\n');
-                bottom = bottom - 1;
-            end
-	end
-    end
-
-end  %end while loop
+%function [left,top,right,bottom] = snap(pixels, x1, y1, x2, y2, wst)
+%% loop over the 4 sides, trimming our current bounding box until we have met
+%% our ink thresholds
+%
+%bg = 1;           % default value for background pixels
+%
+%left=x1; top = y1; right=x2; bottom=y2;
+%
+%l_done = false;
+%t_done = false;
+%r_done = false;
+%b_done = false;
+%
+%l_markstart = left;
+%t_markstart = top;
+%r_markstart = right;
+%b_markstart = bottom;
+%
+%
+%while ~ (l_done & t_done & r_done & b_done)
+%
+%    if left >= right | top >= bottom
+%        warning('Did not find sufficient ink.  Returning orig. subrectangle');
+%        return;
+%    end
+%
+%    if ~ l_done
+%        count = sum(sum(bg - pixels(top:bottom,left)));
+%        if (count == 0)
+%            l_markstart = left;
+%            left = left + 1;
+%        else
+%            count = sum(sum((bg - pixels(top:bottom,l_markstart:left))>0));
+%            if count > (wst * (bottom - top + 1))
+%                left = l_markstart;
+%                l_done = true;
+%            else
+%                left = left + 1;
+%            end
+%        end
+%    end
+%
+%    if ~ t_done
+%        count = sum(sum(bg - pixels(top,left:right)));
+%        if (count == 0)
+%            t_markstart = top;
+%            top = top + 1;
+%        else
+%            count = sum(sum((bg - pixels(t_markstart:top,left:right))>0));
+%            if count > (wst * (right - left + 1))
+%                top = t_markstart;
+%                t_done = true;
+%            else
+%                top = top + 1;
+%            end
+%        end
+%    end
+%
+%    if ~ r_done
+%        count = sum(sum(bg - pixels(top:bottom,right)));
+%        if (count == 0)
+%            r_markstart = right;
+%            right = right - 1;
+%        else
+%            count = sum(sum((bg - pixels(top:bottom,right:r_markstart))>0));
+%            if count > (wst * (bottom - top + 1))
+%                right = r_markstart;
+%                r_done = true;
+%            else
+%                right = right - 1;
+%            end
+%        end
+%    end
+%
+%    if ~ b_done
+%
+%        count = sum(sum((bg - pixels(bottom,left:right))>0));
+%
+%        if (count == 0)
+%            b_markstart = bottom;
+%            bottom = bottom - 1;
+%        else
+%            count = sum(sum((bg - pixels(bottom:b_markstart,left:right))>0));
+%            if count > (wst * (right - left + 1))
+%                bottom = b_markstart;
+%                b_done = true;
+%            else
+%                bottom = bottom - 1;
+%            end
+%        end
+%    end
+%
+%end  %end while loop
 
 
 
