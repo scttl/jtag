@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.11 2003-08-25 17:43:39 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.12 2003-09-03 20:23:13 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.11  2003-08-25 17:43:39  scottl
+## Revision 1.12  2003-09-03 20:23:13  scottl
+## bugfix to ensure that warnings etc. are not displayed (preventing an image
+## from correctly being loaded).
+##
+## Revision 1.11  2003/08/25 17:43:39  scottl
 ## Added a status bar to display status messages during certain actions.
 ##
 ## Revision 1.10  2003/07/28 19:56:19  scottl
@@ -702,13 +706,14 @@ proc ::Jtag::Image::GetFormat {file_name} {
     variable IdentPath $appdir/bin/identify
     variable IdentArg1 {-format}
     variable IdentArg2 {"%m"}
+    variable IdentArg3 {2>/dev/null}
     variable DotPos
     variable Extn
 
     # check to see if the 'identify' program exists in the appropriate dir.
     if {[file executable $IdentPath]} {
         # use the tool to determine the image type
-        set Result [exec $IdentPath $IdentArg1 $IdentArg2 $file_name]
+        set Result [exec $IdentPath $IdentArg1 $IdentArg2 $IdentArg3 $file_name]
 
         switch -regexp -- $Result {
             TIFF|TIF {
