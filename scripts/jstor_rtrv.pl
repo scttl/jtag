@@ -3,7 +3,7 @@
 ##
 ## FILE: jstor_rtrv.pl
 ##
-## CVS: $Id: jstor_rtrv.pl,v 1.5 2003-06-06 18:08:19 scottl Exp $
+## CVS: $Id: jstor_rtrv.pl,v 1.6 2003-06-11 16:45:52 scottl Exp $
 ##
 ## DESCRIPTION: Perl script to parse a list of Stable URL's taken from
 ##              STDIN  and download the appropriate format of article.
@@ -91,11 +91,15 @@ START: while (<STDIN>) {
 
     $url_count += 1;
 
+    print LOG localtime() . " - Attempting to process: " . $_;
+
     # acquire and process each one
     chomp $_;
-    if(! process_url($rua, $rresp, $_)) {
+    if(! process_url($rua, $rresp, $_, $url_count)) {
         $fail_count += 1; 
         print LOG "Failed to Process URL: " . $_ . "\n";
+    } else {
+        print LOG ".... Success!\n";
     }
 
 
@@ -131,12 +135,16 @@ sub process_url {
     my $rua = shift;
     my $rresp = shift;
     my $url = shift;
+    my $count = shift;
 
     # declcare any local variables needed
     my $req;       # the HTTP::Request object used to access pages
     my $html;      # the HTML content returned by the URL
     my $link = ""; # the string representation of the link to follow to dl.
     my $file = ""; # the name of the file to save
+
+    # sleep for a random period (max 60seconds) before making the request
+    sleep(rand(60));
 
     # attempt to get the URL passed
     $req = new HTTP::Request('GET', $url);
@@ -170,18 +178,24 @@ sub process_url {
     }
 
     # extract the filename from the link based on what is in $format
-    if($link =~ $link_regex) {
-        $_ = $link;
-        #s/$link_regex/$3/;  #@@ NOTE: $3 should be changed as $link_regex change
-        $file = $out_dir . "/" . $3 . $4;
-    } else {
+    #if($link =~ $link_regex) {
+    #    $_ = $link;
+        #s/$link_regex/$3/; #@@ NOTE: $3 should be changed as $link_regex change
+    #    $file = $out_dir . "/" . $3 . $4;
+    #} else {
 
         # failed to find the filename in the link
-        print LOG "Download link: " . $link. " didn't list a proper filename\n";
-        undef $req;
-        return 0;
+    #    print LOG "Download link: " . $link. " didn't list a proper filename\n";
+    #    undef $req;
+    #    return 0;
 
-    }
+    #}
+
+    # since filenames repeat, we now just use the counter to create the file
+    $file = $out_dir . "/" . $count . "." . $format;
+
+    # sleep for a random period (max 60seconds) before making the request
+    sleep(rand(60));
 
     # attempt to download the document by GET'ting the download link
     $req = new HTTP::Request('GET', $link);
@@ -200,6 +214,8 @@ sub process_url {
     open(OUT, "> $file") or die "can't open file $file: $!";
     print OUT $$rresp->content();
     close(OUT);
+
+    print LOG "    " . $file . " written OK\n";
 
     return 1;
 
