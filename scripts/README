@@ -1,0 +1,153 @@
+##################################################################################
+## FILE: README
+##
+## CVS: $Id: README,v 1.1 2003-09-15 17:38:00 scottl Exp $
+##
+## DESCRIPTION: Text file describing this directory structure, its contents,
+##              useage, and other notes.
+##
+## ARGUMENTS:
+##
+## REQUIRES:
+##
+################################################################################
+
+
+1. Directory Contents
+---------------------
+
+This directory contains all the helper scripts used outside of the JTAG
+application to aid in things like downloading journal articles, converting
+image files, installing the JTAG application and updating jtag and jlog files.
+
+
+2. File Contents
+----------------
+
+README            - This file
+extract_stable.pl - This script iterates over each file in a specified
+                    directory looking for stable html links to the JSTOR
+                    journal archive site.  Any links found are converted and
+                    printed to stdout, for the user to collect and pass into
+                    jstor_rtrv.pl
+install_jtag.sh   - This script is used to install the JTAG application and
+                    any of its dependent software (Tcl/Tk etc.).  This should
+                    be called by the user first, before they begin running the
+                    JTAG application.
+jmlr_rtrv.sh      - This script is used to find and retrieve *all* articles
+                    available from the JMLR website (www.jmlr.org) (currently
+                    there are about 130 on their site).  If articles already 
+                    exist in the specified directory, an article is retrieved 
+                    only if it is newer than any existing copy of the same name.
+jstor_rtrv.pl     - This script is used to download articles from the JSTOR
+                    website (www.jstor.org) given an input list of stable URL 
+                    links (see extract_stable.pl).  Use with *extreme* caution 
+                    (if at all) since downloading entire issues of journals
+                    from their site violates their license agreement and will 
+                    result in your IP address being banned permanently... 
+                    believe me, I know!
+pdf_to_tiff.sh    - As the name implies, this script can be used to convert
+                    and split multiple page pdf files into many single page 
+                    tiff files.  You pass in a directory containing pdf files
+                    and the script will convert all of them to tiff's, ready
+                    for use in the JTAG application.  See section 4. below for
+                    more information on image representation and conversion.
+science_list.sh   - This script is used to generate a list of links to issues
+                    of the journal Science from the JSTOR website.  Again, use
+                    this script with extreme caution, since it may result in
+                    your IP being permanently banned.  This list must first be
+                    parsed using extract_stable.pl before it can be used via
+                    jstor_rtrv.pl
+update_jfiles.pl  - This script should be used whenever jtag and jlog files
+                    are moved to another directory.  The img tag in these
+                    files will usually list the path to the associated image
+                    file, and if these files are moved, this line must be
+                    updated to reflect the change.  If it is not changed,
+                    several of the MATLAB scripts will break down (and the
+                    JTAG application may also fail).  This script takes care of
+                    the img location updates automatically.
+xplore_list.pl    - This script can be used to download all articles for a
+                    particular journal (you specify its pu number as an 
+                    argument) from the ieeexplore website (ieeexplore.ieee.org).
+                    Again, this script should be used with caution as their
+                    terms state that systematic downloads by intelligent
+                    agents are not allowed.
+
+
+3. Acquiring Journal Articles
+-----------------------------
+
+I have already amassed a rather large collection of journals from various
+sources using the scripts listed above.  These journals can currently be found
+at: /p/learning/scottl/research and have also been burned to several CD's (ask
+Sam for them).
+
+Should you need more articles, I would only recommend using the jmlr_rtrv.sh
+script above, since others violate that site's license terms, and may result
+in a ban of your IP address.
+
+Some good sources for journals (which I have already used, and probably
+require you to use from behind a U of T IP address):
+
+http://www.jmlr.org
+http://ieeexplore.ieee.org
+http://www.jstor.org
+http://eir.library.utoronto.ca/eir/EIRsearch.cfm?T=J
+http://citeseer.nj.nec.com/cs
+
+Since most journals downloaded will be received in PDF or PS format, they will
+most likely need to be converted first.  See section 4. below for a
+description on how this can be accomplished.
+
+
+4. Converting Journals to Image Representations
+-----------------------------------------------
+
+Once you have acquired issues of journals, they must be split and converted
+into an appropriate image format before they can be used in the JTAG
+application and the MATLAB scripts.
+
+The JTAG application uses the TkImg library for all of its image displaying
+and manipulation.  As such it will recognize most common image formats (tiff,
+png, bmp, jpg, etc.) are all supported, but tiff is recommended for its
+high quality.
+
+Currently the MATLAB scripts use the imread() function for all tasks performed
+at the pixel level, and they assume that the input image is grayscale and uses
+the convention of a '1' for white colored (background) pixels and '0' for
+black pixels.  RGB images will not work and need to be mapped to grayscale
+images first (I haven't come across this yet, so I don't know how to go about
+the conversion!).
+
+4.1 Converting PDF -> TIFF
+--------------------------
+
+Simply issue pdf_to_tiff.sh, passing in the path to the directory containing
+the PDF files to be converted (you can also optionally specify the directory
+where you want the output TIFF files to be placed - defaults to the same
+directory as the input dir if unspecified).  This script also takes care of
+the multi-page splitting issue if the PDF files are longer than 1 page (see
+Section 4.3 below for more info).  Note that to run this script you must have
+ghostscript installed.
+
+4.2 Converting PS -> TIFF
+-------------------------
+
+The easiest way to accomplish this conversion is to edit the pdf_to_tiff.sh
+above, changing the PDF_EXTN variable to ps.  Then follow the directions found
+in 4.1 above.  Again this takes care of splitting multi-page ps files.  This,
+this script will work on *all* ps files in the directory you specify.
+
+4.3 Splitting Multi-Page TIFF to Single-Page TIFF's
+---------------------------------------------------
+
+Using the executable tiffsplit (found in the bin directory) you can split
+multi-page tiff files into several single page tiff files.  This is required
+for the JTAG application to access pages beyond the first page.  If the file
+you wish to split contains 10 pages and is named temp.tif, then upon issuing:
+
+  tiffsplit temp.tif temp
+
+from the directory containing the tif file (ensure tiffsplit is added to your
+PATHi first), you will end up with 10 output files: temp.aa.tif, temp.ab.tif,
+..., temp.aj.tif
