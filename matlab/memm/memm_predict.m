@@ -20,7 +20,7 @@ for i=1:length(d.pg);
     for j=1:length(d.pg{i}.cid);
         for k = 1:length(d.class_names);
             if (strcmp(d.class_names(k),pred_path.labels(j+1)));
-                d_out.pg{i}.pred_cid(j,1) = k;
+                d_out.pg{i}.pred_cid(d_out.pg{i}.sorted_index(j),1) = k;
             end;
         end;
     end;
@@ -46,33 +46,32 @@ prev_path(1).ll = log(1);
 %             If it is higher than the best ll for next_path(nl)
 %                 Make it next_path(nl)
 
-lf = fopen('kevtemprecord.txt','w');
+%lf = fopen('kevtemprecord.txt','w');
 
 for ss = 1:size(pg.features,1);
     next_path = {};
-    fprintf(lf,'Starting iteration %i.\n',ss);
+    %fprintf(lf,'Starting iteration %i.\n',ss);
     for nl = 1:length(class_names)-1;
-        fprintf(lf,'    Testing class #%i, "%s".\n',nl,char(class_names(nl)));
+        %fprintf(lf,'    Testing class #%i, "%s".\n',nl,char(class_names(nl)));
         next_path(nl).ll = -inf;
         for pp = 1:length(prev_path);
             
             % loglikelihood = get this somehow.
-            fprintf(lf,'        Path #%i:{',pp);
+            %fprintf(lf,'        Path #%i:{',pp);
             
             lpath = [prev_path(pp).labels, class_names(nl)];
-            for i=1:length(lpath);
-                fprintf(lf,'"%s" ',char(lpath(i)));
-            end;
-            loglikelihood = ...
-                memm_eval_sequence(pg.features(1:(length(lpath)-1),:), ...
-                                   lpath, w, 0);
-            fprintf(lf,', ll=%f', loglikelihood);
+            %for i=1:length(lpath);
+                %fprintf(lf,'"%s" ',char(lpath(i)));
+            %end;
+            feats = pg.features(pg.sorted_index(1:(length(lpath)-1)));
+            loglikelihood = memm_eval_sequence(feats, lpath, w, 0);
+            %fprintf(lf,', ll=%f', loglikelihood);
             if (loglikelihood > next_path(nl).ll);
                 next_path(nl).ll = loglikelihood;
                 next_path(nl).labels = lpath;
-                fprintf(lf, ' <BEST>');
+                %fprintf(lf, ' <BEST>');
             end;
-            fprintf(lf,'\n');
+            %fprintf(lf,'\n');
         end;
     end;
     prev_path = next_path;
@@ -85,28 +84,30 @@ end;
 clear next_path;
 next_path.ll = -inf;
 
-fprintf(lf,'Starting final iteration (#%i):\n', (size(pg.features,1)+1));
-fprintf(lf,'    Testing only possible label: "end_of_page":\n');
+%fprintf(lf,'Starting final iteration (#%i):\n', (size(pg.features,1)+1));
+%fprintf(lf,'    Testing only possible label: "end_of_page":\n');
 for pp = 1:length(prev_path);
-    fprintf(lf,'        Path #%i:{',pp);
+    %fprintf(lf,'        Path #%i:{',pp);
     blankfeat = zeros(1,size(pg.features,2));
-    feats = [pg.features; blankfeat];
+    feats = [pg.features(pg.sorted_index,:); blankfeat];
     lpath = [prev_path(pp).labels, {'end_of_page'}];
-    for i=1:length(lpath);
-        fprintf(lf,'"%s" ',char(lpath(i)));
-    end;
+    %for i=1:length(lpath);
+        %fprintf(lf,'"%s" ',char(lpath(i)));
+    %end;
     loglikelihood = ...
         memm_eval_sequence(feats, lpath, w, 0);
-    fprintf(lf,', ll=%f', loglikelihood);
+    %fprintf(lf,', ll=%f', loglikelihood);
     if (loglikelihood > next_path.ll);
         next_path.ll = loglikelihood;
         next_path.labels = lpath;
-        fprintf(lf,' <BEST>');
+        %fprintf(lf,' <BEST>');
     end;
-    fprintf(lf,'\n');
+    %fprintf(lf,'\n');
 end;
 
 fclose(lf);
 
 path = next_path;
+
+
 

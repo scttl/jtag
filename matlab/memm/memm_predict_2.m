@@ -13,14 +13,15 @@ d_out = d;
 
 for i=1:length(d.pg);
     fprintf('Predicting page %i of %i.\n',i,length(d.pg));
-    pred_path = predict_page(d.pg{i},w);
+    pred_path = predict_page(d.pg{i},w,char(d.pg_names(i)));
     d_out.pg{i}.pred_cid = zeros(length(d.pg{i}.cid),1);
     %disp(pred_path.labels);
     %disp(d.class_names(d.pg{i}.cid));
     for j=1:length(d.pg{i}.cid);
         for k = 1:length(d.class_names);
             if (strcmp(d.class_names(k),pred_path.labels(j+1)));
-                d_out.pg{i}.pred_cid(j,1) = k;
+                %d_out.pg{i}.pred_cid(j,1) = k;
+                d_out.pg{i}.pred_cid(d_out.pg{i}.ordered_index(j),1) = k;
             end;
         end;
     end;
@@ -30,12 +31,12 @@ end;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Subfunction declarations
 
-function path = predict_page(pg,w);
+function path = predict_page(pg,w,jt);
 %Predict the best label sequence for a given page.
 
 global class_names;
 
-firstguess = best_page_guess(pg,w);
+firstguess = best_page_guess(pg,w,jt);
 
 prev_path(1).labels = {'start_of_page'};
 prev_path(1).ll = log(1);
@@ -57,6 +58,8 @@ prev_path(1).ll = log(1);
     %end;
 %fprintf(lf,'\n\n');
 
+%lf = 1;
+
 for ss = 1:size(pg.features,1);
     next_path = {};
     %fprintf(lf, 'Starting iteration %i, with %i previous paths left.\n',ss, ...
@@ -74,11 +77,12 @@ for ss = 1:size(pg.features,1);
             
             lpath = [prev_path(pp).labels, class_names(nl)];
             %for i=1:length(lpath);
-                %fprintf(lf,'"%s" ',char(lpath(i)));
-                %end;
-            loglikelihood = ...
-                memm_eval_sequence(pg.features(1:(length(lpath)-1),:), ...
-                                   lpath, w, 0);
+            %    fprintf(lf,'"%s" ',char(lpath(i)));
+            %end;
+
+            feats = pg.features(pg.ordered_index(1:(length(lpath)-1)),:);
+            loglikelihood = memm_eval_sequence(feats, lpath, w, 0);
+
             %fprintf(lf,', ll=%f', loglikelihood);
             if (loglikelihood > next_path(nl).ll);
                 next_path(nl).ll = loglikelihood;
@@ -111,7 +115,7 @@ next_path.ll = -inf;
 for pp = 1:length(prev_path);
     %fprintf(lf,'        Path #%i:{',pp);
     blankfeat = zeros(1,size(pg.features,2));
-    feats = [pg.features; blankfeat];
+    feats = [pg.features(pg.ordered_index,:); blankfeat];
     lpath = [prev_path(pp).labels, {'end_of_page'}];
     %for i=1:length(lpath);
         %fprintf(lf,'"%s" ',char(lpath(i)));
@@ -133,7 +137,7 @@ path = next_path;
 
 
 
-function path = best_page_guess(pg,w);
+function path = best_page_guess(pg,w,jt);
 
     global class_names;
 
@@ -147,10 +151,10 @@ function path = best_page_guess(pg,w);
     feats = [pg.features; zeros(1,size(pg.features,2))];
     %feats = memm_add_label_features(feats,labels);
 
-    cids = lr_fn(class_names,memm_add_label_features(feats,labels),w);
+    cids = lr_fn(class_names,memm_add_label_features(feats,labels),jt,w);
     cids(end) = get_cid('end_of_page');
 
-    path.labels = [{'start_of_page'}, class_names(cids)];
+    path.labels=[{'start_of_page'},class_names(cids([pg.ordered_index,end]))];
 
     path.ll = memm_eval_sequence(feats, path.labels, w, 0);
 

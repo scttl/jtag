@@ -29,11 +29,14 @@ function w = memm_train(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: memm_train.m,v 1.2 2004-07-22 15:55:55 klaven Exp $
+% $Id: memm_train.m,v 1.3 2004-07-27 22:01:27 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: memm_train.m,v $
-% Revision 1.2  2004-07-22 15:55:55  klaven
+% Revision 1.3  2004-07-27 22:01:27  klaven
+% The new function memm_fn can be used with the jtag software.  Made changes to several other files to accomodate this.
+%
+% Revision 1.2  2004/07/22 15:55:55  klaven
 % MEMM is working correctly as of this version.
 %
 % Revision 1.1  2004/07/16 20:38:48  klaven
@@ -77,11 +80,11 @@ cc = [];
 % ff is the list of all selections feature values
 ff = [];
 for i = 1:data.num_pages;
-    cc = [cc; data.pg{i}.cid'];
-    pagelabels = data.class_names(data.pg{i}.cid);
-    pagelabels(2:end) = pagelabels(1:end-1);
-    pagelabels(1) = {'start_of_page'};
-    pagefeats1 = data.pg{i}.features;
+    cc = [cc; data.pg{i}.cid(data.pg{i}.ordered_index)'];
+    %pagelabels = data.class_names(data.pg{i}.cid(data.pg{i}.ordered_index));
+    %pagelabels(2:end) = pagelabels(1:end-1);
+    %pagelabels(1) = {'start_of_page'};
+    pagefeats1 = data.pg{i}.features(data.pg{i}.ordered_index,:);
     %pagefeats2 = [];
     %for j = 1:size(pagefeats1,1);
     %    pagefeats2 = [pagefeats2; ...

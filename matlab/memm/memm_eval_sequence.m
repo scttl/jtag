@@ -34,7 +34,14 @@ for i = 1:(length(labels)-1);
     end;
 end;
 
-
+% fprintf('size(weights.weights))\n');
+% disp(size(weights.weights));
+% fprintf('size(cid'')\n');
+% disp(size(cid'));
+% fprintf('size(ff'')\n');
+% disp(size(ff'));
+% fprintf('smth\n');
+% disp(smth);
 [ll,dll] = mefun(weights.weights,cid',ff',smth);
 
 loglikelihood = -ll;

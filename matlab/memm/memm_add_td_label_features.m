@@ -27,9 +27,13 @@ for i=1:td_in.num_pages;
     pg.cid = get_cid([td_in.class_names(pg.cid), {'end_of_page'}]);
     blankfeat = zeros(1,size(pg.features,2));
     pg.features = [pg.features;blankfeat];
-    
-    prevpagelabels = [{'start_of_page'}, td_in.class_names(pg.cid(1:end-1))];
-    pg.features = memm_add_label_features(pg.features, prevpagelabels);
+    cn = class_names(pg.cid(pg.ordered_index(1:end-1)));
+    prevpagelabels = [{'start_of_page'}, cn];
+    feats = pg.features(pg.ordered_index,:);
+    feats = memm_add_label_features(feats,prevpagelabels);
+    pg.features = zeros(size(feats));
+    pg.features(pg.ordered_index,:) = feats;
+    %pg.features = memm_add_label_features(pg.features, prevpagelabels);
 
     td_out.pg{i} = pg;
 end;
