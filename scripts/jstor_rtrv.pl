@@ -3,7 +3,7 @@
 ##
 ## FILE: jstor_rtrv.pl
 ##
-## CVS: $Id: jstor_rtrv.pl,v 1.4 2003-06-05 16:48:09 scottl Exp $
+## CVS: $Id: jstor_rtrv.pl,v 1.5 2003-06-06 18:08:19 scottl Exp $
 ##
 ## DESCRIPTION: Perl script to parse a list of Stable URL's taken from
 ##              STDIN  and download the appropriate format of article.
@@ -77,14 +77,14 @@ $rresp = \$resp;
 $ck_val = get_dl_val();
 $cookie_jar = new HTTP::Cookies;
 $cookie_jar->set_cookie(undef, $ck_key, $ck_val, $ck_path, $ck_dom, 
-                        undef, 0, 0, 60*60, 0);
+                        undef, 0, 0, 60*60*12, 0);
 $ua->cookie_jar($cookie_jar);
 
 # create a file handle and use that to to store all logging information
-open(LOG, ">> $log_file") or die "Unable to open log file: " . $log_file . "\n";
+open(LOG, "> $log_file") or die "Unable to open log file: " . $log_file . "\n";
 LOG->autoflush(1);
 print LOG localtime() . ": S T A R T  U R L  P R O C E S S I N G\n" .
-     "----------------------------------------------------------\n\n";
+     "---------------------------------------------------------------\n\n";
 
 # while we still have URL's to read
 START: while (<STDIN>) {
@@ -102,10 +102,11 @@ START: while (<STDIN>) {
 } # end main processing loop
 
 # print summary 
+$url_count -= $fail_count;
 print LOG "\n" . localtime() . ": E N D  U R L  P R O C E S S I N G\n" .
       "------------------------------------------------------------\n" .
       "   # of URL failures = " . $fail_count . "\n" .
-      "   # of URL's successfully processed = " . $url_count-$fail_count . "\n";
+      "   # of URL's successfully processed = " . $url_count . "\n";
 
 close(LOG);
 
@@ -143,7 +144,7 @@ sub process_url {
     if(! $$rresp->is_success) {
     
         # failed to access URL for some reason
-        print "Unable to access URL: " . $url . 
+        print LOG "Unable to access URL: " . $url . 
               "\nReason: " . $$rresp->message . "\n";
         undef $req;
         return 0;
@@ -162,7 +163,7 @@ sub process_url {
     } else {
 
         # failed to find the link to the download page
-        print "URL did not contain appropriate download link\n";
+        print LOG "URL did not contain appropriate download link\n";
         undef $req;
         return 0;
 
@@ -176,7 +177,7 @@ sub process_url {
     } else {
 
         # failed to find the filename in the link
-        print "Download link: " . $link . " didn't list a proper filename\n";
+        print LOG "Download link: " . $link. " didn't list a proper filename\n";
         undef $req;
         return 0;
 
@@ -189,7 +190,8 @@ sub process_url {
     if(! $$rresp->is_success) {
 
         # failed to download the link for some reason
-        print "Unable to download file.\nReason: " . $$rresp->message . "\n";
+        print LOG "Unable to download file.\nReason: " . $$rresp->message . 
+                   "\n";
         undef $req;
         return 0;
     }
@@ -237,4 +239,4 @@ sub get_dl_val {
 
     return $val;
 
-} # end get_ck_val
+} # end get_dl_val
