@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.3 2003-07-09 21:11:59 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.4 2003-07-11 21:58:23 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.3  2003-07-09 21:11:59  scottl
+## Revision 1.4  2003-07-11 21:58:23  scottl
+## Reordered call dependancy between canvas and image creation.  There must now
+## exist a valid canvas object before we can create an image.
+##
+## Revision 1.3  2003/07/09 21:11:59  scottl
 ## Renamed exported namespace variables Img Can and Scroll to be inline with
 ## coding conventions for other namespace variables.
 ## Implemented GetFormat proc to determine the image type if possible.
@@ -120,17 +124,24 @@ proc ::Jtag::Image::create_image {file_name} {
 
     # link any namespace variables
     variable img
+    variable can
 
     # declare any local variables needed
     variable JtagFile
     variable JtagExtn {jtag}
     variable Response
+    variable ScaleW
+    variable ScaleH
 
     debug {entering ::Jtag::Image::create_image}
 
     # attempt to create an image out of the file specified by $file_name
     # if the file is invalid (not found, not an image etc.) an error is
     # returned to the caller.
+
+    if {! $can(created) } {
+        error "No canvas to add the image to"
+    }
 
     catch {image delete $img(orig_img)}
 
@@ -151,6 +162,11 @@ proc ::Jtag::Image::create_image {file_name} {
         set img(file_format) {}
     }
 
+    # scale and add the image to the canvas
+    set ScaleW [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
+    set ScaleH [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
+    ::Jtag::Image::resize [expr $ScaleW <= $ScaleH ? $ScaleW : $ScaleH]
+
     # check and see if a valid jtag file exists for this image
     set JtagFile [string range $file_name 0 [string last "." $file_name]]
     if {$JtagFile == ""} {
@@ -164,7 +180,6 @@ proc ::Jtag::Image::create_image {file_name} {
     if {[catch {::Jtag::Config::read_data $img(jtag_name)} Response]} {
         debug "Failed to read contents of $img(jtag_name).  Reason:\n$Response"
     }
-
 }
 
 
@@ -290,15 +305,6 @@ proc ::Jtag::Image::create_canvas {w width height {args {}}} {
     # create the canvas
     set can(path) $w.$Name
     eval canvas $can(path) -width $width -height $height $can(attribs) $args
-
-    # see if there is an image to add to the canvas
-    if {$img(created)} {
-        set can(img_tag) [$can(path) create image 0 0 -image $img(img) \
-                          -anchor nw]
-    } else {
-        # create a dummy image for now
-        set can(img_tag) [$can(path) create image 0 0 -image {} -anchor nw]
-    }
 
     # make this namespace aware that a canvas has been created
     set can(created) 1
