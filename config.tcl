@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.3 2003-07-14 15:11:53 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.4 2003-07-15 16:40:44 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.3  2003-07-14 15:11:53  scottl
+## Revision 1.4  2003-07-15 16:40:44  scottl
+## Removed a couple of temporary statements that should not have been in place.
+##
+## Revision 1.3  2003/07/14 15:11:53  scottl
 ## Moved classifier defaults from cnfg element to data array elements.
 ## Implemented ability to read config file information.
 ## Implemented ability to read selection information from a jtag file.
@@ -187,9 +190,6 @@ proc ::Jtag::Config::read_config {} {
                 debug "Loading ard-coded classifier defaults instead"
                 return
             }
-
-            # start by removing the default classifiers
-            unset data
 
             # add the new classifier and colour to the list
             for {set I 1} {$I < [llength $ElemList]} {incr I 2} {
@@ -411,8 +411,6 @@ proc ::Jtag::Config::write_data {} {
     # now send the data off to the file for writing (catching any errors)
     ::Jtag::File::write $img(jtag_name) $DList
 
-    #@@ for now halt the application until I finish the real quit command
-    exit 0
 }
 
 
