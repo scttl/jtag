@@ -67,8 +67,83 @@ end;
 %% First, the names:
 for i = 1:size(rects,1);
     fnum = 1;
-    res(i,fnum).name = '';    %% A short name for the feature
-    fnum = fnum + 1;           %% Increment the feature number
+
+    %% A short name for the feature
+    res(i,fnum).name = 'word_count';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_count';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'text_is_a_dash';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'text_is_a_star';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_matches_with_(PICTURE)';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'starts_with_table';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'starts_with_figure';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'starts_with_[number]';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_dots_in the_first_wrod';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_colons_in the_first_wrod';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_math_and_logic_symbols';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_double_quotes';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_single_quotes';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_matches_with_vol.';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+    %% A short name for the feature
+    res(i,fnum).name = 'number_of_matches_with_pp.';         
+    %% Increment the feature number
+    fnum = fnum + 1;                         
+
+
 end;
 
 %% If we only want the names, terminate now
