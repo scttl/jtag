@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.5 2004-06-14 20:20:06 klaven Exp $
+% $Id: create_lr_weights.m,v 1.6 2004-06-18 21:58:30 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.5  2004-06-14 20:20:06  klaven
+% Revision 1.6  2004-06-18 21:58:30  klaven
+% Added a few more items to what is stored in the lr_weights.
+%
+% Revision 1.5  2004/06/14 20:20:06  klaven
 % Changed the load and save routines for lr weights to be more general, allowing me to add more fields to the weights data structure.  Also added a record of the log likelihood progress to the weights data structure.
 %
 % Revision 1.4  2004/06/09 19:20:17  klaven
@@ -52,7 +55,7 @@ function w = create_lr_weights(data, sigma, maxevals)
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,3,nargin));
 if(nargin < 2) sigma = 1e-3; end
-if(nargin < 3) maxevals = 1e8; end
+if(nargin < 3) maxevals = 1e4; end
 
 if ~ isstruct(data)
     if ~ iscellstr(data)

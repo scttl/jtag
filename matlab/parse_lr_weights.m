@@ -18,11 +18,14 @@ function w = parse_lr_weights2(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_lr_weights.m,v 1.2 2004-06-14 20:20:06 klaven Exp $
+% $Id: parse_lr_weights.m,v 1.3 2004-06-18 21:58:30 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_lr_weights.m,v $
-% Revision 1.2  2004-06-14 20:20:06  klaven
+% Revision 1.3  2004-06-18 21:58:30  klaven
+% Added a few more items to what is stored in the lr_weights.
+%
+% Revision 1.2  2004/06/14 20:20:06  klaven
 % Changed the load and save routines for lr weights to be more general, allowing me to add more fields to the weights data structure.  Also added a record of the log likelihood progress to the weights data structure.
 %
 % Revision 1.1  2003/09/22 17:47:31  scottl
@@ -30,7 +33,7 @@ function w = parse_lr_weights2(file)
 %
 
 % New version of save routine stores w in a .mat file.
-if (strcmp(file(end-3:end;), '.mat'));
+if (strcmp(file(end-3:end), '.mat'));
     evalstr = ['load ' file ';'];
     eval(evalstr);
     w = savedweightvar;

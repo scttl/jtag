@@ -37,14 +37,39 @@ Make the marks features reasonably quick to compute.
 
 <DONE> Re-train and re-test with new features
 
+Figure out why the marks features are decreasing performance.
+
+<DONE>Clean up test data
+    Bach02
+    Cannon02
+    Chickering02a
+    Collobert01a
+    Crammer03b
+
+<DONE>Clean up training data
+    Allwein00a
+    Antos02a
+    Callif03a
+    Cancedda03a
+    Caruana03a
+    Chan02a
+    Chickering02b
+    Christensen03a
+    Crammer01a
+    Crammer03a
+
+Fix up "snapping" errors in test and training data
+
+
 Check out "NCA" for KNN (talk to Jacob)
 
 Implement HMM
 
 Get ready to send stuff to Microsoft
 
-Decide on consistent style for Inline Heading, Author List, and 
+<DONE> Decide on consistent style for Inline Heading, Author List, and 
 References.
 
 Go over test data and training data, to make above items consistent.
 
+Think about inferring font size before doing segmentation, and using this.
