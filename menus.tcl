@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.7 2003-09-04 02:48:34 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.8 2003-09-04 14:09:15 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.7  2003-09-04 02:48:34  scottl
+## Revision 1.8  2003-09-04 14:09:15  scottl
+## Bugfixes for merging command.
+##
+## Revision 1.7  2003/09/04 02:48:34  scottl
 ## Implemented split and merge commands.
 ##
 ## Revision 1.6  2003/08/25 17:43:39  scottl
@@ -853,7 +856,7 @@ proc ::Jtag::Menus::MergeCmd {} {
                 set Size [array size ::Jtag::Menus::merge_array]
                 set Found 0
                 for {set I 1} {$I <= $Size} {incr I} {
-                    if {$SelRef == $::Jtag::Menus::merge_array($I)} {
+                    if {$Rect == $::Jtag::Menus::merge_array($I)} {
                         set Found 1
                         break
                     }
@@ -872,7 +875,7 @@ proc ::Jtag::Menus::MergeCmd {} {
                 } else {
                     # add the element to merge_array, highlighting it
                     incr Size
-                    array set ::Jtag::Menus::merge_array [list $Size $SelRef]
+                    array set ::Jtag::Menus::merge_array [list $Size $Rect]
                     $::Jtag::Image::can(path) itemconfigure $Rect -width 4
                 }
             }
@@ -881,6 +884,7 @@ proc ::Jtag::Menus::MergeCmd {} {
 
     bind $can(path) <ButtonRelease-3> {
         bind $::Jtag::Image::can(path) <ButtonRelease-1> {}
+        bind $::Jtag::Image::can(path) <ButtonRelease-3> {}
 
         # merge all elements in merge_array using properties from element in
         # position 1
@@ -888,7 +892,8 @@ proc ::Jtag::Menus::MergeCmd {} {
 
         if {$Size > 0} {
             # get the first rectangle's data for use in the merged rect.
-            set SelRef $::Jtag::Menus::merge_array(1)
+            set SelRef [::Jtag::Classify::get_selection \
+                        $::Jtag::Menus::merge_array(1)]
             set Class     [string range $SelRef 0 [expr \
                                     [string last "," $SelRef] - 1]]
             set X1        [lindex $::Jtag::Config::data($SelRef) 1]
@@ -905,12 +910,12 @@ proc ::Jtag::Menus::MergeCmd {} {
             for {set I 1} {$I <= $Size} {incr I} {
                 # update the merged rectangle boudaries and remove the element 
                 # from the data array as well as its rectangle
-                set SelRef $::Jtag::Menus::merge_array($I)
-                set Id [lindex $::Jtag::Config::data($SelRef) 0]
-                set CurX1 [lindex $::Jtag::Config::data($SelRef) 1]
-                set CurY1 [lindex $::Jtag::Config::data($SelRef) 2]
-                set CurX2 [lindex $::Jtag::Config::data($SelRef) 3]
-                set CurY2 [lindex $::Jtag::Config::data($SelRef) 4]
+                set Id     $::Jtag::Menus::merge_array($I)
+                set SelRef [::Jtag::Classify::get_selection $Id]
+                set CurX1  [lindex $::Jtag::Config::data($SelRef) 1]
+                set CurY1  [lindex $::Jtag::Config::data($SelRef) 2]
+                set CurX2  [lindex $::Jtag::Config::data($SelRef) 3]
+                set CurY2  [lindex $::Jtag::Config::data($SelRef) 4]
     
                 if {$CurX1 < $X1} { set X1 $CurX1 }
                 if {$CurY1 < $Y1} { set Y1 $CurY1 }
