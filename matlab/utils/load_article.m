@@ -1,6 +1,6 @@
-function res = load_article(article_name);
+function res = load_article(article_name,showit);
 %
-% function res = load_article(article_name);
+% function res = load_article(article_name,showit);
 %
 % Loads the article specified by article name.  Article_name should
 % be the full path of the article, but should not include the page
@@ -50,14 +50,17 @@ for i=1:length(jt_files);
     article.page{i} = jt_load([dirpath,jt_files{i}],false);
 end;
 
-fprintf('Loading colourguide.\n');
-cg = colourguide;
-
-%f = figure('KeyPressFcn',@keyPressed);
-%article.fig_handle = f;
 article.curpage = 1;
-page(1);
-%jt_plot(article.page{1},f);
+
+if (nargin < 2) || showit;
+    fprintf('Loading colourguide.\n');
+    cg = colourguide;
+
+    %f = figure('KeyPressFcn',@keyPressed);
+    %article.fig_handle = f;
+    page(1);
+    %jt_plot(article.page{1},f);
+end;
 
 res = article;
 

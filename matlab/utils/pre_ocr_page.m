@@ -4,8 +4,9 @@ function [pix,image_files] = pre_ocr_page(jt,out_file);
 %
 %This function applies an OCR pre-processor to the page jt, saving the
 %remaining text to out_file, with image names created by appending to
-%the name of out_file.  For example, if out_file were AA03.aa.tif, an
-%image file named AA03.aa.tif-figure1.jpg may be created.
+%the name of out_file (with the extension removed).  For example, if 
+%out_file were AA03.aa.tif, an
+%image file named AA03.aa-figure1.tif may be created.
 %
 
 if (ischar(jt));
@@ -41,7 +42,8 @@ for i=1:size(jt.rects,1);
         imwrite(subpix,impath);
         image_files = [image_files,impath];
         %Create an image of text referring viewers to the image.
-        command = ['pbmtext "See ' out_file_name '-' img_file_types{typeid} ...
+        command = ['pbmtextps -fontsize 12 "' out_file_name '-' ...
+                   img_file_types{typeid} ...
                    '-' int2str(img_file_counts(typeid)) '.tif" > ' ...
                    'jt_tmp_bitmap.bmp'];
         system(command);

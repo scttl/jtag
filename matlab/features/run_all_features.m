@@ -1,8 +1,8 @@
-function [feature_vals,f_norm] = run_all_features(rects, pix_file)
+function [feature_vals,f_norm]=run_all_features(rects, pix_file,use_in,donames)
 % RUN_ALL_FEATURES    Iterates through each feature available on RECT,  building
 %                     up a cell array containing all the results.
 %
-%   [FEATURE_VALS,F_NORM] = RUN_ALL_FEATURES(RECTS, PIX_FILE)  
+%   [FEATURE_VALS,F_NORM] = RUN_ALL_FEATURES(RECTS, PIX_FILE, USE_IN, DONAMES)  
 %   This function runs through each
 %   feature listed, passing the appropriate arguments, collecting the result
 %   and adding it to the vector which is returned once all features have
@@ -22,11 +22,14 @@ function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.6 2004-11-12 22:28:19 klaven Exp $
+% $Id: run_all_features.m,v 1.7 2004-12-04 22:12:22 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.6  2004-11-12 22:28:19  klaven
+% Revision 1.7  2004-12-04 22:12:22  klaven
+% *** empty log message ***
+%
+% Revision 1.6  2004/11/12 22:28:19  klaven
 % Minor debugging.
 %
 % Revision 1.5  2004/08/16 22:38:10  klaven
@@ -73,19 +76,21 @@ function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 
 global use;
 
+use_feats = use;
+if (nargin >= 3);
+    use_feats = use_in;
+end;
+
 feature_vals = []; % the vector we will build as we run through features
 f_norm = [];
 get_names = false; % set to true to return feature names instead of values.
 data = {};         % temp holder for structs returned by features
 
-% first do some sanity checking on the arguments passed
-error(nargchk(0,2,nargin));
-
-if nargin == 0
+if (nargin == 0) || ((nargin >= 4) && (donames));
     feature_vals = {};
     get_names = true;
 elseif nargin == 1
-    error('must pass exactly 2 args or none at all');
+    error('must pass 2 or 3 args or none at all');
 else
 
     pixels = imread(char(pix_file));
@@ -110,50 +115,50 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if get_names
-    data = distance_features(use);
+    data = distance_features(use_feats);
     feature_vals = {data.name};
     f_norm = [data.norm];
-    if (use.dens);
+    if (use_feats.dens);
         data = density_features;
         feature_vals = [feature_vals,{data.name}];
         f_norm = [f_norm [data.norm]];
     end;
-    if (use.pnum)
+    if (use_feats.pnum)
         data = pnum_features;
         feature_vals = [feature_vals,{data.name}];
         f_norm = [f_norm [data.norm]];
     end;
-    if (use.mark);
+    if (use_feats.mark);
         data = marks_features;
         feature_vals = [feature_vals,{data.name}];
         f_norm = [f_norm, [data.norm]];
     end;
-    if (use.ocr);
-        data = ocr_features(use);
+    if (use_feats.ocr);
+        data = ocr_features(use_feats);
         feature_vals = [feature_vals,{data.name}];
         f_norm = [f_norm, [data.norm]];
     end;
 else
-    data = distance_features(use,rects,pixels);
+    data = distance_features(use_feats,rects,pixels);
     feature_vals = reshape([data.val],size(data));
     f_norm = [data.norm];
-    if (use.dens);
+    if (use_feats.dens);
         data = density_features(rects,pixels);
         feature_vals = [feature_vals,reshape([data.val],size(data))];
         f_norm = [f_norm [data.norm]];
     end;
-    if (use.pnum);
+    if (use_feats.pnum);
         data = pnum_features(rects,pixels,pix_file);
         feature_vals = [feature_vals,reshape([data.val],size(data))];
         f_norm = [f_norm [data.norm]];
     end;
-    if (use.mark);
+    if (use_feats.mark);
         data = marks_features(rects,pixels);
         feature_vals = [feature_vals,reshape([data.val],size(data))];
         f_norm = [f_norm [data.norm]];
     end;
-    if (use.ocr);
-        data = ocr_features(use,rects,pixels);
+    if (use_feats.ocr);
+        data = ocr_features(use_feats,rects,pixels);
         feature_vals = [feature_vals,reshape([data.val],size(data))];
         f_norm = [f_norm [data.norm]];
     end;

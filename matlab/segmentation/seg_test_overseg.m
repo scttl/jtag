@@ -31,8 +31,8 @@ for tnum=1:length(VS);
     for j=1:min([maxits, data.num_pages]); 
         jt=jt_load(char(data.pg_names(j)),0);
         [us,s] = seg_eval_overseg(imread(char(jt.img_file)), ...
-                                smear(char(jt.img_file),HS(tnum),VS(tnum)), ...
-                                      jt.rects);
+                               xycut(char(jt.img_file),HS(tnum),VS(tnum)), ...
+                                     jt.rects);
         segs(tnum) = segs(tnum) + s;
         undersegs(tnum) = undersegs(tnum) + us;
 

@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.4 2004-08-04 20:51:19 klaven Exp $
+% $Id: create_lr_weights.m,v 1.5 2004-12-04 22:12:22 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.4  2004-08-04 20:51:19  klaven
+% Revision 1.5  2004-12-04 22:12:22  klaven
+% *** empty log message ***
+%
+% Revision 1.4  2004/08/04 20:51:19  klaven
 % Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
 %
 % Revision 1.3  2004/07/29 20:41:56  klaven
@@ -61,11 +64,10 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 
 % LOCAL VARS %
 %%%%%%%%%%%%%%
-
 global class_names;
 
 % first do some argument sanity checking on the argument passed
-error(nargchk(1,3,nargin));
+error(nargchk(1,4,nargin));
 if(nargin < 2) sigma = 1e-3; end
 if(nargin < 3) maxevals = 1e4; end
 

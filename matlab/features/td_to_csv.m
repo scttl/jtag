@@ -33,6 +33,9 @@ for i=1:length(td.pg);
     %fprintf('Page %i\n',i);
     pname = td.pg_names{i};
     pg = td.pg{i};
+    if (~all((sort(pg.ordered_index) == sort(1:size(pg.features,1)))));
+        fprintf('ERROR - ordered_index does not cover all features.');
+    end;
     for j=1:length(pg.ordered_index);
         k = pg.ordered_index(j);
         %fprintf('     Item %i, in order %i\n',j,k);
@@ -45,6 +48,6 @@ for i=1:length(td.pg);
         fprintf(fnum,'\n');
     end;
 end;
-
+res = 1;
 fprintf(fnum,'\n');
 fclose(fnum);

@@ -4,8 +4,8 @@ To Do
 ----------------------------------------------------
 Thesis TOC Gaps:
 ----------------
-3. Applications
-    3.1 OCR Pre-Processing
+<DONE>3. Applications
+    <DONE>3.1 OCR Pre-Processing
     
 ----------------------------------------------------
 
@@ -22,7 +22,7 @@ Fix up problems with LTC2, test 1
 <DONE>Get the objective function sorted out for Recursive Generative Scaling.
 Code Recursive Generative Segmentation (training).
 Train "RGS"
-<DONE>Code Recursive Generative Segmentation (testing).
+Code Recursive Generative Segmentation (testing).
 Test "RGS"
 
 <DONE>Code "optimize overseg"
@@ -71,7 +71,7 @@ Test RGS/lr all ways
 Test RGS/knn all ways
 Test RGS/memm all ways
 
-Implement OCR pre-processor
+<DONE>Implement OCR pre-processor
 
 Thesis: Finish Segmentation Chapter
 Thesis: Finish Background Chapter
