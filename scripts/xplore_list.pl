@@ -3,7 +3,7 @@
 ##
 ## FILE: xplore_list.pl
 ##
-## CVS: $Id: xplore_list.pl,v 1.1 2003-06-06 18:08:19 scottl Exp $
+## CVS: $Id: xplore_list.pl,v 1.2 2003-06-13 14:58:32 scottl Exp $
 ##
 ## DESCRIPTION: Perl script to extract download links to every issue of a
 ##              particular journal given by its pu number (will span multiple 
@@ -11,7 +11,9 @@
 ##
 ##              - Requires a valid pu number (used on the site to identify a
 ##                given journal).
-##              - As it finds the links, it outputs them to STDOUT
+##              - As it finds the links, it downloads the pdf file issues
+##              - To reduce the strain on resources, it sleeps for a random
+##                amount (max 60 seconds) before issuing each HTTP request
 ##
 ## USEAGE: xplore_list.pl <pu_number>
 ##
@@ -26,7 +28,7 @@ use LWP::UserAgent;
 use HTTP::Cookies;
 
 use IO::Handle;                        # to flush output right away
-use LWP::Debug(qw(+));                # use when debugging only - very verbose
+#use LWP::Debug(qw(+));                # use when debugging only - very verbose
 
 
 
@@ -97,6 +99,7 @@ if(! $pu || $pu =~ /\D/) {
               "journal you wish to acquire\n";
 }
 
+
 # Attempt to retrieve the webpage specified by the pu number given
 $req = new HTTP::Request('GET', $issue_url . $pu);
 $resp = $ua->request($req);
@@ -134,6 +137,10 @@ foreach $line (@file) {
 # now we iterate through each item in our @issues list, extracting and saving
 # the toc html page.
 foreach $issue (@issues) {
+
+    # sleep for a random period (max 60seconds) before making the request
+    sleep(rand(60));
+
     # attempt to retrieve the webpage specified by this link
     $req = new HTTP::Request('GET', $issue);
     $resp = $ua->request($req);
@@ -223,6 +230,8 @@ sub extract_toc {
     my @file;
     my $line;
 
+    # sleep for a random period (max 60seconds) before making the request
+    sleep(rand(60));
 
     # attempt to get the URL passed
     $req = new HTTP::Request('GET', $url);
@@ -275,6 +284,9 @@ sub dl_pdf {
     # declare any local variables needed
     my $req;
     my $file;
+
+    # sleep for a random period (max 60seconds) before making the request
+    sleep(rand(60));
 
     # attempt to get the URL passed
     $req = new HTTP::Request('GET', $url);
