@@ -21,11 +21,14 @@ function res = classify_pg(data, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.1 2003-08-26 20:36:24 scottl Exp $
+% $Id: classify_pg.m,v 1.2 2003-09-11 17:47:09 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.1  2003-08-26 20:36:24  scottl
+% Revision 1.2  2003-09-11 17:47:09  scottl
+% Allowed use of existing rectangles (if found) to be used for classification.
+%
+% Revision 1.1  2003/08/26 20:36:24  scottl
 % Initial revision.
 %
 
@@ -61,11 +64,17 @@ dot_idx = regexp(img_file, '\.');
 s.jtag_file = strcat(img_file(1:dot_idx(length(dot_idx))), jtag_extn);
 s.jlog_file = strcat(img_file(1:dot_idx(length(dot_idx))), jlog_extn);
 
-% get the list of rectangles to classify
-rects = xycut(img_file);
-for i = 1:size(rects,1)
-    % s.rects = [s.rects; line_detect(pixels, rects(i,:))];
-    s.rects(i,:) = get_sr(rects(i,:), pixels);
+% get the list of rectangles to classify, first see if they already exist in a
+% jtag file, otherwise build them from scratch
+try
+    tmp_struct = parse_jtag(s.jtag_file);
+    s.rects = tmp_struct.rects;
+catch
+    rects = xycut(img_file);
+    for i = 1:size(rects,1)
+        % s.rects = [s.rects; line_detect(pixels, rects(i,:))];
+        s.rects(i,:) = get_sr(rects(i,:), pixels);
+    end
 end
 
 % loop to classify each reactangle
