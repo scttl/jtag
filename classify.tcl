@@ -5,11 +5,16 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.1 2003-07-08 14:57:39 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.2 2003-07-10 19:25:12 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.1  2003-07-08 14:57:39  scottl
+## Revision 1.2  2003-07-10 19:25:12  scottl
+## Get classifications from data array instead of cnfg.
+## Removed temporary debugging puts outputs.
+## Normailzed selection co-ordinates when stored in the data array.
+##
+## Revision 1.1  2003/07/08 14:57:39  scottl
 ## Initial revision.
 ##
 ##
@@ -85,7 +90,7 @@ namespace eval ::Jtag::Classify {
 proc ::Jtag::Classify::create_buckets {wl wr} {
 
     # link any namespace variables needed
-    variable ::Jtag::Config::cnfg
+    variable ::Jtag::Config::data
     variable lBuckets
     variable rBuckets
     variable f_attribs
@@ -95,6 +100,8 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     variable I
     variable Item
     variable Count
+    variable Match
+    variable Name
 
     # the paths to the left, right frames
     variable LF
@@ -113,20 +120,25 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     # and packing it to its frame.  Also add a drag&drop receiver for each
     # button
     set Count 1
-    foreach I $cnfg(classifiers) {
-        set Item(colour) [lindex $I 1]
+    foreach I [array names data -regexp {(.*)(,)(colour)}] {
+        set Item(colour) $data($I)
+        regexp (.*)(,)(colour) $I Match Name
         if {$Count % 2} {
             # create a button for the left frame
-            set Item(path) $LF.[lindex $I 0]
-            set lBuckets [lappend lBuckets [eval button $Item(path) \
-                -activebackground $Item(colour) -foreground $Item(colour) \
-                -text [lindex $I 0] $b_attribs ]]
+            set Item(path) $LF.$Name
+            if { [catch {lappend lBuckets [eval button $Item(path) \
+                    -activebackground $Item(colour) -foreground $Item(colour) \
+                    -text $Name $b_attribs ]} lBuckets] } {
+                error "Bad colour specified in config file"
+            }
         } else {
             # create a button for the right frame
-            set Item(path) $RF.[lindex $I 0]
-            set rBuckets [lappend rBuckets [eval button $Item(path) \
-                -activebackground $Item(colour) -foreground $Item(colour) \
-                -text [lindex $I 0] $b_attribs ]]
+            set Item(path) $RF.$Name
+            if { [catch {lappend rBuckets [eval button $Item(path) \
+                    -activebackground $Item(colour) -foreground $Item(colour) \
+                    -text $Name $b_attribs ]} rBuckets] } {
+               error "Bad colour specified in config file"
+            }
         }
         # register the button as a drag&drop receiver
         ::blt::drag&drop target $Item(path) handler sel \
@@ -525,6 +537,7 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     variable sel
     variable ::Jtag::Config::data
     variable ::Jtag::Config::cnfg
+    variable ::Jtag::Image::img
 
     # declare any local variables
     variable Class [string range $b [expr 1+ [string last "." $b]] \
@@ -568,14 +581,10 @@ proc ::Jtag::Classify::AddToBucket {c b} {
         set LastNum [expr $data(${ReclassBase}num_sels) - 1]
         if {$ReclassNum != $LastNum} {
             # pop the last element contents to fill the hole in the array
-            puts a
-            puts $ReclassRef
-            puts [array get data ${ReclassBase}${ReclassNum}]
             array set data [list $ReclassRef \
                                  $data(${ReclassBase}${LastNum})]
             array unset data ${ReclassBase}${LastNum}
         } else {
-            puts b
             array unset data $ReclassRef
         }
         incr data(${ReclassBase}num_sels) -1
@@ -588,11 +597,12 @@ proc ::Jtag::Classify::AddToBucket {c b} {
 
     # now update the data structure to reflect our new classification
     set data($Class,$data($Class,num_sels)) [list $sel(id) \
-              $sel(x1) $sel(y1) $sel(x2) $sel(y2) $cnfg(mode) $SelTime \
-              $ClsTime $Attmpt]
+              [expr $sel(x1) / $img(zoom)] [expr $sel(y1) / $img(zoom)] \
+              [expr $sel(x2) / $img(zoom)] [expr $sel(y2) / $img(zoom)] \
+              $cnfg(mode) $SelTime $ClsTime $Attmpt]
     set data($Class,num_sels) [expr $data($Class,num_sels) + 1]
 
-    puts [parray data] ;#@@
+    #puts [parray data]
 
     # highlight the selection in the classifiers colour
     $c itemconfigure $sel(id) -outline [$b cget -foreground]
