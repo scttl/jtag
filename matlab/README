@@ -1,7 +1,7 @@
 ##################################################################################
 ## FILE: README
 ##
-## CVS: $Id: README,v 1.2 2003-09-19 15:26:36 scottl Exp $
+## CVS: $Id: README,v 1.3 2003-09-23 14:38:12 scottl Exp $
 ##
 ## DESCRIPTION: Text file describing this directory structure, its contents,
 ##              useage, and other notes.
@@ -28,8 +28,8 @@ from the jtag application.  The main functions of these scripts are to:
 
   * Determine various feature values for a particular region (See section 5.)
 
-  * Automatically classify regions of a page using training data and a
-    learning algorithm (See section 6.)
+  * Automatically classify regions of a page using training data and/or
+    coefficients etc. and a learning algorithm (See section 6.)
 
 
 2. File Contents
@@ -39,6 +39,10 @@ README - this file
 
 classify_pg.m - matlab function that classifies a page of rectangular regions
                 given training data and a learner
+
+create_lr_weights.m - matlab function used to determine each class's
+                      coefficient weight values for use in a logistic
+                      regression classifier
 
 create_training_data.m - matlab function that reads in a list of image files,
                          extracts info from the associated jtag file, and
@@ -61,10 +65,15 @@ dump_jfiles.m - matlab function that dumps an in-memory representation of
 dump_training_data.m - matlab function that dumps an in-memory representation of
                        some training data out to disk in the appropriate format
 
+dump_lr_weights.m - matlab function that dumps an in-memory representation of
+                    coefficient weights out to disk in the appropriate format
+
+duprows.m - helper function used by the logistic regression trainer
+
 get_sr.m - matlab helper function that when given an image and a single
            rectangular region, calculates the subrectangular region inside the 
            rectangle that has its bounding box snapped tightly against a 
-           threshold of non-background pixels on each side.
+           threshold of non-background pixels on each side
 
 knn_fn.m - matlab function that implements the k-nearest neighbours learning
            algorithm given training data and a list of feature values
@@ -73,11 +82,27 @@ line_detect.m - @@ *not currently used* @@ matlab function that given an image
                 and rectangular region attempts to further subdivide the region 
                 based on profile sums and whitespace
 
+logsum.m - helper function used by the logistic regression trainer
+
+lr_fn.m - matlab function that implements the logistic regression learning
+          algorithm given a list of class names, some feature values, and a 
+          series of weight values
+
+minimize.m - helper function used by the logistic regression trainer
+
 parse_jlog.m - matlab function that given a jlog file, reads into an in-memory 
                structure
 
 parse_jtag.m - matlab function that given a jtag file, reads into an in-memory 
                structure
+
+parse_lr_weights.m - matlab function that given an on-disk representation of 
+                     coefficient logistic regression weight values, reads them
+                     into an appropriate in-memory structure
+
+parse_training_data.m - matlab function that given an on-disk representation
+                        of some training data, reads them into an appropriate
+                        in-memory sstructure
 
 run_all_features.m - matlab function that given an image and a single
                      rectangular region, calculates values for all features 
@@ -259,7 +284,6 @@ d) Pass the rectangle vector and the pixel map into the function
 
 e) (Optional) to determine the names/order of each of the feature values
    returned simply call the run_all_features function with no arguments
-bottom co-ords
 
 5.2 Current Feature Listing
 ---------------------------
@@ -323,13 +347,15 @@ bottom co-ords
 a) Startup matlab with this (the matlab) dir in your path (or cd to that dir
    after startup)
 
-b) Load the training data to be used into memory (See section 3.1 and 3.2) on
-   how to do this
+b) Create a cell array of class names (one per column) that you wish to use
+   for your output classified rectangles.  It is your responsibility to ensure
+   that this list is consistent with any training data classes etc.
 
-c) Call classify_pg passing in a string specifying the path and name of the 
-   image file to classify, a string giving the name of the matlab function to 
-   use as a learner (ex: 'knn_fn') and (optionally) any addtional arguments 
-   the learner requires.
+c) Call classify_pg passing in the list of class names created in b) above, 
+   a string specifying the path and name of the image file to classify, a 
+   string giving the name of the matlab function to use as a learner (ex: 
+   'knn_fn') and (optionally) any addtional arguments the learner requires
+   (like training data or coefficients etc.).
 
 d) The results are automatically dumped to the jtag and jlog files created by
    replacing the input image file extension with jtag and jlog respectively.
