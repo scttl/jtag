@@ -13,11 +13,14 @@ function res = dump_training_data(s, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: dump_training_data.m,v 1.2 2004-07-16 20:28:51 klaven Exp $
+% $Id: dump_training_data.m,v 1.3 2004-07-20 02:21:44 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: dump_training_data.m,v $
-% Revision 1.2  2004-07-16 20:28:51  klaven
+% Revision 1.3  2004-07-20 02:21:44  klaven
+% Changing training data format from text to .mat
+%
+% Revision 1.2  2004/07/16 20:28:51  klaven
 % Assorted changes made to accommodate memm.
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -29,6 +32,13 @@ function res = dump_training_data(s, outfile)
 % Revision 1.1  2003/08/19 20:51:55  scottl
 % Initial revision.
 %
+if (strcmp(outfile(end-3:end), '.mat'));
+    saveddatavar = s;
+    evalstr = ['save ' outfile ' saveddatavar;'];
+    eval(evalstr);
+    res = 1;
+    return;
+end;
 
 
 % LOCAL VARS %

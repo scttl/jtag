@@ -33,11 +33,14 @@ function s = parse_training_data(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_training_data.m,v 1.2 2004-07-16 20:28:53 klaven Exp $
+% $Id: parse_training_data.m,v 1.3 2004-07-20 02:21:48 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_training_data.m,v $
-% Revision 1.2  2004-07-16 20:28:53  klaven
+% Revision 1.3  2004-07-20 02:21:48  klaven
+% Changing training data format from text to .mat
+%
+% Revision 1.2  2004/07/16 20:28:53  klaven
 % Assorted changes made to accommodate memm.
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -46,6 +49,16 @@ function s = parse_training_data(file)
 % Revision 1.1  2003/08/20 21:22:35  scottl
 % Initial revision.
 %
+
+% New version of save routine stores s in a .mat file.
+if (strcmp(file(end-3:end), '.mat'));
+    evalstr = ['load ' file ';'];
+    eval(evalstr);
+    s = saveddatavar;
+    return;
+end;
+
+% If it is not a .mat file, try the old loading routine.
 
 
 % LOCAL VARS %
