@@ -1,12 +1,66 @@
-function res = reflow_2col(article_name);
+function [pages,jts] = reflow_2col(article_name,savepath);
 
-final_marg_r = 30;
-final_marg_l = 30;
+pages = get_2col_pages(article_name);
 
-margins.left = 20;
-margins.right = 20;
-margins.top = 100;
-margins.bottom = 100;
+if (nargin >= 2);
+    jts = pages_to_jtag(pages, savepath, true, true);
+else;
+    jts = [];
+end;
+
+
+function pages = get_2col_pages(article_name);
+
+marg_r = 70;
+marg_l = 70;
+
+col_margins.l = 30;
+col_margins.r = 30;
+col_margins.t = 100;
+col_margins.b = 100;
+
+[pwidth,pheight] = get_page_size(article_name);
+
+colwidth = floor((pwidth - marg_r - marg_l)/2);
+colheight = pheight;
+
+blocks = get_article_blocks(article_name);
+%fprintf('In reflow_2col, blocks:\n');
+%disp(blocks);
+columns = reflow_pages(blocks,colwidth,colheight,col_margins);
+
+pages = [];
+pnew = [];
+for i=1:2:length(columns);
+    newpix = ones(pheight,pwidth);
+    c = columns(i);
+    newpix(1:colheight,marg_l:marg_l+colwidth-1) = c.pix;
+    page.pix = newpix;
+    page.blocks = c.blocks;
+    if (i < length(columns));
+        c = columns(i+1);
+        %fprintf('l:%i, r:%i, w:%i\n', (pwidth-marg_r-colwidth+1), ...
+        %        pwidth-marg_r, size(c.pix,2));
+        newpix(1:colheight, ...
+               pwidth-marg_r-colwidth+1:pwidth-marg_r) = c.pix;
+        for j=1:length(c.blocks);
+            c.blocks(j).rect(1) = c.blocks(j).rect(1)+colwidth;
+            c.blocks(j).rect(3) = c.blocks(j).rect(3)+colwidth;
+        end;
+        page.pix = newpix;
+        page.blocks = [page.blocks;c.blocks];
+    end;
+    for j=1:length(page.blocks);
+        page.blocks(j).rect(1) = page.blocks(j).rect(1)+marg_l-1;
+        page.blocks(j).rect(3) = page.blocks(j).rect(3)+marg_l-1;
+    end;
+    pages = [pages;page];
+end;
+
+%----------------------------------------------------
+%Subfunctions
+
+function [w,h] = get_page_size(article_name);
 
 if (strcmp(article_name(1:2), './') || strcmp(article_name(1:3), '../'));
     article_name = [pwd '/' article_name];
@@ -16,37 +70,12 @@ dot_idx = regexp(article_name, '/');
 dirpath = article_name(1:dot_idx(length(dot_idx)));
 
 tmp = dir([article_name, '.*.jtag']);
+tmp = dir([article_name, '*.jtag']);
 
 jt_paths = {tmp.name};
+%fprintf('Loading "%s"\n', [char(dirpath),char(jt_paths(1))]);
 jt = jt_load([char(dirpath),char(jt_paths(1))],false);
 pix = imread(jt.img_file);
-pageheight = size(pix,1) - (margins.top + margins.bottom);
-pagewidth = floor((size(pix,2)-(final_marg_l + final_marg_r))/2) - ...
-            (margins.right + margins.left);
-fprintf('Original pages were %i pixels wide.  Making cols %i pixels.\n', ...
-        size(pix,2), pagewidth);
+h = size(pix,1);
+w = size(pix,2);
 
-cols = reflow_article(article_name,pagewidth,pageheight,margins);
-fprintf('Assigned col height is %i.\n', pageheight + margins.top + ...
-        margins.bottom);
-
-pages = []
-colh = size(cols(1).ink,1);
-colw = (size(cols(1).ink,1)+size(cols(2).ink,2))+final_marg_l+final_marg_r;
-fprintf('Expected col height is %i.\n',colh);
-for i=1:2:length(cols);
-    if (i < length(cols));
-        fprintf('Merging cols %i and %i, with heights %i and %i.\n', ...
-                i,i+i, size(cols(i).ink,1), size(cols(i+1).ink,1));
-        page.ink = [ones(colh,final_marg_l),cols(i).ink,cols(i+1).ink, ...
-                    ones(colh,final_marg_r)];
-        imshow(page.ink);
-    else;
-        page.ink = [ones(colh,final_marg_l),cols(i).ink, ...
-                    ones(size(cols(i).ink)), ones(colh,final_marg_r)];
-        imshow(page.ink);
-    end;
-    pages = [pages;page];
-end;
-
-res = pages;

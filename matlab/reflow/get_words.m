@@ -1,4 +1,4 @@
-function words = get_words(pix,jt);
+function words = get_words(pix);
 
 lines = get_text_lines(pix);
 
