@@ -46,20 +46,22 @@ for i=1:length(cut_cands);
         %fprintf('Found a seg cand:\n');
         %disp(seg_cand);
         seg_cand = seg_snap(pixels,seg_cand,0);
-        if (i>1 || j<length(cut_cands)); %Don't re-add the original segment
+        if (~td) || (i>1 || j<length(cut_cands)); %If we're building training
+                                               %data, then don't re-add the 
+                                               %original segment
             %fprintf('Adding cand:\n');
             %disp(seg_cand);
             seg_cands.rects = [seg_cands.rects; seg_cand];
             seg_cands.cut_before = [seg_cands.cut_before; i];
             seg_cands.cut_after = [seg_cands.cut_after; j];
             if td && (isfield(c1,'valid_cut'));
-                fprintf('Checking if segment should be valid.\n');
+                %fprintf('Checking if segment should be valid.\n');
                 seg_valid = (c1.valid_cut && c2.valid_cut);
                 if (seg_valid);
-                    for k=i+1:j-1;
-                        if (cut_cands(k).valid_cut);
+                    if (i+1 <= j-1);
+                        vc=[cut_cands(i+1:j-1).valid_cut];
+                        if (any(vc));
                             seg_valid = false;
-                            break;
                         end;
                     end;
                 end;

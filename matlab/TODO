@@ -5,20 +5,83 @@ To Do
 Thesis TOC Gaps:
 ----------------
 3. Applications
-    3.1 OCR Pre-Processing for searchable image-documents
-    3.2 OCR Pre-Processing for compression and storage
-    3.3 OCR Pre-Processing for HTML
+    3.1 OCR Pre-Processing
     
 ----------------------------------------------------
 
 <DONE>Re-test lr, knn, memm on new data.
 <DONE>Fix up problems with LTC3, test 2 (rebuild lr weights)
-<RUNNING>Test LTC3, test2
+<DONE>Test LTC3, test2
 <RUNNING>Run TD extraction with Khash's new algorithms.
+<RUNNING>Optimize Voronoi
+
 Fix up problems with LTC2, test 1
-Code "Recursive Generative Segmentation"
+    <FIXED>BUG: Must count *all* of the "no" regions while doing my dynamic
+                programming trick at test time.
 
+<DONE>Get the objective function sorted out for Recursive Generative Scaling.
+Code Recursive Generative Segmentation (training).
+Train "RGS"
+<DONE>Code Recursive Generative Segmentation (testing).
+Test "RGS"
 
+<DONE>Code "optimize overseg"
+<DONE>Test "optimize overseg"
+
+<DONE>Decide on final cost function for segmentation optimizations.
+
+<DONE>Run final xycuts optimization
+
+<RUNNING>Run final smear optimization
+
+<RUNNING>Run final voronoi optimization
+
+<DONE>Run final LTC3 train/test
+    <DONE>Add more features?  (min_ws, as used by smear)
+<DONE>Sanity check on final LTC3 training.  Beats xycuts hands-down!
+
+Run final RGS training
+
+<DONE>Code test_seg_all_ways
+
+Code test_seg_label_all_ways
+
+Test xycuts all ways
+Test xycuts/lr all ways
+Test xycuts/knn all ways
+Test xycuts/memm all ways
+
+Test smear all ways
+Test smear/lr all ways
+Test smear/knn all ways
+Test smear/memm all ways
+
+Test voronoi all ways
+Test voronoi/lr all ways
+Test voronoi/knn all ways
+Test voronoi/memm all ways
+
+Test LTC3 all ways
+Test LTC3/lr all ways
+Test LTC3/knn all ways
+Test LTC3/memm all ways
+
+Test RGS all ways
+Test RGS/lr all ways
+Test RGS/knn all ways
+Test RGS/memm all ways
+
+Implement OCR pre-processor
+
+Thesis: Finish Segmentation Chapter
+Thesis: Finish Background Chapter
+Thesis: Draft Introduction Chapter
+Thesis: Draft Applications chapter
+Thesis: Draft Labelling chapter
+Thesis: Draft Concludsion chapter
+Thesis: Draft Combined Segmentation & Classification Chapter
+Thesis: References
+Thesis: Figures & Tables
 
 
 
@@ -26,15 +89,15 @@ Code "Recursive Generative Segmentation"
 
 <DONE>Fix bottom-of-page bug and re-run 2-col reflow examples
 
-Read Yann Lecunn papers
+<DONE>Read Yann Lecunn papers
 
-Change LTC2 so that each sample doesn't include the feature names.
+<DONE>Change LTC2 so that each sample doesn't include the feature names.
 
-Implement the best-merge algorithm
+<NOPE>Implement the best-merge algorithm
 
-Implement Voronoi Diagrams for best-merge
+<DONE>Implement Voronoi Diagrams for best-merge
 
-Test Voronoi Diagrams for best-merge
+<RUNNING>Test Voronoi Diagrams for best-merge
 
 <DONE>Improve the document re-flowing
 
@@ -42,16 +105,8 @@ Test Voronoi Diagrams for best-merge
 
 <DONE>Implement "optimizing" Learn-To-Cut data collection
 
-Train "optimizing" Learn-To-Cut
-
 <DONE>Code "optimizing" Learn-To-Cut cutting algorithm
 
-Test "optimizing" Learn-To-Cut cutting algorithm
-
-Add classification features:
-    Does it have both vertical AND horizontal lines?
-    Some measure of font size.
-    
 Consider second reader for thesis:
     -Rich Zemel
     -Brendon Frye

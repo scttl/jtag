@@ -1,11 +1,15 @@
-function score = eval_seg_and_label_file(jt_cor, jt_pred, eval_method);
+function [s1,s2,s3] = eval_seg_and_label_file(jt_cor, jt_pred, eval_method);
 
-if (strcmp(eval_method,'regs_correct'));
-    score = eval_regs_correct(jt_cor,jt_pred);
+if (nargin < 3) || strcmp(eval_methd,'all');
+    s1 = eval_regs_correct(jt_cor,jt_pred);
+    s2 = eval_regs_errors(jt_cor,jt_pred);
+    s3 = eval_pix_correct(jt_cor,jt_pred);
+elseif (strcmp(eval_method,'regs_correct'));
+    s1 = eval_regs_correct(jt_cor,jt_pred);
 elseif (strcmp(eval_method,'regs_errors'));
-    score = eval_regs_errors(jt_cor,jt_pred);
+    s2 = eval_regs_errors(jt_cor,jt_pred);
 elseif (strcmp(eval_method,'pix_correct'));
-    score = eval_pix_correct(jt_cor,jt_pred);
+    s3 = eval_pix_correct(jt_cor,jt_pred);
 end;
 
 

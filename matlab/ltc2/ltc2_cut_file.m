@@ -69,15 +69,22 @@ while (length(live_segs) > 0);
         cut_cands = cut_cands(find([cut_cands.horizontal]==h));
     end;
     fprintf('        Found %i cut_cands at t=%i\n',length(cut_cands),toc);
+    for i=1:length(cut_cands);
+        fprintf('                Cut %i at %i\n',i,cut_cands(i).y);
+    end;
     if (length(cut_cands) == 0);
         dead_segs = [dead_segs;seg];
         continue;
     end;
 
     %Find the seg candidates
+    global seg_cands;
+    seg_cands = [];
     [seg_cands,cut_cands] = cuts_to_segs(seg,cut_cands,pix,h,0);
     fprintf('        Found %i seg_cands, t=%i\n', ...
             length(seg_cands.segs_valid),toc);
+    global seg_samps;
+    seg_samps = [];
     seg_samps = ltc2_make_samples_from_cands(seg_cands,pix,jt,h,f,seg);
     fprintf('        Found %i seg_samps, t=%i\n',length(seg_samps),toc);
 
@@ -104,7 +111,9 @@ while (length(live_segs) > 0);
     for i=2:length(cut_cands);
         cut_cand = cut_cands(i);
         %For each "path" in our list, check if it creates the best path in
-        %which this candidate is a 1:
+        %which this candidate is a 1.
+        %Whether it does or not, update the score for that path to include
+        %all of the additional "not_a_segment" labels added to it.
         bestscore = -inf;
         bestpath = [];
 
@@ -124,12 +133,16 @@ while (length(live_segs) > 0);
                 bestpath = path;
                 bestscore = path.score_sum;
             end;
+
+            %Now update the score for this path to reflect all the additional
+            %not_a_segments that have been added.
+            paths(j).score_sum = paths(j).score_sum + sum(seg_ll_ops_n);
         end;
         paths = [paths;bestpath];
     end;
-    %cut_cands = cut_cands(2:end-1);   %Un-pad the cut_cands
-    if (length(cut_cands)>0);
-        done_segs = [done_segs; make_cuts(seg,bestpath.cuts,pix)];
+
+    if (length(bestpath.cuts)>2); %If more than the "padded" cuts were chosen
+        done_segs = [done_segs; make_cuts(seg,bestpath.cuts(2:end-1),pix)];
     elseif (f && ~h);
         done_segs = [done_segs; seg];
     else;

@@ -23,10 +23,10 @@ for tnum=1:length(Td1);
         jt=jt_load(char(data.pg_names(j)),0);
         pix = imread(char(jt.img_file));
         if (nargin < 3);
-            s = seg_eval(pix,voronoi1(pix),jt.rects,jt.class_id); 
+            s = seg_eval_2(pix,voronoi1(pix),jt.rects); 
         else;
-            s = seg_eval(pix, voronoi1(pix,Td1(tnum),Td2(tnum)), ...
-                         jt.rects, jt.class_id);
+            s = seg_eval_2(pix, voronoi1(pix,Td1(tnum),Td2(tnum)), ...
+                           jt.rects);
         end;
         score(tnum) = score(tnum) + s; 
         fprintf('    Page %i of %i scored %f, for running total of %f\n', ...

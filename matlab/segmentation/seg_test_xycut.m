@@ -30,14 +30,8 @@ for tnum=1:length(VT);
     score(tnum) = 0; 
     for j=1:min([maxits, data.num_pages]); 
         jt=jt_load(char(data.pg_names(j)),0);
-        if (nargin < 3);
-            s = seg_eval(imread(char(jt.img_file)), ...
-                         xycut(char(jt.img_file)),jt.rects,jt.class_id); 
-        else;
-            s = seg_eval(imread(char(jt.img_file)), ...
-                         xycut(char(jt.img_file),HT(tnum),VT(tnum)), ...
-                               jt.rects, jt.class_id);
-        end;
+        s = seg_eval_2(imread(char(jt.img_file)), ...
+                       xycut(char(jt.img_file),HT(tnum),VT(tnum)), jt.rects);
         score(tnum) = score(tnum) + s; 
         fprintf('    Page %i of %i scored %f, for running total of %f\n', ...
                 j, min([maxits, data.num_pages]), s, score(tnum)); 

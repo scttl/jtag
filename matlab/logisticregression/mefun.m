@@ -1,32 +1,26 @@
-function [ll,dll] = mefun(lamvec,cc,ff,sigma)
+function [ll,dll] = mefun(w_vec,cc,ff,smoothing)
 
-% [ll,dll] = mefun(lamvec,cc,ff,sigma)
+% [ll,dll] = mefun(w_vec,cc,ff,smoothing)
 % Provides the Log Likelihood value (ll), as well as the gradient (dll)
 % for use by the minimize function.
 %
-% lamvec: Weight vector at the start of this iteration
+% w_vec: Weight vector at the start of this iteration
 %
 % ff: Features.  Each column contains the features for one data item.
 %
 % cc: Class ID's.  Each row contains the classID for one data item.
 %
-% sigma: the smoothing
+% smoothing: the smoothing
 %
 % ff should NOT have the default feature, mefun will add that
 
 [M,N] = size(ff);
-C=length(lamvec(:))/(M+1);
-lambda = reshape(lamvec(:),M+1,C);
+C=length(w_vec(:))/(M+1);
+ww = reshape(w_vec(:),M+1,C);
 
-%fprintf('Inside mefun, M=%i,N=%i,C=%i\n',M,N,C);
-
-lqq=lambda'*[ff;ones(1,N)];
-%qq=exp(lqq);
-%qqn=sum(qq,1);
+lqq=ww'*[ff;ones(1,N)];
 lqqn = logsum(lqq,1);
 logprobc = lqq-repmat(lqqn,C,1);
-%probc = qq./repmat(qqn,C,1);
-%probc=exp(logprobc);
 ccidx = zeros(C,N);
 for i=1:N;
     if (cc(i)==0);
@@ -43,19 +37,12 @@ ccmat(ccidx)=1;
 % negatives because we are minimizing!
 
 ll  = - (sum(lqq(ccidx)) - sum(lqqn)) ...
-      + .5*sigma*sum(lambda(:).^2);
+      + .5*smoothing*sum(ww(:).^2);
 dll = - sum(repmat([ff;ones(1,N)],C,1).* ...
-       duprows(ccmat-exp(logprobc),M+1),2) + sigma*lambda(:);
+       duprows(ccmat-exp(logprobc),M+1),2) + smoothing*ww(:);
 
 
-% no gaussian prior
+% no smoothing
 %ll  = - (sum(lqq(ccidx)) - sum(log(qqn)));
 %dll = - sum(repmat([ff;ones(1,N)],C,1).*duprows(ccmat-probc,M+1),2);
 
-
-
-
-
-% duprows(m,n)
-%[mr,mc] = size(m);
-%b = reshape(ones(n,1)*m(:)',mr*n,mc);

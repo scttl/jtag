@@ -1,6 +1,7 @@
 addpath('./matlab/');
 addpath('./matlab/logisticregression/');
 addpath('./matlab/knn/');
+addpath('./matlab/rgs/');
 addpath('./matlab/segmentation/');
 addpath('./matlab/learntocut/');
 addpath('./matlab/ltc2/');

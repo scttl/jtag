@@ -1,14 +1,15 @@
 %Script to optimize Voronoi for JMLR and NIPS
 
-jmlr = parse_training_data('./results/nosnap/nosnap-jmlr-train.knn.mat');
+jmlr=parse_training_data('./results/2004-10-04/2004-10-04-jmlr-train.knn.mat');
 
-nips = parse_training_data('./results/nosnap/nosnap-nips-train.knn.mat');
+nips=parse_training_data('./results/2004-10-04/2004-10-04-nips-train.knn.mat');
 
-Td1=[8  8  8  8  9  9  9  9 ...
-     10 10 10 10 11 11 11 11];
-Td2=[3  4  5  6  3  4  5  6 ...
-      3  4  5  6  3  4  5  6];
-     
+Td1=[16 18 20 22 24 16 18 20 22 24 16 18 20 22 24 ...
+     16 18 20 22 24 16 18 20 22 24];
+
+Td2=[ 3  3  3  3  3  4  4  4  4  4  5  5  5  5  5 ...
+      6  6  6  6  6  7  7  7  7  7];
+
 
 [JScores,JAllScores] = seg_test_voronoi(jmlr,Td1,Td2);
 
