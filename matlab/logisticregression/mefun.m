@@ -25,7 +25,6 @@ lqqn = logsum(lqq,1);
 logprobc = lqq-repmat(lqqn,C,1);
 %probc = qq./repmat(qqn,C,1);
 %probc=exp(logprobc);
-
 ccidx = sub2ind([C,N],cc(:),(1:N)');
 
 ccmat = zeros(C,N);
