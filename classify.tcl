@@ -5,11 +5,15 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.10 2003-07-21 15:21:36 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.11 2003-07-21 21:35:18 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.10  2003-07-21 15:21:36  scottl
+## Revision 1.11  2003-07-21 21:35:18  scottl
+## Moved snapping to inital rectangle creation only, also moved snap threshold to
+## be read from the config file instead of hard-coded within this file.
+##
+## Revision 1.10  2003/07/21 15:21:36  scottl
 ## Implemented automatic snapping of selections to bound text based on percentage
 ## of non-background ink found.
 ##
@@ -471,7 +475,7 @@ proc ::Jtag::Classify::snap_selection id {
     variable ::Jtag::Config::data
 
     # declare any local variables needed
-    variable Threshold .02 ;# % of pixels on a side that must be non-background
+    variable Threshold
     variable Background {#ffffff}  ;# background colour (RGB format)
     variable Simple {simple}
     variable Data
@@ -505,6 +509,12 @@ proc ::Jtag::Classify::snap_selection id {
     set Y2 [$can(path) coords $id]
     if {[llength $Y2] != 4} {
         debug "no rectangle belonging to id $id passed"
+        return
+    }
+
+    # ensure the threshold exists and is a valid percent
+    if {$cnfg(snap_threshold) < 0 || $cnfg(snap_threshold) > 100} {
+        debug "snap_threshold set to invalid percentage"
         return
     }
 
@@ -545,7 +555,7 @@ proc ::Jtag::Classify::snap_selection id {
                         incr InkCount
                 }
             }
-            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+            if {$InkCount >= [expr $NumPixels * $cnfg(snap_threshold) / 100.]} {
                 set X1Done 1
             } else {
                 incr X1
@@ -562,7 +572,7 @@ proc ::Jtag::Classify::snap_selection id {
                         incr InkCount
                 }
             }
-            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+            if {$InkCount >= [expr $NumPixels * $cnfg(snap_threshold) / 100.]} {
                 set Y1Done 1
             } else {
                 incr Y1
@@ -579,7 +589,7 @@ proc ::Jtag::Classify::snap_selection id {
                         incr InkCount
                 }
             }
-            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+            if {$InkCount >= [expr $NumPixels * $cnfg(snap_threshold) / 100.]} {
                 set X2Done 1
             } else {
                 incr X2 -1
@@ -596,7 +606,7 @@ proc ::Jtag::Classify::snap_selection id {
                         incr InkCount
                 }
             }
-            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+            if {$InkCount >= [expr $NumPixels * $cnfg(snap_threshold) / 100.]} {
                 set Y2Done 1
             } else {
                 incr Y2 -1
@@ -970,21 +980,23 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
     # adjust selection rectangle to the current position:
     SelExpand $c $x $y $m
 
-    # snap our selection
-    ::Jtag::Classify::snap_selection $sel(id)
-
-    # update our sel(x1) ... sel(y2) co-ords to the now snapped co-ords
-    set Coords [$c coords $sel(id)]
-    set sel(x1) [lindex $Coords 0]
-    set sel(y1) [lindex $Coords 1]
-    set sel(x2) [lindex $Coords 2]
-    set sel(y2) [lindex $Coords 3]
 
     # check if we have just finished resizing a classified rectangle
     set ResizeRef [::Jtag::Classify::get_selection $sel(id)]
 
     if {$ResizeRef == ""} {
         # create a new selection rectangle
+
+        # snap our selection
+        ::Jtag::Classify::snap_selection $sel(id)
+
+        # update our sel(x1) ... sel(y2) co-ords to the now snapped co-ords
+        set Coords [$c coords $sel(id)]
+        set sel(x1) [lindex $Coords 0]
+        set sel(y1) [lindex $Coords 1]
+        set sel(x2) [lindex $Coords 2]
+        set sel(y2) [lindex $Coords 3]
+
         # hack to create transparent rectangles
         ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
 
