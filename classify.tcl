@@ -5,11 +5,15 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.9 2003-07-18 17:58:48 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.10 2003-07-21 15:21:36 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.9  2003-07-18 17:58:48  scottl
+## Revision 1.10  2003-07-21 15:21:36  scottl
+## Implemented automatic snapping of selections to bound text based on percentage
+## of non-background ink found.
+##
+## Revision 1.9  2003/07/18 17:58:48  scottl
 ## - Fixed bug whereby already classified resizes where not being updated in the
 ##   data array.
 ## - Also split AddToBucket into a helper so that the helper can be used
@@ -444,6 +448,178 @@ proc ::Jtag::Classify::get_selection id {
 }
 
 
+# ::Jtag::Classify::snap_selection --
+#
+#    Given a selection id, this procedure tightens the bounding rectangle
+#    represented by this id using ink thresholds as appropriate
+#
+# Arguments:
+#    id    The unique id returned during the creation of a rectangle that
+#          exists on the canvas
+#
+# Results:
+#    The image is shrunk down on all 4 sides (if mode is crop) or top and
+#    bottom side (if mode is simple) until each side of the bounding box
+#    contains a certain threshold of non-background pixels
+
+proc ::Jtag::Classify::snap_selection id {
+
+    # link any namespace variables
+    variable ::Jtag::Config::cnfg
+    variable ::Jtag::Image::can
+    variable ::Jtag::Image::img
+    variable ::Jtag::Config::data
+
+    # declare any local variables needed
+    variable Threshold .02 ;# % of pixels on a side that must be non-background
+    variable Background {#ffffff}  ;# background colour (RGB format)
+    variable Simple {simple}
+    variable Data
+    variable NumPixels
+    variable InkCount
+    variable I
+    variable J
+
+    # current rectangle bounds
+    variable X1
+    variable Y1
+    variable X2
+    variable Y2
+
+    # set to 1 when we've met the bound for that side
+    variable X1Done 0
+    variable Y1Done 0
+    variable X2Done 0
+    variable Y2Done 0
+
+
+    debug {entering ::Jtag::Classify::snap_selection}
+
+    # ensure that an image exists to snap to
+    if {! [::Jtag::Image::exists]} {
+        debug "no image to snap selection to"
+        return
+    }
+
+    # ensure that the id refers to a created rectangle
+    set Y2 [$can(path) coords $id]
+    if {[llength $Y2] != 4} {
+        debug "no rectangle belonging to id $id passed"
+        return
+    }
+
+    # change the cursor since this may take a bit of time (depending on sel
+    # size and error), and prevent other operations 
+    ::blt::busy hold .
+
+    set X1 [expr round([lindex $Y2 0] / $img(zoom))]
+    set Y1 [expr round([lindex $Y2 1] / $img(zoom))]
+    set X2 [expr round([lindex $Y2 2] / $img(zoom))]
+    set Y2 [expr round([lindex $Y2 3] / $img(zoom))]
+
+    # if we are in simple mode, explicitly set X1 and X2 to be the width of
+    # the image (rounding may make it larger than the image, causing problems 
+    # below)
+    if {$cnfg(mode) == $Simple} {
+        set X1 0
+        set X2 [lindex [::Jtag::Image::get_actual_dimensions] 0]
+    }
+
+    # loop over all sides, moving them in one pixel at a time until done
+    while {! ($X1Done && $Y1Done && $X2Done && $Y2Done)} {
+
+        if {$X1 >= $X2 || $Y1 >= $Y2} {
+            debug "no ink found in selection"
+            # now allow people to interact and handle events again
+            ::blt::busy release .
+            return
+        }
+
+        if {! $X1Done} {
+            set Data [$img(orig_img) data -grayscale \
+                                          -from $X1 $Y1 [expr $X1+1] $Y2]
+            set NumPixels [llength $Data]
+            set InkCount 0
+            foreach I $Data {
+                if {$I != $Background} {
+                        incr InkCount
+                }
+            }
+            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+                set X1Done 1
+            } else {
+                incr X1
+            }
+        } ;# end X1 checks
+
+        if {! $Y1Done} {
+            set Data [$img(orig_img) data -grayscale \
+                                          -from $X1 $Y1 $X2 [expr $Y1+1]]
+            set NumPixels [llength [lindex $Data 0]]
+            set InkCount 0
+            foreach I [lindex $Data 0] {
+                if {$I != $Background} {
+                        incr InkCount
+                }
+            }
+            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+                set Y1Done 1
+            } else {
+                incr Y1
+            }
+        } ;# end Y1 checks
+
+        if {! $X2Done} {
+            set Data [$img(orig_img) data -grayscale \
+                                          -from [expr $X2 -1] $Y1 $X2 $Y2]
+            set NumPixels [llength $Data]
+            set InkCount 0
+            foreach I $Data {
+                if {[lindex $I 0] != $Background} {
+                        incr InkCount
+                }
+            }
+            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+                set X2Done 1
+            } else {
+                incr X2 -1
+            }
+        } ;# end X2 checks
+
+        if {! $Y2Done} {
+            set Data [$img(orig_img) data -grayscale \
+                                          -from $X1 [expr $Y2 -1] $X2 $Y2]
+            set NumPixels [llength [lindex $Data 0]]
+            set InkCount 0
+            foreach I [lindex $Data 0] {
+                if {$I != $Background} {
+                        incr InkCount
+                }
+            }
+            if {$InkCount >= [expr $NumPixels * $Threshold]} {
+                set Y2Done 1
+            } else {
+                incr Y2 -1
+            }
+        } ;# end Y2 checks
+
+    } ;# end while
+
+    if {$cnfg(mode) == $Simple} {
+        # explicitly set the X widths back to the image width 
+        set X1 0
+        set X2 [lindex [::Jtag::Image::get_actual_dimensions] 0]
+    }
+
+    # now set the rectangle co-ords to the new value
+    $can(path) coords $id [expr $X1 * $img(zoom)] [expr $Y1 * $img(zoom)] \
+                          [expr $X2 * $img(zoom)] [expr $Y2 * $img(zoom)]
+
+    # now allow people to interact and handle events again
+    ::blt::busy release .
+
+}
+
 
 
 # PRIVATE PROCEDURES #
@@ -775,6 +951,7 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
     variable Min 6
     variable ResizeRef
     variable Class
+    variable Coords
 
     # stop the clock timer and adjust to seconds
     set sel(sl_time) [expr ($sel(sl_time) + \
@@ -792,6 +969,16 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
 
     # adjust selection rectangle to the current position:
     SelExpand $c $x $y $m
+
+    # snap our selection
+    ::Jtag::Classify::snap_selection $sel(id)
+
+    # update our sel(x1) ... sel(y2) co-ords to the now snapped co-ords
+    set Coords [$c coords $sel(id)]
+    set sel(x1) [lindex $Coords 0]
+    set sel(y1) [lindex $Coords 1]
+    set sel(x2) [lindex $Coords 2]
+    set sel(y2) [lindex $Coords 3]
 
     # check if we have just finished resizing a classified rectangle
     set ResizeRef [::Jtag::Classify::get_selection $sel(id)]
