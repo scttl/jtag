@@ -5,11 +5,15 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.17 2003-08-29 18:53:27 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.18 2003-09-11 18:26:21 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.17  2003-08-29 18:53:27  scottl
+## Revision 1.18  2003-09-11 18:26:21  scottl
+## Activate button corresponding to classified selection when mouse enters
+## that selection.
+##
+## Revision 1.17  2003/08/29 18:53:27  scottl
 ## Updated status bar to display data array info when mousing over a
 ## classified selection.
 ##
@@ -767,6 +771,8 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
     # link any namespace variables needed
     variable pad
     variable ::Jtag::Image::img
+    variable lBuckets
+    variable rBuckets
     
     # declare any local variables needed
     variable R
@@ -781,6 +787,11 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
 
     ::Jtag::UI::status_text "POS: [expr [$c canvasx $x] / $img(zoom)], \
                                   [expr [$c canvasy $y] / $img(zoom)]"
+
+    set Buckets [concat $lBuckets $rBuckets]
+    foreach I $Buckets {
+        $I configure -state normal
+    }
 
     if {[llength $Coords] == 4} {
         #inside a rectangle
@@ -807,6 +818,12 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
             set ClsAttmpt [lindex $::Jtag::Config::data($SelRef) 9]
             set ResAttmpt [lindex $::Jtag::Config::data($SelRef) 10]
 
+            # flash the button associated with this selection
+            foreach I $Buckets {
+                if {[regexp \\.$Class $I]} {
+                    $I configure -state active
+                }
+            }
             ::Jtag::UI::status_text "SEL: ($X1, $Y1, $X2, $Y2) \
             Class=$Class Mode=$Mode Snapped=$Snapped SelTime=$SelTime \
             ClsTime=$ClsTime ClassAttmpts=$ClsAttmpt \
