@@ -1,14 +1,14 @@
-function res = run_all_features(rect, pixels)
+function feature_vals = run_all_features(rects, pixels)
 % RUN_ALL_FEATURES    Iterates through each feature available on RECT,  building
 %                     up a cell array containing all the results.
 %
-%   RES = RUN_ALL_FEATURES(RECT, PIXELS)  This function runs through each
-%   feature listed, passing the appropriate arguments, collecting the result 
-%   and adding it to the vector RES which is returned once all features have 
+%   RES = RUN_ALL_FEATURES(RECTS, PIXELS)  This function runs through each
+%   feature listed, passing the appropriate arguments, collecting the result
+%   and adding it to the vector RES which is returned once all features have
 %   been completed.
 %
-%   If called without any arguments, then RES returned is a cell array 
-%   containing the names of each feature instead of feature data.
+%   If called without any arguments, then feature_vals returned is a cell
+%   array containing the names of each feature instead of feature data.
 %
 %   If there is a problem at any point an error is returned to the caller.
 %
@@ -18,11 +18,14 @@ function res = run_all_features(rect, pixels)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.4 2004-06-01 19:24:34 klaven Exp $
-% 
+% $Id: run_all_features.m,v 1.5 2004-06-01 21:38:21 klaven Exp $
+%
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.4  2004-06-01 19:24:34  klaven
+% Revision 1.5  2004-06-01 21:38:21  klaven
+% Updated the feature extraction methods to take all the rectangles at once, rather than work one at a time.  This allows for the extraction of features that use relations between rectangles.
+%
+% Revision 1.4  2004/06/01 19:24:34  klaven
 % Assorted minor changes.  About to re-organize.
 %
 % Revision 1.3  2004/05/14 17:21:32  klaven
@@ -40,7 +43,7 @@ function res = run_all_features(rect, pixels)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-res = [];          % the vector we will build as we run through features
+feature_vals = []; % the vector we will build as we run through features
 get_names = false; % set to true to return feature names instead of values.
 data = {};         % temp holder for structs returned by features
 
@@ -48,17 +51,22 @@ data = {};         % temp holder for structs returned by features
 error(nargchk(0,2,nargin));
 
 if nargin == 0
-    res = {};
+    feature_vals = {};
     get_names = true;
 elseif nargin == 1
     error('must pass exactly 2 args or none at all');
 else
     [r, c] = size(pixels);
-    if ndims(rect) > 2 | size(rect) ~= 4
-        error('RECT must have exactly 4 elements.');
-    elseif rect(1) < 1 | rect(2) < 1 | rect(3) > c | rect(4) > r
-        error('RECT passed exceeds PIXEL boundaries');
-    end
+    if ndims(rects) > 2 | size(rects,2) ~= 4;
+        error('Each RECT must have exactly 4 elements.');
+    else
+        for rr = 1:size(rects,1);
+            if min(rects(:,1)) < 1 | min(rects(:,2)) < 1 | ...
+               max(rects(:,3)) > c | max(rects(:,4)) > r;
+                error('RECT passed exceeds PIXEL boundaries');
+            end;
+        end
+    end;
 end
 
 % start running through features.
@@ -71,16 +79,19 @@ if get_names
     data(1:20) = distance_features;
     data(21:22) = density_features;
     for i = 1:length(data)
-        res{i} = data{i}.name;
+        feature_vals{i} = data{i}.name;
     end
 else
-    data(1:20) = distance_features(rect,pixels);
-    data(21:22) = density_features(rect,pixels);
-    for i = 1:length(data)
-        res = [res, data{i}.val];
-    end
-end
-
+    data(:,1:20) = distance_features(rects,pixels);
+    data(:,21:22) = density_features(rects,pixels);
+    for j = 1:length(rects);
+        %data(1:20) = distance_features(rects(j,:),pixels);
+        %data(21:22) = density_features(rects(j,:),pixels);
+        for i = 1:length(data);
+	    feature_vals(j,i) = data{i}.val;
+        end;
+    end;
+end;
 
 
 % SUBFUNCITON DECLARATIONS %

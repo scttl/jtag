@@ -1,4 +1,4 @@
-function res = distance_features(rect, pixels, varargin)
+function res = distance_features(rects, pixels, varargin)
 % DISTANCE_FEATURES   Subjects RECT to a variety of distance related features.
 %
 %  DISTANCE_FEATURES(RECT, PAGE, {THRESHOLD})  Runs the 4 element vector RECT
@@ -15,11 +15,14 @@ function res = distance_features(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: distance_features.m,v 1.3 2004-06-01 19:24:34 klaven Exp $
+% $Id: distance_features.m,v 1.4 2004-06-01 21:38:21 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: distance_features.m,v $
-% Revision 1.3  2004-06-01 19:24:34  klaven
+% Revision 1.4  2004-06-01 21:38:21  klaven
+% Updated the feature extraction methods to take all the rectangles at once, rather than work one at a time.  This allows for the extraction of features that use relations between rectangles.
+%
+% Revision 1.3  2004/06/01 19:24:34  klaven
 % Assorted minor changes.  About to re-organize.
 %
 % Revision 1.2  2003/08/26 21:37:50  scottl
@@ -48,11 +51,13 @@ elseif nargin == 1
     error('can not pass in 1 argument.  Must be 0, 2 or 3');
 else
     [r, c] = size(pixels);
-    if ndims(rect) > 2 | size(rect) ~= 4
+    if ndims(rects) > 2 | size(rects,2) ~= 4
         error('RECT passed must have exactly 4 elements');
-    elseif rect(1) < 1 | rect(2) < 1 | rect(3) > c | rect(4) > r
+    end;
+    if min(rects(:,1)) < 1 | min(rects(:,2)) < 1 | ...
+       max(rects(:,3)) > c | max(rects(:,4)) > r;
         error('RECT passed exceeds PAGE boundaries');
-    end
+    end;
 
     if nargin == 3
         if varargin{1} < 0 | varargin{1} > 1
@@ -64,48 +69,57 @@ end
 
 res = {};
 
+for rr = 1:size(rects,1);
+rect = rects(rr,:);
+
 % note that all feature distances computed are normalized by the size of the
 % page!!
 
 % features 1 - 4 compute the distance from one edge of the rectangle to the
 % associated edge in the "snapped" subrectangle (must contain at least
 % threshold percent ink)
-res{1}.name  = 'l_inksr_dist';
-res{2}.name  = 't_inksr_dist';
-res{3}.name  = 'r_inksr_dist';
-res{4}.name  = 'b_inksr_dist';
+res{rr,1}.name  = 'l_inksr_dist';
+res{rr,2}.name  = 't_inksr_dist';
+res{rr,3}.name  = 'r_inksr_dist';
+res{rr,4}.name  = 'b_inksr_dist';
 
 % features 5 - 8 compute the distance from one edge of the rectangle to the
 % associated edge of the page
-res{5}.name  = 'l_page_dist';
-res{6}.name  = 't_page_dist';
-res{7}.name  = 'r_page_dist';
-res{8}.name  = 'b_page_dist';
+res{rr,5}.name  = 'l_page_dist';
+res{rr,6}.name  = 't_page_dist';
+res{rr,7}.name  = 'r_page_dist';
+res{rr,8}.name  = 'b_page_dist';
 
 % features 9 - 12 copmute the distance from one edge of the "snapped"
 % subrectangle to the associated edge of the page.  This is really the sum of
 % the first and second group of features above, i.e.
 % res{9} = res{1} + res{5} etc.
-res{9}.name   = 'l_inksr_page_dist';
-res{10}.name  = 't_inksr_page_dist';
-res{11}.name  = 'r_inksr_page_dist';
-res{12}.name  = 'b_inksr_page_dist';
+res{rr,9}.name   = 'l_inksr_page_dist';
+res{rr,10}.name  = 't_inksr_page_dist';
+res{rr,11}.name  = 'r_inksr_page_dist';
+res{rr,12}.name  = 'b_inksr_page_dist';
 
 % features 13 - 16 compute the distance from one edge of the rectangle to the
 % next threshold significant non-whitespace region.
-res{13}.name  = 'l_ws_dist';
-res{14}.name = 't_ws_dist';
-res{15}.name = 'r_ws_dist';
-res{16}.name = 'b_ws_dist';
+res{rr,13}.name  = 'l_ws_dist';
+res{rr,14}.name = 't_ws_dist';
+res{rr,15}.name = 'r_ws_dist';
+res{rr,16}.name = 'b_ws_dist';
 
 % features 17 - 20 compute the distance from one edge of the "snapped"
 % subrectangle to the next threshold significant non-whitespace region.
 % This is really the sum of the first and fourth group of features above, i.e.
 % res{17} = res{1} + res{13} etc.
-res{17}.name = 'l_inksr_ws_dist';
-res{18}.name = 't_inksr_ws_dist';
-res{19}.name = 'r_inksr_ws_dist';
-res{20}.name = 'b_inksr_ws_dist';
+res{rr,17}.name = 'l_inksr_ws_dist';
+res{rr,18}.name = 't_inksr_ws_dist';
+res{rr,19}.name = 'r_inksr_ws_dist';
+res{rr,20}.name = 'b_inksr_ws_dist';
+
+%res{rr,21}.name = 'height';
+%res{rr,22}.name = 'width';
+%res{rr,23}.name = 'area';
+%res{rr,24}.name = 'aspect_ratio1';
+%res{rr,25}.name = 'aspect_ratio2';
 
 
 if get_names
@@ -115,23 +129,23 @@ end
 
 % get the subrectangle meeting the ink threshold (features 1 - 4).
 sr = get_sr(rect, pixels, threshold);
-res{1}.val = (sr(1) - rect(1)) / c;
-res{2}.val = (sr(2) - rect(2)) / r;
-res{3}.val = (rect(3) - sr(3)) / c;
-res{4}.val = (rect(4) - sr(4)) / r;
+res{rr,1}.val = (sr(1) - rect(1)) / c;
+res{rr,2}.val = (sr(2) - rect(2)) / r;
+res{rr,3}.val = (rect(3) - sr(3)) / c;
+res{rr,4}.val = (rect(4) - sr(4)) / r;
 
 
 % now calculate features 5 - 8
-res{5}.val  = (rect(1) - 1) / c;
-res{6}.val  = (rect(2) - 1) / r;
-res{7}.val  = (c - rect(3)) / c;
-res{8}.val  = (r - rect(4)) / r;
+res{rr,5}.val  = (rect(1) - 1) / c;
+res{rr,6}.val  = (rect(2) - 1) / r;
+res{rr,7}.val  = (c - rect(3)) / c;
+res{rr,8}.val  = (r - rect(4)) / r;
 
 % now calculate features 9 - 12
-res{9}.val  = res{1}.val + res{5}.val;
-res{10}.val = res{2}.val + res{6}.val;
-res{11}.val = res{3}.val + res{7}.val;
-res{12}.val = res{4}.val + res{8}.val;
+res{rr,9}.val  = res{rr,1}.val + res{rr,5}.val;
+res{rr,10}.val = res{rr,2}.val + res{rr,6}.val;
+res{rr,11}.val = res{rr,3}.val + res{rr,7}.val;
+res{rr,12}.val = res{rr,4}.val + res{rr,8}.val;
 
 % now calculate the amount of whitespace from each edge (features 13 - 16).
 % Note that when determining whitespace above or below a selection, the entire
@@ -148,6 +162,7 @@ l_done = false;
 t_done = false;
 r_done = false;
 b_done = false;
+
 
 while ~ (l_done & t_done & r_done & b_done)
 
@@ -225,15 +240,17 @@ while ~ (l_done & t_done & r_done & b_done)
 
 end  %end while loop
 
-res{13}.val = (rect(1) - left) / c;
-res{14}.val = (rect(2) - top) / r;
-res{15}.val = (right - rect(3)) / c;
-res{16}.val = (bottom - rect(4)) / r;
+res{rr,13}.val = (rect(1) - left) / c;
+res{rr,14}.val = (rect(2) - top) / r;
+res{rr,15}.val = (right - rect(3)) / c;
+res{rr,16}.val = (bottom - rect(4)) / r;
 
 
 % now calculate features 17 - 20 by simply adding the corresponding element
 % from features (1-4) with features (13-16)
-res{17}.val = res{1}.val + res{13}.val;
-res{18}.val = res{2}.val + res{14}.val;
-res{19}.val = res{3}.val + res{15}.val;
-res{20}.val = res{4}.val + res{16}.val;
+res{rr,17}.val = res{rr,1}.val + res{rr,13}.val;
+res{rr,18}.val = res{rr,2}.val + res{rr,14}.val;
+res{rr,19}.val = res{rr,3}.val + res{rr,15}.val;
+res{rr,20}.val = res{rr,4}.val + res{rr,16}.val;
+
+end;
