@@ -1,18 +1,37 @@
-function cost = seg_eval(p,segs)
-%function cost = seg_eval(p,segs)
-%  p is a pixel map from imread()
-%  segs is a segmentation like that returned by xycut
+function loglikelihood = seg_eval(p,seg_pred,seg_cor);
 %
-%First attempt at a cost function for segmentation
-%Basic idea: every black pixel missed is worth 100
-%            every white pixel included is worth 1
+%function loglikelihood = seg_eval(p,seg_pred,seg_cor);
+% Loss function for segmentation supervised learning.
+%     p is the pixels
+%     seg_pred is the predicted segmentation
+%     seg_cor is the correct (actual) segmentation
+%
+%
+% First attempt: Each actual segment that does not have a
+% predicted segment matching all 4 parameters within 10
+% pixels is considered an error.
+%
+% Loss = num_errors * num_pred / (num_cor^2)
+%
 
-OnesInSegs = zeros(size(p));
-for ii = 1 : size(segs,1);
-  OnesInSegs(segs(ii,2):segs(ii,4),segs(ii,1):segs(ii,3)) = 1;
+num_cor = 0;
+num_wrong = 0;
+for i = 1:size(seg_cor,1);
+    matched = false;
+    for j = 1:size(seg_pred,1);
+        if (max(abs(seg_pred(j,:) - seg_cor(i,:))) < 10);
+            matched = true;
+        end;
+    end;
+    if matched;
+        num_cor = num_cor + 1;
+    else
+        num_wrong = num_wrong + 1;
+        fprintf('No match for l%i t%i r%i b%i\n', seg_cor(i,1), ...
+                seg_cor(i,2), seg_cor(i,3), seg_cor(i,4));
+    end;
 end;
 
-cost = sum(sum(OnesInSegs .* p));
-cost = cost + (100 * (sum(sum((1 - OnesInSegs) .* (1 - p)))));
+loglikelihood = - (num_wrong) * (size(seg_pred,1) + 0.5);
 
-
+% Try #2: Use each corner as a dimension, and find the "squared error".
