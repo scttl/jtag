@@ -1,0 +1,948 @@
+diff -cr blt2.4z/src/bltGrAxis.c blt2.4z-new/src/bltGrAxis.c
+*** blt2.4z/src/bltGrAxis.c	2002-09-18 17:30:51.000000000 -0500
+--- blt2.4z-new/src/bltGrAxis.c	2002-12-02 22:39:26.000000000 -0600
+***************
+*** 1424,1482 ****
+      double majorStep, minorStep;
+      int nMajor, nMinor;
+  
+!     min = (min != 0.0) ? log10(FABS(min)) : 0.0;
+!     max = (max != 0.0) ? log10(FABS(max)) : 1.0;
+! 
+!     tickMin = floor(min);
+!     tickMax = ceil(max);
+!     range = tickMax - tickMin;
+! 
+!     if (range > 10) {
+! 	/* There are too many decades to display a major tick at every
+! 	 * decade.  Instead, treat the axis as a linear scale.  */
+! 	range = NiceNum(range, 0);
+! 	majorStep = NiceNum(range / DEF_NUM_TICKS, 1);
+! 	tickMin = UFLOOR(tickMin, majorStep);
+! 	tickMax = UCEIL(tickMax, majorStep);
+! 	nMajor = (int)((tickMax - tickMin) / majorStep) + 1;
+! 	minorStep = EXP10(floor(log10(majorStep)));
+! 	if (minorStep == majorStep) {
+! 	    nMinor = 4, minorStep = 0.2;
+  	} else {
+! 	    nMinor = Round(majorStep / minorStep) - 1;
+! 	}
+!     } else {
+! 	if (tickMin == tickMax) {
+! 	    tickMax++;
+! 	}
+! 	majorStep = 1.0;
+! 	nMajor = (int)(tickMax - tickMin + 1); /* FIXME: Check this. */
+! 
+! 	minorStep = 0.0;	/* This is a special hack to pass
+  				 * information to the GenerateTicks
+  				 * routine. An interval of 0.0 tells
+  				 *	1) this is a minor sweep and 
+  				 *	2) the axis is log scale.  
+  				 */
+! 	nMinor = 10;
+!     }
+!     if ((axisPtr->looseMin == TICK_RANGE_TIGHT) ||
+! 	((axisPtr->looseMin == TICK_RANGE_LOOSE) && 
+! 	 (DEFINED(axisPtr->reqMin)))) {
+! 	tickMin = min;
+! 	nMajor++;
+!     }
+!     if ((axisPtr->looseMax == TICK_RANGE_TIGHT) ||
+! 	((axisPtr->looseMax == TICK_RANGE_LOOSE) &&
+! 	 (DEFINED(axisPtr->reqMax)))) {
+! 	tickMax = max;
+      }
+      axisPtr->majorSweep.step = majorStep;
+      axisPtr->majorSweep.initial = floor(tickMin);
+      axisPtr->majorSweep.nSteps = nMajor;
+      axisPtr->minorSweep.initial = axisPtr->minorSweep.step = minorStep;
+      axisPtr->minorSweep.nSteps = nMinor;
+- 
+      SetAxisRange(&axisPtr->axisRange, tickMin, tickMax);
+  }
+  
+--- 1424,1485 ----
+      double majorStep, minorStep;
+      int nMajor, nMinor;
+  
+!     nMajor = nMinor = 0;
+!     majorStep = minorStep = 0.0;
+!     if (min < max) {
+! 	min = (min != 0.0) ? log10(FABS(min)) : 0.0;
+! 	max = (max != 0.0) ? log10(FABS(max)) : 1.0;
+! 	
+! 	tickMin = floor(min);
+! 	tickMax = ceil(max);
+! 	range = tickMax - tickMin;
+! 	
+! 	if (range > 10) {
+! 	    /* There are too many decades to display a major tick at every
+! 	     * decade.  Instead, treat the axis as a linear scale.  */
+! 	    range = NiceNum(range, 0);
+! 	    majorStep = NiceNum(range / DEF_NUM_TICKS, 1);
+! 	    tickMin = UFLOOR(tickMin, majorStep);
+! 	    tickMax = UCEIL(tickMax, majorStep);
+! 	    nMajor = (int)((tickMax - tickMin) / majorStep) + 1;
+! 	    minorStep = EXP10(floor(log10(majorStep)));
+! 	    if (minorStep == majorStep) {
+! 		nMinor = 4, minorStep = 0.2;
+! 	    } else {
+! 		nMinor = Round(majorStep / minorStep) - 1;
+! 	    }
+  	} else {
+! 	    if (tickMin == tickMax) {
+! 		tickMax++;
+! 	    }
+! 	    majorStep = 1.0;
+! 	    nMajor = (int)(tickMax - tickMin + 1); /* FIXME: Check this. */
+! 	    
+! 	    minorStep = 0.0;	/* This is a special hack to pass
+  				 * information to the GenerateTicks
+  				 * routine. An interval of 0.0 tells
+  				 *	1) this is a minor sweep and 
+  				 *	2) the axis is log scale.  
+  				 */
+! 	    nMinor = 10;
+! 	}
+! 	if ((axisPtr->looseMin == TICK_RANGE_TIGHT) ||
+! 	    ((axisPtr->looseMin == TICK_RANGE_LOOSE) && 
+! 	     (DEFINED(axisPtr->reqMin)))) {
+! 	    tickMin = min;
+! 	    nMajor++;
+! 	}
+! 	if ((axisPtr->looseMax == TICK_RANGE_TIGHT) ||
+! 	    ((axisPtr->looseMax == TICK_RANGE_LOOSE) &&
+! 	     (DEFINED(axisPtr->reqMax)))) {
+! 	    tickMax = max;
+! 	}
+      }
+      axisPtr->majorSweep.step = majorStep;
+      axisPtr->majorSweep.initial = floor(tickMin);
+      axisPtr->majorSweep.nSteps = nMajor;
+      axisPtr->minorSweep.initial = axisPtr->minorSweep.step = minorStep;
+      axisPtr->minorSweep.nSteps = nMinor;
+      SetAxisRange(&axisPtr->axisRange, tickMin, tickMax);
+  }
+  
+***************
+*** 1551,1581 ****
+      double axisMin, axisMax;
+      int nTicks;
+  
+!     range = max - min;
+! 
+!     /* Calculate the major tick stepping. */
+!     if (axisPtr->reqStep > 0.0) {
+! 	/* An interval was designated by the user.  Keep scaling it
+! 	 * until it fits comfortably within the current range of the
+! 	 * axis.  */
+! 	step = axisPtr->reqStep;
+! 	while ((2 * step) >= range) {
+! 	    step *= 0.5;
+  	}
+!     } else {
+! 	range = NiceNum(range, 0);
+! 	step = NiceNum(range / DEF_NUM_TICKS, 1);
+      }
+- 
+-     /* Find the outer tick values. Add 0.0 to prevent getting -0.0. */
+-     axisMin = tickMin = floor(min / step) * step + 0.0;
+-     axisMax = tickMax = ceil(max / step) * step + 0.0;
+- 
+-     nTicks = Round((tickMax - tickMin) / step) + 1;
+      axisPtr->majorSweep.step = step;
+      axisPtr->majorSweep.initial = tickMin;
+      axisPtr->majorSweep.nSteps = nTicks;
+! 
+      /*
+       * The limits of the axis are either the range of the data
+       * ("tight") or at the next outer tick interval ("loose").  The
+--- 1554,1588 ----
+      double axisMin, axisMax;
+      int nTicks;
+  
+!     nTicks = 0;
+!     tickMin = tickMax = 0.0;
+!     if (min < max) {
+! 	range = max - min;
+! 	
+! 	/* Calculate the major tick stepping. */
+! 	if (axisPtr->reqStep > 0.0) {
+! 	    /* An interval was designated by the user.  Keep scaling it
+! 	     * until it fits comfortably within the current range of the
+! 	     * axis.  */
+! 	    step = axisPtr->reqStep;
+! 	    while ((2 * step) >= range) {
+! 		step *= 0.5;
+! 	    }
+! 	} else {
+! 	    range = NiceNum(range, 0);
+! 	    step = NiceNum(range / DEF_NUM_TICKS, 1);
+  	}
+! 	
+! 	/* Find the outer tick values. Add 0.0 to prevent getting -0.0. */
+! 	axisMin = tickMin = floor(min / step) * step + 0.0;
+! 	axisMax = tickMax = ceil(max / step) * step + 0.0;
+! 	
+! 	nTicks = Round((tickMax - tickMin) / step) + 1;
+      }
+      axisPtr->majorSweep.step = step;
+      axisPtr->majorSweep.initial = tickMin;
+      axisPtr->majorSweep.nSteps = nTicks;
+!     
+      /*
+       * The limits of the axis are either the range of the data
+       * ("tight") or at the next outer tick interval ("loose").  The
+***************
+*** 1596,1604 ****
+  	axisMax = max;
+      }
+      SetAxisRange(&axisPtr->axisRange, axisMin, axisMax);
+! 
+      /* Now calculate the minor tick step and number. */
+! 
+      if ((axisPtr->reqNumMinorTicks > 0) && 
+  	((axisPtr->flags & AXIS_CONFIG_MAJOR) == 0)) {
+  	nTicks = axisPtr->reqNumMinorTicks - 1;
+--- 1603,1611 ----
+  	axisMax = max;
+      }
+      SetAxisRange(&axisPtr->axisRange, axisMin, axisMax);
+!     
+      /* Now calculate the minor tick step and number. */
+!     
+      if ((axisPtr->reqNumMinorTicks > 0) && 
+  	((axisPtr->flags & AXIS_CONFIG_MAJOR) == 0)) {
+  	nTicks = axisPtr->reqNumMinorTicks - 1;
+***************
+*** 1614,1620 ****
+      axisPtr->minorSweep.nSteps = nTicks;
+  }
+  
+- 
+  static void
+  SweepTicks(axisPtr)
+      Axis *axisPtr;
+--- 1621,1626 ----
+***************
+*** 1684,1692 ****
+      for (linkPtr = Blt_ChainFirstLink(graphPtr->elements.displayList);
+  	linkPtr != NULL; linkPtr = Blt_ChainNextLink(linkPtr)) {
+  	elemPtr = Blt_ChainGetValue(linkPtr);
+! 	(*elemPtr->procsPtr->extentsProc) (elemPtr, &exts);
+! 	GetDataLimits(elemPtr->axes.x, exts.left, exts.right);
+! 	GetDataLimits(elemPtr->axes.y, exts.top, exts.bottom);
+      }
+      /*
+       * Step 3:  Now that we know the range of data values for each axis,
+--- 1690,1700 ----
+      for (linkPtr = Blt_ChainFirstLink(graphPtr->elements.displayList);
+  	linkPtr != NULL; linkPtr = Blt_ChainNextLink(linkPtr)) {
+  	elemPtr = Blt_ChainGetValue(linkPtr);
+! 	if (!elemPtr->hidden) {
+! 	    (*elemPtr->procsPtr->extentsProc) (elemPtr, &exts);
+! 	    GetDataLimits(elemPtr->axes.x, exts.left, exts.right);
+! 	    GetDataLimits(elemPtr->axes.y, exts.top, exts.bottom);
+! 	}
+      }
+      /*
+       * Step 3:  Now that we know the range of data values for each axis,
+diff -cr blt2.4z/src/bltGrElem.c blt2.4z-new/src/bltGrElem.c
+*** blt2.4z/src/bltGrElem.c	2002-09-18 17:30:51.000000000 -0500
+--- blt2.4z-new/src/bltGrElem.c	2002-12-02 22:42:31.000000000 -0600
+***************
+*** 1215,1223 ****
+  {
+      int nNames;			/* Number of names found in Tcl name list */
+      char **nameArr;		/* Broken out array of element names */
+-     Blt_HashSearch cursor;
+      register int i;
+-     register Blt_HashEntry *hPtr;
+      Element *elemPtr;		/* Element information record */
+  
+      if (Tcl_SplitList(graphPtr->interp, newList, &nNames, &nameArr) != TCL_OK) {
+--- 1215,1221 ----
+***************
+*** 1227,1243 ****
+      }
+      /* Clear the display list and mark all elements as hidden.  */
+      Blt_ChainReset(graphPtr->elements.displayList);
+-     for (hPtr = Blt_FirstHashEntry(&graphPtr->elements.table, &cursor);
+- 	hPtr != NULL; hPtr = Blt_NextHashEntry(&cursor)) {
+- 	elemPtr = (Element *)Blt_GetHashValue(hPtr);
+- 	elemPtr->hidden = TRUE;
+-     }
+  
+      /* Rebuild the display list, checking that each name it exists
+       * (currently ignoring invalid element names).  */
+      for (i = 0; i < nNames; i++) {
+  	if (NameToElement(graphPtr, nameArr[i], &elemPtr) == TCL_OK) {
+- 	    elemPtr->hidden = FALSE;
+  	    Blt_ChainAppend(graphPtr->elements.displayList, elemPtr);
+  	}
+      }
+--- 1225,1235 ----
+***************
+*** 1399,1406 ****
+  	    /* Comment the PostScript to indicate the start of the element */
+  	    Blt_FormatToPostScript(psToken, "\n%% Element \"%s\"\n\n", 
+  		elemPtr->name);
+! 	    (*elemPtr->procsPtr->printNormalProc) (graphPtr, psToken, 
+! 		elemPtr);
+  	}
+      }
+  }
+--- 1391,1397 ----
+  	    /* Comment the PostScript to indicate the start of the element */
+  	    Blt_FormatToPostScript(psToken, "\n%% Element \"%s\"\n\n", 
+  		elemPtr->name);
+! 	    (*elemPtr->procsPtr->printNormalProc) (graphPtr, psToken, elemPtr);
+  	}
+      }
+  }
+***************
+*** 1426,1433 ****
+  	if ((!elemPtr->hidden) && (elemPtr->flags & ELEM_ACTIVE)) {
+  	    Blt_FormatToPostScript(psToken, "\n%% Active Element \"%s\"\n\n",
+  		elemPtr->name);
+! 	    (*elemPtr->procsPtr->printActiveProc) (graphPtr, psToken, 
+! 						   elemPtr);
+  	}
+      }
+  }
+--- 1417,1423 ----
+  	if ((!elemPtr->hidden) && (elemPtr->flags & ELEM_ACTIVE)) {
+  	    Blt_FormatToPostScript(psToken, "\n%% Active Element \"%s\"\n\n",
+  		elemPtr->name);
+! 	    (*elemPtr->procsPtr->printActiveProc) (graphPtr, psToken, elemPtr);
+  	}
+      }
+  }
+***************
+*** 1671,1676 ****
+--- 1661,1667 ----
+      ClosestSearch search;
+      int i, x, y;
+      int flags = TCL_LEAVE_ERR_MSG;
++     int found;
+  
+      if (graphPtr->flags & RESET_AXES) {
+  	Blt_ResetAxes(graphPtr);
+***************
+*** 1715,1727 ****
+      search.dist = (double)(search.halo + 1);
+  
+      if (i < argc) {
+  	for ( /* empty */ ; i < argc; i++) {
+  	    if (NameToElement(graphPtr, argv[i], &elemPtr) != TCL_OK) {
+  		return TCL_ERROR;	/* Can't find named element */
+  	    }
+! 	    if (elemPtr->hidden) {
+  		Tcl_AppendResult(interp, "element \"", argv[i], "\" is hidden",
+! 		    (char *)NULL);
+  		return TCL_ERROR;	/* Element isn't visible */
+  	    }
+  	    /* Check if the X or Y vectors have notifications pending */
+--- 1706,1728 ----
+      search.dist = (double)(search.halo + 1);
+  
+      if (i < argc) {
++ 	Blt_ChainLink *linkPtr;
++ 
+  	for ( /* empty */ ; i < argc; i++) {
+  	    if (NameToElement(graphPtr, argv[i], &elemPtr) != TCL_OK) {
+  		return TCL_ERROR;	/* Can't find named element */
+  	    }
+! 	    found = FALSE;
+! 	    for (linkPtr = Blt_ChainFirstLink(graphPtr->elements.displayList);
+! 		 linkPtr == NULL; linkPtr = Blt_ChainNextLink(linkPtr)) {
+! 		if (elemPtr == Blt_ChainGetValue(linkPtr)) {
+! 		    found = TRUE;
+! 		    break;
+! 		}
+! 	    }
+! 	    if ((!found) || (elemPtr->hidden)) {
+  		Tcl_AppendResult(interp, "element \"", argv[i], "\" is hidden",
+! 			(char *)NULL);
+  		return TCL_ERROR;	/* Element isn't visible */
+  	    }
+  	    /* Check if the X or Y vectors have notifications pending */
+***************
+*** 1744,1759 ****
+  	for (linkPtr = Blt_ChainLastLink(graphPtr->elements.displayList);
+  	    linkPtr != NULL; linkPtr = Blt_ChainPrevLink(linkPtr)) {
+  	    elemPtr = Blt_ChainGetValue(linkPtr);
+- 
+  	    /* Check if the X or Y vectors have notifications pending */
+! 	    if ((elemPtr->flags & MAP_ITEM) ||
+  		(Blt_VectorNotifyPending(elemPtr->x.clientId)) ||
+  		(Blt_VectorNotifyPending(elemPtr->y.clientId))) {
+  		continue;
+  	    }
+! 	    if (!elemPtr->hidden) {
+! 		(*elemPtr->procsPtr->closestProc) (graphPtr, elemPtr, &search);
+! 	    }
+  	}
+  
+      }
+--- 1745,1758 ----
+  	for (linkPtr = Blt_ChainLastLink(graphPtr->elements.displayList);
+  	    linkPtr != NULL; linkPtr = Blt_ChainPrevLink(linkPtr)) {
+  	    elemPtr = Blt_ChainGetValue(linkPtr);
+  	    /* Check if the X or Y vectors have notifications pending */
+! 	    if ((elemPtr->hidden) || 
+! 		(elemPtr->flags & MAP_ITEM) ||
+  		(Blt_VectorNotifyPending(elemPtr->x.clientId)) ||
+  		(Blt_VectorNotifyPending(elemPtr->y.clientId))) {
+  		continue;
+  	    }
+! 	    (*elemPtr->procsPtr->closestProc)(graphPtr, elemPtr, &search);
+  	}
+  
+      }
+***************
+*** 1859,1888 ****
+  	    return TCL_ERROR;	/* Failed to configure element */
+  	}
+  	if (Blt_ConfigModified(elemPtr->specsPtr, "-hide", (char *)NULL)) {
+- 	    Blt_ChainLink *linkPtr;
+- 
+- 	    for (linkPtr = Blt_ChainFirstLink(graphPtr->elements.displayList);
+- 		linkPtr != NULL; linkPtr = Blt_ChainNextLink(linkPtr)) {
+- 		if (elemPtr == Blt_ChainGetValue(linkPtr)) {
+- 		    break;
+- 		}
+- 	    }
+- 	    if ((elemPtr->hidden) != (linkPtr == NULL)) {
+- 
+- 		/* The element's "hidden" variable is out of sync with
+- 		 * the display list. [That's what you get for having
+- 		 * two ways to do the same thing.]  This affects what
+- 		 * elements are considered for axis ranges and
+- 		 * displayed in the legend. Update the display list by
+- 		 * either by adding or removing the element.  */
+- 
+- 		if (linkPtr == NULL) {
+- 		    Blt_ChainPrepend(graphPtr->elements.displayList, elemPtr);
+- 		} else {
+- 		    Blt_ChainDeleteLink(graphPtr->elements.displayList, 
+- 					linkPtr);
+- 		}
+- 	    }
+  	    graphPtr->flags |= RESET_AXES;
+  	    elemPtr->flags |= MAP_ITEM;
+  	}
+--- 1858,1863 ----
+diff -cr blt2.4z/src/bltGrMarker.c blt2.4z-new/src/bltGrMarker.c
+*** blt2.4z/src/bltGrMarker.c	2002-09-18 17:30:51.000000000 -0500
+--- blt2.4z-new/src/bltGrMarker.c	2002-12-11 01:55:27.000000000 -0600
+***************
+*** 29,34 ****
+--- 29,37 ----
+  #include "bltChain.h"
+  #include "bltGrElem.h"
+  
++ #define GETBITMAP(b) \
++ 	(((b)->destBitmap == None) ? (b)->srcBitmap : (b)->destBitmap)
++ 
+  #define MAX_OUTLINE_POINTS	12
+  
+  /* Map graph coordinates to normalized coordinates [0..1] */
+***************
+*** 812,818 ****
+  
+      /* Polygon specific attributes and fields */
+  
+!     Point2D *screenPts;
+  
+      ColorPair outline;
+      ColorPair fill;
+--- 815,827 ----
+  
+      /* Polygon specific attributes and fields */
+  
+!     Point2D *screenPts;		/* Array of points representing the
+! 				 * polygon in screen coordinates. It's
+! 				 * not used for drawing, but to
+! 				 * generate the outlinePts and fillPts
+! 				 * arrays that are the coordinates of
+! 				 * the possibly clipped outline and
+! 				 * filled polygon. */
+  
+      ColorPair outline;
+      ColorPair fill;
+***************
+*** 1563,1571 ****
+      if (bmPtr->srcBitmap == None) {
+  	return TCL_OK;
+      }
+-     if (bmPtr->destBitmap == None) {
+- 	bmPtr->destBitmap = bmPtr->srcBitmap;
+-     }
+      bmPtr->theta = FMOD(bmPtr->rotate, 360.0);
+      if (bmPtr->theta < 0.0) {
+  	bmPtr->theta += 360.0;
+--- 1572,1577 ----
+***************
+*** 1650,1658 ****
+      if (bmPtr->srcBitmap == None) {
+  	return;
+      }
+!     if (bmPtr->destBitmap != bmPtr->srcBitmap) {
+  	Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
+! 	bmPtr->destBitmap = bmPtr->srcBitmap;
+      }
+      /* 
+       * Collect the coordinates.  The number of coordinates will determine
+--- 1656,1664 ----
+      if (bmPtr->srcBitmap == None) {
+  	return;
+      }
+!     if (bmPtr->destBitmap != None) {
+  	Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
+! 	bmPtr->destBitmap = None;
+      }
+      /* 
+       * Collect the coordinates.  The number of coordinates will determine
+***************
+*** 1752,1758 ****
+      } else {
+  	bmPtr->destWidth = srcWidth;
+  	bmPtr->destHeight = srcHeight;
+! 	bmPtr->destBitmap = bmPtr->srcBitmap;
+      }
+      bmPtr->anchorPos = anchorPos;
+      {
+--- 1758,1764 ----
+      } else {
+  	bmPtr->destWidth = srcWidth;
+  	bmPtr->destHeight = srcHeight;
+! 	bmPtr->destBitmap = None;
+      }
+      bmPtr->anchorPos = anchorPos;
+      {
+***************
+*** 1909,1917 ****
+      Graph *graphPtr = markerPtr->graphPtr;
+      BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+      double theta;
+  
+!     if ((bmPtr->destBitmap == None) || (bmPtr->destWidth < 1) || 
+! 	(bmPtr->destHeight < 1)) {
+  	return;
+      }
+      theta = FMOD(bmPtr->theta, (double)90.0);
+--- 1915,1924 ----
+      Graph *graphPtr = markerPtr->graphPtr;
+      BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+      double theta;
++     Pixmap bitmap;
+  
+!     bitmap = GETBITMAP(bmPtr);
+!     if ((bitmap == None) || (bmPtr->destWidth < 1) || (bmPtr->destHeight < 1)) {
+  	return;
+      }
+      theta = FMOD(bmPtr->theta, (double)90.0);
+***************
+*** 1934,1947 ****
+  	    XFillPolygon(graphPtr->display, drawable, bmPtr->fillGC,
+  		 polygon, bmPtr->nOutlinePts, Convex, CoordModeOrigin);
+  	}
+! 	XSetClipMask(graphPtr->display, bmPtr->gc, bmPtr->destBitmap);
+  	XSetClipOrigin(graphPtr->display, bmPtr->gc, (int)bmPtr->anchorPos.x, 
+  	       (int)bmPtr->anchorPos.y);
+      } else {
+  	XSetClipMask(graphPtr->display, bmPtr->gc, None);
+  	XSetClipOrigin(graphPtr->display, bmPtr->gc, 0, 0);
+      }
+!     XCopyPlane(graphPtr->display, bmPtr->destBitmap, drawable, bmPtr->gc, 0, 0,
+  	bmPtr->destWidth, bmPtr->destHeight, (int)bmPtr->anchorPos.x, 
+  	(int)bmPtr->anchorPos.y, 1);
+  }
+--- 1941,1954 ----
+  	    XFillPolygon(graphPtr->display, drawable, bmPtr->fillGC,
+  		 polygon, bmPtr->nOutlinePts, Convex, CoordModeOrigin);
+  	}
+! 	XSetClipMask(graphPtr->display, bmPtr->gc, bitmap);
+  	XSetClipOrigin(graphPtr->display, bmPtr->gc, (int)bmPtr->anchorPos.x, 
+  	       (int)bmPtr->anchorPos.y);
+      } else {
+  	XSetClipMask(graphPtr->display, bmPtr->gc, None);
+  	XSetClipOrigin(graphPtr->display, bmPtr->gc, 0, 0);
+      }
+!     XCopyPlane(graphPtr->display, bitmap, drawable, bmPtr->gc, 0, 0,
+  	bmPtr->destWidth, bmPtr->destHeight, (int)bmPtr->anchorPos.x, 
+  	(int)bmPtr->anchorPos.y, 1);
+  }
+***************
+*** 1965,1972 ****
+  {
+      Graph *graphPtr = markerPtr->graphPtr;
+      BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
+  
+!     if (bmPtr->destBitmap == None) {
+  	return;
+      }
+      if (bmPtr->fillColor != NULL) {
+--- 1972,1981 ----
+  {
+      Graph *graphPtr = markerPtr->graphPtr;
+      BitmapMarker *bmPtr = (BitmapMarker *)markerPtr;
++     Pixmap bitmap;
+  
+!     bitmap = GETBITMAP(bmPtr);
+!     if (bitmap == None) {
+  	return;
+      }
+      if (bmPtr->fillColor != NULL) {
+***************
+*** 1982,1988 ****
+      Blt_FormatToPostScript(psToken, "    %d %d true [%d 0 0 %d 0 %d] {",
+  	bmPtr->destWidth, bmPtr->destHeight, bmPtr->destWidth, 
+  	-bmPtr->destHeight, bmPtr->destHeight);
+!     Blt_BitmapDataToPostScript(psToken, graphPtr->display, bmPtr->destBitmap,
+  	bmPtr->destWidth, bmPtr->destHeight);
+      Blt_AppendToPostScript(psToken, "    } imagemask\n",
+  	"grestore\n", (char *)NULL);
+--- 1991,1997 ----
+      Blt_FormatToPostScript(psToken, "    %d %d true [%d 0 0 %d 0 %d] {",
+  	bmPtr->destWidth, bmPtr->destHeight, bmPtr->destWidth, 
+  	-bmPtr->destHeight, bmPtr->destHeight);
+!     Blt_BitmapDataToPostScript(psToken, graphPtr->display, bitmap,
+  	bmPtr->destWidth, bmPtr->destHeight);
+      Blt_AppendToPostScript(psToken, "    } imagemask\n",
+  	"grestore\n", (char *)NULL);
+***************
+*** 2018,2024 ****
+      if (bmPtr->fillGC != NULL) {
+  	Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
+      }
+!     if (bmPtr->destBitmap != bmPtr->srcBitmap) {
+  	Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
+      }
+  }
+--- 2027,2033 ----
+      if (bmPtr->fillGC != NULL) {
+  	Tk_FreeGC(graphPtr->display, bmPtr->fillGC);
+      }
+!     if (bmPtr->destBitmap != None) {
+  	Tk_FreePixmap(graphPtr->display, bmPtr->destBitmap);
+      }
+  }
+***************
+*** 2127,2134 ****
+  	    imPtr->tkImage = Tk_GetImage(interp, graphPtr->tkwin,
+  		imPtr->imageName, ImageChangedProc, imPtr);
+  	    if (imPtr->tkImage == NULL) {
+- 		Tcl_AppendResult(interp, "can't find an image \"", 
+- 			imPtr->imageName, "\"", (char *)NULL);
+  		Blt_Free(imPtr->imageName);
+  		imPtr->imageName = NULL;
+  		return TCL_ERROR;
+--- 2136,2141 ----
+***************
+*** 2494,2499 ****
+--- 2501,2509 ----
+      if (imPtr->srcImage != NULL) {
+  	Blt_FreeColorImage(imPtr->srcImage);
+      }
++     if (imPtr->gc != NULL) {
++ 	Tk_FreeGC(graphPtr->display, imPtr->gc);
++     }
+  }
+  
+  /*
+***************
+*** 3747,3757 ****
+  {
+      PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
+  
+!     if (pmPtr->nWorldPts < 2) {
+! 	return FALSE;
+      }
+!     return Blt_PointInPolygon(samplePtr, pmPtr->screenPts, 
+! 	pmPtr->nWorldPts + 1);
+  }
+  
+  /*
+--- 3757,3767 ----
+  {
+      PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
+  
+!     if ((pmPtr->nWorldPts >= 3) && (pmPtr->screenPts != NULL)) {
+! 	return Blt_PointInPolygon(samplePtr, pmPtr->screenPts, 
+! 		  pmPtr->nWorldPts + 1);
+      }
+!     return FALSE;
+  }
+  
+  /*
+***************
+*** 3769,3775 ****
+  {
+      PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
+      
+!     if (pmPtr->nWorldPts >= 3) {
+  	return Blt_RegionInPolygon(extsPtr, pmPtr->screenPts, pmPtr->nWorldPts,
+  	       enclosed);
+      }
+--- 3779,3785 ----
+  {
+      PolygonMarker *pmPtr = (PolygonMarker *)markerPtr;
+      
+!     if ((pmPtr->nWorldPts >= 3) && (pmPtr->screenPts != NULL)) {
+  	return Blt_RegionInPolygon(extsPtr, pmPtr->screenPts, pmPtr->nWorldPts,
+  	       enclosed);
+      }
+***************
+*** 4036,4041 ****
+--- 4046,4054 ----
+      if (pmPtr->outlinePts != NULL) {
+  	Blt_Free(pmPtr->outlinePts);
+      }
++     if (pmPtr->screenPts != NULL) {
++ 	Blt_Free(pmPtr->screenPts);
++     }
+      Blt_FreeColorPair(&pmPtr->outline);
+      Blt_FreeColorPair(&pmPtr->fill);
+  }
+***************
+*** 4260,4265 ****
+--- 4273,4279 ----
+      int nNames, nOpts;
+      char **options;
+      register int i;
++     int under;
+  
+      /* Figure out where the option value pairs begin */
+      argc -= 3;
+***************
+*** 4289,4294 ****
+--- 4303,4309 ----
+  	}
+  	/* Save the old marker. */
+  	oldName = markerPtr->name;
++ 	under = markerPtr->drawUnder;
+  	if (Tk_ConfigureWidget(interp, graphPtr->tkwin, 
+  		markerPtr->classPtr->configSpecs, nOpts, options, 
+  		(char *)markerPtr, flags) != TCL_OK) {
+***************
+*** 4304,4309 ****
+--- 4319,4327 ----
+  	if ((*markerPtr->classPtr->configProc) (markerPtr) != TCL_OK) {
+  	    return TCL_ERROR;
+  	}
++ 	if (markerPtr->drawUnder != under) {
++ 	    graphPtr->flags |= REDRAW_BACKING_STORE;
++ 	}
+      }
+      return TCL_OK;
+  }
+***************
+*** 4942,4948 ****
+--- 4960,4973 ----
+      for (linkPtr = Blt_ChainLastLink(graphPtr->markers.displayList);
+  	linkPtr != NULL; linkPtr = Blt_ChainPrevLink(linkPtr)) {
+  	markerPtr = Blt_ChainGetValue(linkPtr);
++ 	/* 
++ 	 * Don't consider markers that are pending to be mapped. Even
++ 	 * if the marker has already been mapped, the coordinates
++ 	 * could be invalid now.  Better to pick no marker than the
++ 	 * wrong marker.
++ 	 */
+  	if ((markerPtr->drawUnder == under) && (markerPtr->nWorldPts > 0) && 
++ 	    ((markerPtr->flags & MAP_ITEM) == 0) && 
+  	    (!markerPtr->hidden) && (markerPtr->state == STATE_NORMAL)) {
+  	    if ((*markerPtr->classPtr->pointProc) (markerPtr, &point)) {
+  		return markerPtr;
+Only in blt2.4z-new/src: bltHash.h
+diff -cr blt2.4z/src/bltInit.c blt2.4z-new/src/bltInit.c
+*** blt2.4z/src/bltInit.c	2002-09-10 00:12:33.000000000 -0500
+--- blt2.4z-new/src/bltInit.c	2002-12-02 22:25:33.000000000 -0600
+***************
+*** 38,54 ****
+  #endif
+  #endif
+  
+  double bltNaN;
+  #if (TCL_MAJOR_VERSION > 7)
+  Tcl_Obj *bltEmptyStringObjPtr;
+  #endif
+  
+  static Tcl_MathProc MinMathProc, MaxMathProc;
+- static int tclLoaded = FALSE;
+- #ifndef TCL_ONLY
+- static int tkLoaded = FALSE;
+- #endif
+- 
+  static char libPath[1024] =
+  {
+      BLT_LIBRARY
+--- 38,53 ----
+  #endif
+  #endif
+  
++ #define BLT_THREAD_KEY		"BLT Initialized"
++ #define BLT_TCL_CMDS		(1<<0)
++ #define BLT_TK_CMDS		(1<<1)
++ 
+  double bltNaN;
+  #if (TCL_MAJOR_VERSION > 7)
+  Tcl_Obj *bltEmptyStringObjPtr;
+  #endif
+  
+  static Tcl_MathProc MinMathProc, MaxMathProc;
+  static char libPath[1024] =
+  {
+      BLT_LIBRARY
+***************
+*** 404,410 ****
+  Blt_Init(interp)
+      Tcl_Interp *interp;		/* Interpreter to add extra commands */
+  {
+!     if (!tclLoaded) {
+  	register Tcl_AppInitProc **p;
+  	Tcl_Namespace *nsPtr;
+  	Tcl_ValueType args[2];
+--- 403,412 ----
+  Blt_Init(interp)
+      Tcl_Interp *interp;		/* Interpreter to add extra commands */
+  {
+!     int flags;
+! 
+!     flags = (int)Tcl_GetAssocData(interp, BLT_THREAD_KEY, NULL);
+!     if ((flags & BLT_TCL_CMDS) == 0) {
+  	register Tcl_AppInitProc **p;
+  	Tcl_Namespace *nsPtr;
+  	Tcl_ValueType args[2];
+***************
+*** 451,460 ****
+  	if (Tcl_PkgProvide(interp, "BLT", BLT_VERSION) != TCL_OK) {
+  	    return TCL_ERROR;
+  	}
+! 	tclLoaded = TRUE;
+      }
+  #ifndef TCL_ONLY
+!     if (!tkLoaded) {
+  	register Tcl_AppInitProc **p;
+  	Tcl_Namespace *nsPtr;
+  
+--- 453,463 ----
+  	if (Tcl_PkgProvide(interp, "BLT", BLT_VERSION) != TCL_OK) {
+  	    return TCL_ERROR;
+  	}
+! 	Tcl_SetAssocData(interp, BLT_THREAD_KEY, NULL, 
+! 		(ClientData)(flags | BLT_TCL_CMDS));
+      }
+  #ifndef TCL_ONLY
+!     if ((flags & BLT_TK_CMDS) == 0) {
+  	register Tcl_AppInitProc **p;
+  	Tcl_Namespace *nsPtr;
+  
+***************
+*** 486,492 ****
+  	    }
+  	}
+  	Blt_InitEpsCanvasItem(interp);
+! 	tkLoaded = TRUE;
+      }
+  #endif
+      return TCL_OK;
+--- 489,496 ----
+  	    }
+  	}
+  	Blt_InitEpsCanvasItem(interp);
+! 	Tcl_SetAssocData(interp, BLT_THREAD_KEY, NULL, 
+! 		(ClientData)(flags | BLT_TK_CMDS));
+      }
+  #endif
+      return TCL_OK;
+***************
+*** 499,505 ****
+  Blt_Init(interp)
+      Tcl_Interp *interp;		/* Interpreter to add extra commands */
+  {
+!     if (!tclLoaded) {
+  	register Tcl_AppInitProc **p;
+  	Tcl_ValueType args[2];
+  
+--- 503,512 ----
+  Blt_Init(interp)
+      Tcl_Interp *interp;		/* Interpreter to add extra commands */
+  {
+!     int flags;
+! 
+!     flags = (int)Tcl_GetAssocData(interp, BLT_THREAD_KEY, NULL);
+!     if ((flags & BLT_TCL_CMDS) == 0) {
+  	register Tcl_AppInitProc **p;
+  	Tcl_ValueType args[2];
+  
+***************
+*** 537,546 ****
+  	if (Tcl_PkgProvide(interp, "BLT", BLT_VERSION) != TCL_OK) {
+  	    return TCL_ERROR;
+  	}
+! 	tclLoaded = TRUE;
+      }
+  #ifndef TCL_ONLY
+!     if (!tkLoaded) {
+  	register Tcl_AppInitProc **p;
+  
+  #if (TCL_VERSION_NUMBER >= _VERSION(8,1,0)) 
+--- 544,554 ----
+  	if (Tcl_PkgProvide(interp, "BLT", BLT_VERSION) != TCL_OK) {
+  	    return TCL_ERROR;
+  	}
+! 	Tcl_SetAssocData(interp, BLT_THREAD_KEY, NULL, 
+! 		(ClientData)(flags | BLT_TCL_CMDS));
+      }
+  #ifndef TCL_ONLY
+!     if ((flags & BLT_TK_CMDS) == 0) {
+  	register Tcl_AppInitProc **p;
+  
+  #if (TCL_VERSION_NUMBER >= _VERSION(8,1,0)) 
+***************
+*** 560,566 ****
+  	    }
+  	}
+  	Blt_InitEpsCanvasItem(interp);
+! 	tkLoaded = TRUE;
+      }
+  #endif
+      return TCL_OK;
+--- 568,575 ----
+  	    }
+  	}
+  	Blt_InitEpsCanvasItem(interp);
+! 	Tcl_SetAssocData(interp, BLT_THREAD_KEY, NULL, 
+! 		(ClientData)(flags | BLT_TK_CMDS));
+      }
+  #endif
+      return TCL_OK;
+diff -cr blt2.4z/src/bltTreeView.c blt2.4z-new/src/bltTreeView.c
+*** blt2.4z/src/bltTreeView.c	2002-08-15 23:15:04.000000000 -0500
+--- blt2.4z-new/src/bltTreeView.c	2003-03-04 11:15:34.000000000 -0600
+***************
+*** 3866,3871 ****
+--- 3866,3872 ----
+  	assert(tvPtr->visibleArr);
+      }
+      tvPtr->nVisible = 0;
++     tvPtr->visibleArr[0] = NULL;
+  
+      if (tvPtr->rootPtr->flags & ENTRY_HIDDEN) {
+  	return TCL_OK;		/* Root node is hidden. */
+***************
+*** 4631,4636 ****
+--- 4632,4640 ----
+      int width;
+      int x0, cx, xOffset;
+  
++     if (tvPtr->titleHeight < 1) {
++ 	return;
++     }
+      columnWidth = columnPtr->width;
+      cx = x;
+      if (columnPtr->position == Blt_ChainGetLength(tvPtr->colChainPtr)) {
+Only in blt2.4z/src: pure_api.c

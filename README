@@ -1,0 +1,116 @@
+##################################################################################
+## FILE: README
+##
+## CVS: $Id: README,v 1.1 2003-08-29 18:54:15 scottl Exp $
+##
+## DESCRIPTION: Text file describing this directory structure, its contents,
+##              useage, and other notes.
+##
+## ARGUMENTS:
+##
+## REQUIRES:
+##
+################################################################################
+
+
+1. Directory Contents
+---------------------
+
+This directory is the base (root) directory and contains everything related to
+the Journal image TAGging application software (JTAG).  This software is a GUI
+driven Tcl/Tk application that can load, display, and magnify raster image 
+representations of documents in a variety of formats.  Once displayed in the
+application, the user can add, display, manipulate, and save overlaid 
+rectangular region selections (each of which is intended to isolate one
+particular document component ex. a page number or section title).
+
+In addition to this application, a series of matlab functions and scripts are
+available to automatically recognize and classify regions on new pages.  This
+is accomplished through an appropriate learner and a corpus of accumulated
+training data.
+
+Directly contained in this directory is the Tcl/Tk source to the JTAG
+application and a series of subdirectories that aid the application in one way
+or another (see Section 1.1 for a description of each).  
+
+Note that there are some dependencies on the JTAG source and certain aspects
+of the subdirectory structure so it is important that this structure remains
+intact during its use.
+
+1.1 Subdirectory Contents
+-------------------------
+
+CVS - (internal / not used) CVS version information
+bin - linux specific binary executable utilities used by the JTAG application
+doc - houses all documentation related to the JTAG application
+lib - 3rd party Tcl/Tk packages used by the JTAG application
+matlab - holds all matlab functions and scripts used to generate training data
+         and classify page segments
+scripts - contains various helper scripts to aid in everything from JTAG
+          application installation to document downloading and conversion
+src - contains tarballs of dependency software (Tcl/Tk, BLT etc.)
+
+For further information on each subdirectory, see its own README 
+file.
+
+
+2. File Contents
+----------------
+
+.jconfig - Sample JTAG configuration file listing options that can be set by 
+           the user.  This file is read by the JTAG application upon startup
+README - this file
+classify.tcl - JTAG source file responsible for all things related to
+               rectangular selection regions, and the various classes (buckets)
+config.tcl - JTAG source file containing all the data shared between the other
+             source files, and the logic to read and write the configuration 
+             file
+file.tcl - JTAG source file responsible for handling all "lower-level" file
+           parsing and writing
+image.tcl - JTAG source file used to manipulate and display the raster image
+main.tcl - JTAG executable and the point of source code entry
+menus.tcl - JTAG source file responsible for all the menu entries and commands
+ui.tcl - JTAG source file responsible for packaging up the various components
+         for display in an appropriate fashion
+
+
+3. Installing the JTAG Application
+----------------------------------
+
+Since the JTAG application is written in Tcl/Tk (an interpreted language) no
+compilation is necessary.
+
+All you must do is ensure that you have the following available on your local 
+machine:
+
+  * Tcl/Tk 8.4 (tested with 8.4.3)
+  * TkImg 1.3 (aka Img extensions)
+  * BLT 2.4 (tested with 2.4z)
+  * libtiff, libjpeg etc.  All these are included with TkImg
+ 
+To automatically test for and install any missing dependencies from the list
+above, simply issue:
+
+  scripts/install_jtag.sh
+
+from this directory, and follow the on screen directions given.  Note that
+the only tested platform currently is Linux, but other *NIX platforms should
+probably be little (no??) effort to port to.
+
+
+4. Starting the JTAG Application
+--------------------------------
+
+Should be as simple as running main.tcl contained in this directory.  You can
+also specify the path and name of a valid image file to load at startup as an 
+argument.
+
+
+5. Using the JTAG Application
+-----------------------------
+
+Most things should be fairly intuitive.  For a complete reference see the file:
+
+  doc/useage.txt
+
+for more information.
