@@ -5,11 +5,19 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.4 2003-07-14 19:06:58 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.5 2003-07-15 16:44:27 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.4  2003-07-14 19:06:58  scottl
+## Revision 1.5  2003-07-15 16:44:27  scottl
+## - Renamed CheckReclassify method to get_selection and exported it for
+##   availability to other namespaces
+## - Implemented unbind_selection method to control bindings when opening
+##   multiple images
+## - Implemented remove method to cleanup data array and intelligently remove
+##   elements
+##
+## Revision 1.4  2003/07/14 19:06:58  scottl
 ## Implemented "simple" mode, made resizing more robust.
 ##
 ## Revision 1.3  2003/07/14 15:09:17  scottl
@@ -62,6 +70,7 @@ namespace eval ::Jtag::Classify {
     # the current selection rectangle
     variable sel
     set sel(parent) {}
+    set sel(tkn_label) {}
     set sel(id) {}
     set sel(modifying) 0
     set sel(pos) {}
@@ -209,8 +218,44 @@ proc ::Jtag::Classify::bind_selection {w} {
 
     # create the token and its label, which will appear when we drag things
     set Token [::blt::drag&drop token $w]
-    label $Token.label
-    pack $Token.label
+    set sel(tkn_label) [label $Token.label]
+    pack $sel(tkn_label)
+
+}
+
+
+# ::Jtag::Classify::unbind_selection --
+#
+#    This procedure removes any and all selection bindings from the widget
+#    stored in $sel(parent) (the canvas widget)
+#
+# Arguments:
+#
+# Results:
+#    Removes all click and drag event bindings from the canvas, unregisters the
+#    drag&drop sources and token.
+
+proc ::Jtag::Classify::unbind_selection {} {
+
+    # link any namespace variables needed
+    variable sel
+
+    # declare any local variables needed
+
+    debug {entering ::Jtag::Classify::unbind_selection}
+
+    if {$sel(parent) == ""} {
+        # no selection have been bound yet
+        debug {nothing to un-bind}
+        return
+    }
+
+    bind $sel(parent) <ButtonPress-1>   {}
+    bind $sel(parent) <B1-Motion>       {}
+    bind $sel(parent) <Motion>          {}
+    bind $sel(parent) <ButtonRelease-1> {}
+
+    destroy $sel(tkn_label)
 
 }
 
@@ -283,6 +328,106 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
     incr data($class,num_sels)
 
 }
+
+
+# ::Jtag::Classify::remove --
+#
+#    This procedure removes the entry passed from the 'data' array, shifting
+#    up any other items, and decrementing the number of selections.
+#
+# Arguments:
+#    sel_ref  The 'data' item to be removed.  Note that it must be a string of
+#             the form: "<class>,<num>"  where <class> is the name of a valid 
+#             classifier and <num> is a valid numerical number corresponding 
+#             to the selection number.  This is the same format as is returned 
+#             by ::Jtag::Classify::get_selection.
+#
+# Results:
+#    Updates the 'data' array appropriately to remove the element reference
+#    passed.  Note that it is the caller's responsibility to destroy the
+#    associated rectange from the canvas.
+
+proc ::Jtag::Classify::remove {sel_ref} {
+
+    # link any namespace variables needed
+    variable ::Jtag::Config::data
+
+    # declare any local variables needed
+    variable CommaPos
+    variable SelBase
+    variable SelNum
+
+    debug {entering ::Jtag::Classify::remove}
+
+    if {[array names data -exact $sel_ref] == ""} {
+        debug "trying to remove a non-existent data item"
+        return
+    }
+
+    # remove the entry from 'data' and decrement the number of selection
+    # for the associated classifier.  Note that the original may not be 
+    # the last element, so check this and swap the last element for the 
+    # now empty space.
+    set CommaPos [string last "," $sel_ref]
+    set SelBase [string range $sel_ref 0 $CommaPos]
+    set SelNum [string range $sel_ref [expr $CommaPos + 1] \
+                             [string length $sel_ref]]
+    set LastNum [expr $data(${SelBase}num_sels) - 1]
+    debug "Removing $sel_ref entry: $data($sel_ref)"
+    if {$SelNum != $LastNum} {
+        # pop the last element contents to fill the hole in the array
+        array set data [list $sel_ref $data(${SelBase}${LastNum})]
+        array unset data ${SelBase}${LastNum}
+    } else {
+        array unset data $sel_ref
+    }
+
+    incr data(${SelBase}num_sels) -1
+
+}
+
+
+# ::Jtag::Classify::get_selection --
+#
+#    Searches through all selection data in the 'data' array to see if there
+#    is a match for the rectangle id passed.
+#
+# Arguments:
+#    id    the unique id returned during the creation of a rectangle that
+#          exists on the canvas.
+#
+# Results:
+#    If a match was found for id in the data array, a string is returned
+#    giving the element containing its data.  Otherwise, the empty string is
+#    returned.  Note that the string returned is a bit of a hack in that
+#    Tcl/Tk has no real support for multi-dimensional arrays.  Since our data
+#    array is of this form, the string returned is of the form "<class>,<num>"
+#    where <class> is replaced with a valid classifier name, and <num> is
+#    replaced with the appropriate selection number matching the rectangle
+#    given by the id passed.  You can use the string returned to get to the
+#    data as follows: data([get_selection $id]) for example.
+
+proc ::Jtag::Classify::get_selection id {
+
+    # link any namespace variables
+    variable ::Jtag::Config::data
+
+    # declare any local variables needed
+    variable I
+
+    debug "entering ::Jtag::Classify::get_selection"
+
+    # iterate through each of the selections in the data array one-by-one
+    foreach I [array names data -regexp {(.*)(,)([0-9])+}] {
+        if {$id == [lindex $data($I) 0]} {
+            # match found
+            return $I
+        }
+    }
+
+    return ""
+}
+
 
 
 
@@ -727,30 +872,15 @@ proc ::Jtag::Classify::AddToBucket {c b} {
 
     # check if we are making a new classification or a reclassification
 
-    set  ReclassRef [::Jtag::Classify::CheckReclassify $sel(id)]
+    set  ReclassRef [::Jtag::Classify::get_selection $sel(id)]
     if {$ReclassRef != ""} {
         # reclassification attempt
         set SelTime [lindex $data($ReclassRef) 6]
         set ClsTime [lindex $data($ReclassRef) 7]
         set Attmpt  [lindex $data($ReclassRef) 8]
 
-        # remove the original entry and decrement the number for this type
-        # note that the original may not be the last element, so check this
-        # and swap the last element for the now empty space.
-        set CommaPos [string last "," $ReclassRef]
-        set ReclassBase [string range $ReclassRef 0 $CommaPos]
-        set ReclassNum [string range $ReclassRef [expr $CommaPos + 1] \
-                              [string length $ReclassRef]]
-        set LastNum [expr $data(${ReclassBase}num_sels) - 1]
-        if {$ReclassNum != $LastNum} {
-            # pop the last element contents to fill the hole in the array
-            array set data [list $ReclassRef \
-                                 $data(${ReclassBase}${LastNum})]
-            array unset data ${ReclassBase}${LastNum}
-        } else {
-            array unset data $ReclassRef
-        }
-        incr data(${ReclassBase}num_sels) -1
+        # remove the original's 'data' entry
+        ::Jtag::Classify::remove $ReclassRef
     }
 
     # update metrics
@@ -835,46 +965,4 @@ proc ::Jtag::Classify::DeterminePos {rx1 ry1 rx2 ry2 x y} {
         # x or y lies outside of the selection.
         return ""
     }
-}
-
-
-
-# ::Jtag::Classify::CheckReclassify --
-#
-#    Searches through all selection data in the 'data' array to see if there
-#    is a match for the rectangle id passed (and thus a reclassification is
-#    occuring).
-#
-# Arguments:
-#    id    the unique id returned during the creation of a rectangle that
-#          exists on the canvas.
-#
-# Results:
-#    If a match was found for id in the data array, a string is returned
-#    giving the element containing its data.  Otherwise, the empty string is
-#    returned.  Note that the string returned is a bit of a hack in that
-#    Tcl/Tk has no real support for multi-dimensional arrays.  Since our data
-#    array is of this form, the string returned is of the form "<class>,<num>"
-#    where <class> is replaced with a valid classifier name, and <num> is
-#    replaced with the appropriate selection number matching the rectangle
-#    given by the id passed.  You can use the string returned to get to the
-#    data as follows: data([CheckReclassify $id]) for example.
-
-proc ::Jtag::Classify::CheckReclassify id {
-
-    # link any namespace variables
-    variable ::Jtag::Config::data
-
-    # declare any local variables needed
-    variable I
-
-    # iterate through each of the selections in the data array one-by-one
-    foreach I [array names data -regexp {(.*)(,)([0-9])+}] {
-        if {$id == [lindex $data($I) 0]} {
-            # match found
-            return $I
-        }
-    }
-
-    return ""
 }
