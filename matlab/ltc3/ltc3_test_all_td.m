@@ -1,4 +1,8 @@
-function res = ltc3_test_all_td(path_to_td,batchname);
+function res = ltc3_test_all_td(batchname,path_to_td);
+
+if (nargin < 2);
+    path_to_td = './results/withmarks/marks';
+end;
 
 fprintf('For nips:\n');
 nips = test_set([path_to_td '-nips'], [batchname '-nips']);

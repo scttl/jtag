@@ -28,6 +28,7 @@ if(nargin < 3) maxevals = 1e4; end
 cut_classes = {'no','yes'};
 
 samps_hf = samples(find(and([samples.horizontal]==1,[samples.fullpage]==1)));
+fprintf('Optimizing on %i horizontal full samples.\n',length(samps_hf));
 if (length(samps_hf) > 0);
     cids_hf = [samps_hf.valid_cut] + 1;
     hf_fvals = reshape([samps_hf.feat_vals], ...
@@ -38,6 +39,7 @@ if (length(samps_hf) > 0);
     whf.feature_names = fnames;
     whf.norm_add = - min(hf_fvals')';
     whf.norm_div = max(hf_fvals')' + whf.norm_add;
+    whf.norm_div(find(whf.norm_div==0)) == 1;
     hf_fvals = hf_fvals + repmat(whf.norm_add,1,size(hf_fvals,2));
     hf_fvals = hf_fvals ./ repmat(whf.norm_div,1,size(hf_fvals,2));
     hf_C = length(whf.class_names);
@@ -54,6 +56,7 @@ w.whf = whf;
 
 
 samps_hp = samples(find(and([samples.horizontal]==1,[samples.fullpage]==0)));
+fprintf('Optimizing on %i horizontal partial samples.\n',length(samps_hp));
 if (length(samps_hp) > 0);
     cids_hp = [samps_hp.valid_cut] + 1;
     hp_fvals = reshape([samps_hp.feat_vals], ...
@@ -64,6 +67,7 @@ if (length(samps_hp) > 0);
     whp.feature_names = fnames;
     whp.norm_add = - min(hp_fvals')';
     whp.norm_div = max(hp_fvals')' + whp.norm_add;
+    whp.norm_div(find(whp.norm_div==0)) == 1;
     hp_fvals = hp_fvals + repmat(whp.norm_add,1,size(hp_fvals,2));
     hp_fvals = hp_fvals ./ repmat(whp.norm_div,1,size(hp_fvals,2));
     hp_C = length(whp.class_names);
@@ -80,6 +84,7 @@ w.whp = whp;
 
 
 samps_vf = samples(find(and([samples.horizontal]==0,[samples.fullpage]==1)));
+fprintf('Optimizing on %i vertical full samples.\n',length(samps_vf));
 if (length(samps_vf) > 0);
     cids_vf = [samps_vf.valid_cut] + 1;
     vf_fvals = reshape([samps_vf.feat_vals], ...
@@ -90,6 +95,7 @@ if (length(samps_vf) > 0);
     wvf.feature_names = fnames;
     wvf.norm_add = - min(vf_fvals')';
     wvf.norm_div = max(vf_fvals')' + wvf.norm_add;
+    wvf.norm_div(find(wvf.norm_div==0)) == 1;
     vf_fvals = vf_fvals + repmat(wvf.norm_add,1,size(vf_fvals,2));
     vf_fvals = vf_fvals ./ repmat(wvf.norm_div,1,size(vf_fvals,2));
     vf_C = length(wvf.class_names);
@@ -106,6 +112,7 @@ w.wvf = wvf;
 
 
 samps_vp = samples(find(and([samples.horizontal]==0,[samples.fullpage]==0)));
+fprintf('Optimizing on %i vertical partial samples.\n',length(samps_vp));
 if (length(samps_vp) > 0);
     cids_vp = [samps_vp.valid_cut] + 1;
     vp_fvals = reshape([samps_vp.feat_vals], ...
@@ -118,6 +125,7 @@ if (length(samps_vp) > 0);
     % Normalize features
     wvp.norm_add = - min(vp_fvals')';
     wvp.norm_div = max(vp_fvals')' + wvp.norm_add;
+    wvp.norm_div(find(wvp.norm_div==0)) = 1;
     vp_fvals = vp_fvals + repmat(wvp.norm_add,1,size(vp_fvals,2));
     vp_fvals = vp_fvals ./ repmat(wvp.norm_div,1,size(vp_fvals,2));
     %A few more variables
@@ -134,7 +142,7 @@ else;
 end;
 w.wvp = wvp;
 
-if (nargin == 4);
+if (nargin == 5);
     savedweightvar = w;
     evalstr = ['save ' outfile ' savedweightvar'];
     eval(evalstr);

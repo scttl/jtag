@@ -93,7 +93,9 @@ for i=1:length(cut_cands);
 
     samp.horizontal = h;
     samp.fullpage = f;
-    samp.valid_cut = cand.valid_cut;
+    if (isfield(cand,'valid_cut'));
+        samp.valid_cut = cand.valid_cut;
+    end;
     samp.x = cand.x;
     samp.y = cand.y;
     samp.feat_vals = [];
@@ -105,9 +107,9 @@ for i=1:length(cut_cands);
     
     if ~h; %This is a vertical cut
         x = cand.x;
-        s1box = [s0.l, s0.t, cand.x - 1, s0.b];
+        s1box = [s0.l, s0.t, max(cand.x-1,1), s0.b];
         s1box = seg_snap(pix,s1box,0);
-        s2box = [cand.x + 1, s0.t, s0.r, s0.b];
+        s2box = [min(cand.x+1,size(pix,2)), s0.t, s0.r, s0.b];
         s2box = seg_snap(pix,s2box,0);
         ws.l = s1box(3) + 1;
         ws.r = s2box(1) - 1;
@@ -176,9 +178,9 @@ for i=1:length(cut_cands);
         
     else;  %This is a horizontal cut
         y = cand.y;
-        s1box = [s0.l, s0.t, s0.r, cand.y - 1];
+        s1box = [s0.l, s0.t, s0.r, max(cand.y-1,1)];
         s1box = seg_snap(pix,s1box,0);
-        s2box = [s0.l, cand.y + 1, s0.r, s0.b];
+        s2box = [s0.l, min(cand.y+1,size(pix,1)), s0.r, s0.b];
         s2box = seg_snap(pix,s2box,0);
         ws.l = s0.l;
         ws.r = s0.r;

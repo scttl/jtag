@@ -30,15 +30,33 @@ dead_segs = [];
 %First, the vertical full pass
 %Not used
 
+%fprintf('Starting with [%i,%i,%i,%i]\n', live_segs(1), live_segs(2), ...
+%        live_segs(3), live_segs(4));
+
 %Next, the horizontal full pass on each live_seg
-[live_segs,ds] = seg_pass(ww,live_segs,pix,1,1);
+[live_segs,ds] = seg_pass(ww,live_segs,pixels,1,1,jt);
 dead_segs = [dead_segs;ds];
 
-[live_segs,ds] = seg_pass(ww,live_segs,pix,0,0);
+%fprintf('After pass 1, live segs:\n');
+%disp(live_segs);
+%fprintf('After pass 1, dead segs:\n');
+%disp(dead_segs);
+
+[live_segs,ds] = seg_pass(ww,live_segs,pixels,0,0,jt);
 dead_segs = [dead_segs;ds];
 
-[live_segs,ds] = seg_pass(ww,live_segs,pix,1,0);
+%fprintf('After pass 2, live segs:\n');
+%disp(live_segs);
+%fprintf('After pass 2, dead segs:\n');
+%disp(dead_segs);
+
+[live_segs,ds] = seg_pass(ww,live_segs,pixels,1,0,jt);
 dead_segs = [dead_segs;ds];
+
+%fprintf('After pass 3, live segs:\n');
+%disp(live_segs);
+%fprintf('After pass 3, dead segs:\n');
+%disp(dead_segs);
 
 useslope = 30;
 segs = [live_segs;dead_segs];
@@ -48,27 +66,30 @@ segs = segs(segorder,:);
 
 %------------------------------------------------------
 %---Subfunction Declarations---------------------------
-function [live_segs,dead_segs] = seg_pass(ww,live_segs,pix,h,f);
+function [live_segs,dead_segs] = seg_pass(ww,live_segs,pix,h,f,jt);
 
 cut_classes = {'no','yes'};
 
 done_segs = [];
 dead_segs = [];
-valid_cuts = [];
 while (length(live_segs) > 0);
+    valid_cuts = [];
     paths = [];
     seg = live_segs(1,:);
     live_segs(1,:) = [];
 
     %Get the cut candidates
     cut_cands = ltc3_find_cand(pix,seg);
-    cut_samps = ltc3_make_samples_from_cands(cut_cands,pix,jt,h,f,seg);
+    if (length(cut_cands) > 0);
+        cut_cands = cut_cands(find([cut_cands.horizontal]==h));
+        cut_samps = ltc3_make_samples_from_cands(cut_cands,pix,jt,h,f,seg);
+    end;
 
     %Evaluate the candidates
-    for i=1:length(cut_samps);
+    for i=1:length(cut_cands);
         samp = cut_samps(i);
         cand = cut_cands(i);
-        [score_y,score_n] = ltc3_score_samp(samp,ww);
+        [score_y,score_n] = ltc3_score_seg(samp,ww);
         if (score_y > score_n);
             samp.valid_cut = true;
             cand.valid_cut = true;
@@ -87,4 +108,4 @@ while (length(live_segs) > 0);
     
 end;
 
-
+live_segs = done_segs;
