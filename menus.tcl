@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.8 2003-09-04 14:09:15 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.9 2003-09-05 14:20:26 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.8  2003-09-04 14:09:15  scottl
+## Revision 1.9  2003-09-05 14:20:26  scottl
+## Implemented auto-prediction functionality.
+##
+## Revision 1.8  2003/09/04 14:09:15  scottl
 ## Bugfixes for merging command.
 ##
 ## Revision 1.7  2003/09/04 02:48:34  scottl
@@ -76,6 +79,7 @@ namespace eval ::Jtag::Menus {
     set edit(attribs) {-text Edit -underline 0}
     set edit(next_btn) {}
     set edit(prev_btn) {}
+    set edit(predict_btn) {}
 
     # the zoom menu
     variable zoom
@@ -105,6 +109,8 @@ namespace eval ::Jtag::Menus {
     # array containing the id's of data array elements to be merged
     variable merge_array
      
+    # name of the matlab executable
+    variable matlab_exe matlab
 
 }
 
@@ -247,14 +253,188 @@ proc ::Jtag::Menus::multi_page_functions {on} {
                              [expr $::Jtag::Image::img(curr_page) - 1]}
 
     } else {
+        bind . <Next> {}
+        bind . <Prior> {}
         destroy $edit(next_btn)
         destroy $edit(prev_btn)
 
         # remove them from the edit menu if they exist
-        $edit(m) delete "Next Page"
-        $edit(m) delete "Prev Page"
+        catch {$edit(m) delete "Next Page"}
+        catch {$edit(m) delete "Prev Page"}
     }
 }
+
+
+# ::Jtag::Menus::auto_prediction --
+#
+#    Enables or disables the ability to have the JTAG application
+#    automatically "predict" where rectangles are located as well as their
+#    classification.  This is accomplished through the use of config file
+#    settings and MATLAB functionality.  If matlab, the classification
+#    scripts, or other dependancies can not be found, this feature is
+#    disabled.
+#
+# Arguments:
+#
+# Results:
+#    All of the required components (matlab executable, training data, matlab
+#    scripts) are checked for and if any are missing or invalid, the
+#    functionality is disabled and 0 is returned.  Only if all the above exist 
+#    is a button created that allows auto-prediction.
+
+proc ::Jtag::Menus::auto_prediction {} {
+
+    # link the appdir global variable
+    global appdir
+
+    # link any namespace variables needed
+    variable f
+    variable edit
+    variable ::Jtag::Image::img
+    variable ::Jtag::Config::cnfg
+    variable ::Jtag::Menus::matlab_exe
+
+    # declare any local variables needed
+    variable PredictionFn $appdir/matlab/classify_pg.m
+
+    debug {entering ::Jtag::Menus::auto_prediction}
+
+
+    # start by disabling auto_prediction (incase it was enabled previously)
+    destroy $edit(predict_btn)
+    catch {$edit(m) delete "Auto Predict Selections"}
+
+    # have we specified a valid training data file
+    if {! [file exists $cnfg(td_loc)]} {
+        debug {failed to set auto_prediction: training data file doesn't exist}
+        return 0
+    }
+
+    # does matlab exist in the path
+    if {[exec which $matlab_exe {2>/dev/null}] == ""} {
+        debug {failed to set auto_prediction: $matlab_exe not in path}
+        return 0
+    }
+
+    # does our matlab page prediction function file exist?
+    if {! [file exists $PredictionFn]} {
+        debug {failed to set auto_prediction: $PredictionFn doesn't exist}
+        return 0
+    }
+
+    # have we specified a learning function
+    if {$cnfg(learner) == ""} {
+        debug {failed to set auto_prediction: learner algorithm not specified}
+        return 0
+    }
+
+    # everything looks ok, create the button and display it.
+    set edit(predict_btn) $f(path).predict
+    button $edit(predict_btn) -text {Auto Predict Selections} -relief solid \
+              -overrelief raised -command {::Jtag::Menus::run_prediction}
+    $edit(m) add command -label "Auto Predict Selections" -command \
+              {::Jtag::Menus::run_prediction}
+    pack $edit(predict_btn) -side left
+}
+
+
+# ::Jtag::Menus::run_prediction --
+#
+#    This procedure carries out the actual auto-classification process using
+#    MATLAB procedures and an already-created file contraining traing data
+#    (all of which has already been verified and validated in the
+#    auto_prediction proc above)
+#
+# Arguments:
+#
+# Results:
+#    If any selections are found on the page, the user prompted to ensure that
+#    they want to continue (and lose the existing selections).  Matlab is
+#    started and progress is displayed in a pop-window as the procedure is
+#    carried out.  If there is a problem at any time it is displayed to the
+#    user and the auto-prediction is cancelled.  Otherwise the file has its
+#    new jtag and jlog selection items reloaded and displayed.
+
+proc ::Jtag::Menus::run_prediction {} {
+
+    # link the appdir global variable
+    global appdir
+
+    # link any namespace variables needed
+    variable ::Jtag::Image::img
+    variable ::Jtag::Config::cnfg
+    variable ::Jtag::Config::data
+    variable ::Jtag::Menus::matlab_exe
+
+    # declare any local variables needed
+    variable TmpFile $appdir/tmp.m
+    variable MatlabPath $appdir/matlab
+    variable TmpScript {}
+    variable FoundSels 0
+    variable RemoveOk 0
+    variable I
+
+    # see if there are existing selections that will be lost
+    foreach I [array names data -regexp {(.*)(,)(num_sels)}] {
+        if {$data($I) > 0} {
+            set FoundSels 1
+            break
+        }
+    }
+    if {$FoundSels} {
+        set RemoveOk [tk_dialog .dialog "Warning -- Selections found!" \
+            "Existing selections have been found for this page.\nIf you \
+             choose to continue they will be lost!!" "" 1 "Ok" "Cancel"]
+         if {$RemoveOk != 0} {
+             return 
+         }
+    }
+
+    update
+    ::blt::busy hold .
+
+    # build a temporary matlab script that can be used
+    lappend TmpScript "addpath $MatlabPath"
+    if {$cnfg(learner_args) == ""} {
+        eval lappend TmpScript "{classify_pg( parse_training_data( \
+                      '$cnfg(td_loc)'), '$img(file_name)', '$cnfg(learner)')}"
+    } else {
+        eval lappend TmpScript "{classify_pg( parse_training_data( \
+                      '$cnfg(td_loc)'), '$img(file_name)', \
+                      '$cnfg(learner)', $cnfg(learner_args))}"
+    }
+    if {[catch {::Jtag::File::write $TmpFile $TmpScript} Response]} {
+        debug "Failed to create temp file $TmpFile.  Reason:\n$Response"
+        return
+    }
+
+    # run it (will return an error if it fails)
+    ::Jtag::UI::status_text "Running Auto-Prediction...."
+    update idletasks
+    eval exec $matlab_exe -nojvm -nosplash "<" $TmpFile
+    ::blt::busy release .
+
+    # clean up the temp script
+    file delete $TmpFile
+
+    # redisplay the page
+    if {$FoundSels} {
+        while {[array names data -regexp {(.*)(,)([0-9])+}] != ""} {
+            ::Jtag::Classify::remove [lindex \
+                         [array names data -regexp {(.*)(,)([0-9])+}] 0]
+        }
+    }
+
+    ::Jtag::Image::clear_canvas
+
+    # reload the image to get new jtag data
+    if {[catch {::Jtag::Image::create_image $img(file_name)} Response]} {
+        debug "Failed to validate/display new image.  Reason:\n$Response"
+    }
+
+    ::Jtag::UI::status_text "Successfully Reopened image: $img(file_name)"
+}
+
 
 
 

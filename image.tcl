@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.12 2003-09-03 20:23:13 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.13 2003-09-05 14:22:17 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.12  2003-09-03 20:23:13  scottl
+## Revision 1.13  2003-09-05 14:22:17  scottl
+## Implemented auto-prediction functionality.
+##
+## Revision 1.12  2003/09/03 20:23:13  scottl
 ## bugfix to ensure that warnings etc. are not displayed (preventing an image
 ## from correctly being loaded).
 ##
@@ -211,6 +214,7 @@ proc ::Jtag::Image::create_image {file_name} {
     if {$DotPos == -1} {
         set FileBase $file_name
         set img(multi_page) 0
+        ::Jtag::Menus::multi_page_functions 0
     } else {
         set FileBase [string range $file_name 0 [expr $DotPos - 1]]
         set DotPos [string last "." $FileBase]
@@ -229,8 +233,14 @@ proc ::Jtag::Image::create_image {file_name} {
             set A2 [expr [scan [string index $FileBase [expr $DotPos + 2]] \
                           %c] - 96]
             set img(curr_page) [expr (26 * ($A1 - 1)) + $A2]
+        } else {
+            set img(multi_page) 0
+            ::Jtag::Menus::multi_page_functions 0
         }
     }
+
+    # attempt to add auto-prediction functionality buttons
+    ::Jtag::Menus::auto_prediction
 
     # scale and add the image to the canvas
     set ScaleW [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]

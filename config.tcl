@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.10 2003-08-25 17:43:39 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.11 2003-09-05 14:22:17 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.10  2003-08-25 17:43:39  scottl
+## Revision 1.11  2003-09-05 14:22:17  scottl
+## Implemented auto-prediction functionality.
+##
+## Revision 1.10  2003/08/25 17:43:39  scottl
 ## Added a status bar to display status messages during certain actions.
 ##
 ## Revision 1.9  2003/07/31 19:16:46  scottl
@@ -102,6 +105,15 @@ namespace eval ::Jtag::Config {
 
     # Journal component classification types and colours are stored in the
     # 'data' array.
+
+    # path and name of the training data file to be used for auto-prediction
+    set cnfg(td_loc) {}
+
+    # name of the learning algorithm to use
+    set cnfg(learner) {knn_fn}
+
+    # any additional args to pass to the learner
+    set cnfg(learner_args) {}
 
     # Array containing all selection data.  Each element name will be a
     # class, and each of its element will be an array giving its colour
