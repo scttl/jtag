@@ -52,7 +52,7 @@ subpix = pix(top:bot, left:right);
 if (max(max(1 - subpix)) <= wst);
     %Empty segment: snap to the single pixel at the center.
     seg = [floor((left+right)/2), floor((top+bot)/2), ...
-           floor((left_right)/2), floor((top+bot)/2)];
+           floor((left+right)/2), floor((top+bot)/2)];
     return;
 end;
 

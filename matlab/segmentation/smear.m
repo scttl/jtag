@@ -1,9 +1,13 @@
-function segs = smear(pix_in, x_smear, y_smear, drawit);
+function segs = smear(pix_in, x_smear, y_smear, drawit, rem_overlaps);
 %
-%function segs = smear(pix_in, x_smear, y_smear, drawit);
+%function segs = smear(pix_in, x_smear, y_smear, drawit, rem_overlaps);
 %
 % pix(top:bot,left:right);
 %
+
+if (nargin < 5);
+    rem_overlaps = false;
+end;
 
 if (ischar(pix_in));
     pixels = imread(pix_in);
@@ -65,6 +69,11 @@ for i=1:nummarks;
 end;
 
 segs = seg_snap(pixels,segs,0);
+
+if (rem_overlaps);
+    segs = rem_overlapping_segs(pixels,segs);
+end;
+
 
 if (nargin >= 4) && (drawit);
     seg_plot(pixels,segs);
