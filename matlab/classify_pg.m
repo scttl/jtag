@@ -1,14 +1,13 @@
-function res = classify_pg(data, img_file, class_fn, varargin)
+function res = classify_pg(class_names, img_file, class_fn, varargin)
 % CLASSIFY_PG    Attempts to find and classify each rectangular subrectangle
-%                of IMG_FILE by running the CLASS_FN algorithm against all the 
-%                training data in DATA passed.
+%                of IMG_FILE as one of the clases in CLASS_NAMES by running 
+%                the CLASS_FN algorithm.
 %
-%   RES = CLASSIFY_PG(DATA, IMG_FILE, CLASS_FN, {ARGS})  Opens the IMG_FILE 
-%   passed, then determines a collection of rectangular subregions using the 
-%   xycut algorithm and a line detector.  Each subregion is then classified 
-%   against the training data struct DATA (see CREATE_TRAINING_DATA for its 
-%   format) using the classification algorithm defined by CLASS_FN and any
-%   additional arguments in ARGS.
+%   RES = CLASSIFY_PG(CLASS_NAMES, IMG_FILE, CLASS_FN, {ARGS})  Opens the 
+%   IMG_FILE passed, then determines a collection of rectangular subregions 
+%   using the xycut algorithm.  Each subregion is then classified 
+%   as one of the classes listed in CLASS_NAMES using the classification 
+%   algorithm defined by CLASS_FN and any additional arguments in ARGS.
 %
 %   Once the rectangles have been classified, the information is dumped out to
 %   the appropriate jtag and jlog files, overwriting any existing files.
@@ -21,11 +20,15 @@ function res = classify_pg(data, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.3 2003-09-11 18:25:23 scottl Exp $
+% $Id: classify_pg.m,v 1.4 2003-09-19 15:27:08 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.3  2003-09-11 18:25:23  scottl
+% Revision 1.4  2003-09-19 15:27:08  scottl
+% Updates to remove always passing training data.  Now it is an optional
+% argument since it is only needed for knn_fn.
+%
+% Revision 1.3  2003/09/11 18:25:23  scottl
 % Amended previous fix, to ensure that rectangles are found, if none currently
 % exist in the jtag file.
 %
@@ -48,12 +51,15 @@ s = [];  % the structure we will build as we classify the rectangles
 % first do some sanity checking on the arguments passed
 error(nargchk(3,inf,nargin));
 
+if ~iscell(class_names) | size(class_names,1) ~= 1
+    error('CLASS_NAMES must be a cell array listing one class per column');
+end
 if iscell(img_file) | ~ ischar(img_file) | size(img_file,1) ~= 1
     error('IMG_FILE must contain a single string.');
 end
 
 % initialize components of the structure
-s.class_name = data.class_names;
+s.class_name = class_names;
 s.img_file = img_file;
 s.rects = [];
 
@@ -89,9 +95,9 @@ for i = 1:size(s.rects,1)
     % run through all features for this rectangle
     features = run_all_features(s.rects(i,:), pixels);
     if ~isempty(varargin)
-        s.class_id(i,:) = feval(class_fn, data, features, varargin{:});
+        s.class_id(i,:) = feval(class_fn, s.class_name, features, varargin{:});
     else
-        s.class_id(i,:) = feval(class_fn, data, features);
+        s.class_id(i,:) = feval(class_fn, s.class_name, features);
     end
 end
 
