@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.18 2003-09-11 18:26:21 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.19 2003-09-15 19:06:35 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.18  2003-09-11 18:26:21  scottl
+## Revision 1.19  2003-09-15 19:06:35  scottl
+## Small bugfix to ensure we only activate the one matching bucket.
+##
+## Revision 1.18  2003/09/11 18:26:21  scottl
 ## Activate button corresponding to classified selection when mouse enters
 ## that selection.
 ##
@@ -820,7 +823,7 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
 
             # flash the button associated with this selection
             foreach I $Buckets {
-                if {[regexp \\.$Class $I]} {
+                if {[regexp \\.$Class$ $I]} {
                     $I configure -state active
                 }
             }
