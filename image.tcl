@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.6 2003-07-15 16:41:35 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.7 2003-07-16 16:46:02 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.6  2003-07-15 16:41:35  scottl
+## Revision 1.7  2003-07-16 16:46:02  scottl
+## Fixed small bug to allow scaling by height when resizing.  Also implemented
+## snapping of canvas size to that of the image.
+##
+## Revision 1.6  2003/07/15 16:41:35  scottl
 ## Implemented clear_canvas method to allow opening of multiple images over the
 ## same session.
 ##
@@ -172,7 +176,7 @@ proc ::Jtag::Image::create_image {file_name} {
 
     # scale and add the image to the canvas
     set ScaleW [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
-    set ScaleH [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
+    set ScaleH [expr [$can(path) cget -height] / ($img(actual_height) + 0.0)]
     ::Jtag::Image::resize [expr $ScaleW <= $ScaleH ? $ScaleW : $ScaleH]
 
     # allow classifications to be performed on the image/canvas
@@ -478,6 +482,14 @@ proc ::Jtag::Image::resize {{factor 1.}} {
         # put the image as low on the canvas as possible
         if {$NextItem != ""} {
             $can(path) lower $can(img_tag) $NextItem
+        }
+        # see if we can snap the canvas width or height down to that of the
+        # image
+        if {$img(height) < [$can(path) cget -height]} {
+            $can(path) configure -height $img(height)
+        }
+        if {$img(width) < [$can(path) cget -width]} {
+            $can(path) configure -width $img(width)
         }
         if {$scrl(created)} {
             # reset the scroll region to that of the new image
