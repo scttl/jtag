@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.5 2003-07-14 14:32:54 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.6 2003-07-15 16:41:35 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.5  2003-07-14 14:32:54  scottl
+## Revision 1.6  2003-07-15 16:41:35  scottl
+## Implemented clear_canvas method to allow opening of multiple images over the
+## same session.
+##
+## Revision 1.5  2003/07/14 14:32:54  scottl
 ## Once image has been created, allow classifications to occur by binding
 ## selections made on the canvas.
 ##
@@ -486,6 +490,38 @@ proc ::Jtag::Image::resize {{factor 1.}} {
 
     # allow clicks and binding events again
     ::blt::busy release .
+}
+
+
+# ::Jtag::Image::clear_canvas --
+#
+#    Removes all items that currently exist on the canvas (images, rectangles,
+#    etc.) so that the canvas is completely blank.  Also prohibits selections
+#    from occuring on it.
+#
+# Arguments:
+#
+# Results:
+#    Everything on the canvas is destroyed
+
+proc ::Jtag::Image::clear_canvas {} {
+
+    # link any namespcae variables
+    variable can
+
+    # declare any local variables
+
+    debug "entering ::Jtag::Image::clear_canvas"
+
+    if {! $can(created)} {
+        debug "trying to clear a non-existent canvas"
+        return
+    }
+
+    $can(path) delete all
+
+    ::Jtag::Classify::unbind_selection
+
 }
 
 
