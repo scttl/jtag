@@ -3,7 +3,7 @@
 ##
 ## FILE: extract_stable.pl
 ##
-## CVS: $Id: extract_stable.pl,v 1.1 2003-06-03 23:38:06 scottl Exp $
+## CVS: $Id: extract_stable.pl,v 1.2 2003-06-04 22:36:16 scottl Exp $
 ##
 ## DESCRIPTION: Perl script to exctract, convert and print a list of Stable URLs
 ##              found searching all html files below the $SRC directory
@@ -43,6 +43,8 @@ while (defined($file = readdir(DIR))) {
     }
 
   }
+
+  close(FILE);
     
 }
 closedir(DIR);
