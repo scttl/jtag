@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.6 2003-07-16 20:27:12 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.7 2003-07-21 21:36:16 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.6  2003-07-16 20:27:12  scottl
+## Revision 1.7  2003-07-21 21:36:16  scottl
+## Added snap_threshold param.
+##
+## Revision 1.6  2003/07/16 20:27:12  scottl
 ## Renamed classifier references to class references to avoid confusion.
 ##
 ## Revision 1.5  2003/07/16 16:51:05  scottl
@@ -79,6 +82,9 @@ namespace eval ::Jtag::Config {
 
     # Position related options.
     set cnfg(window_pos) {0 0}
+
+    # non-background pixel percentage threshold to prohibit further snapping
+    set cnfg(snap_theshold) 2
 
     # Journal component classification types and colours are stored in the
     # 'data' array.

@@ -5,7 +5,7 @@
 ## DESCRIPTION: Sample configuration file to be distributed with jtag
 ##              application.
 ##
-## CVS: $Id: .jconfig,v 1.3 2003-07-16 20:27:45 scottl Exp $
+## CVS: $Id: .jconfig,v 1.4 2003-07-21 21:32:46 scottl Exp $
 ##
 ################################################################################
 
@@ -54,6 +54,13 @@ canvas_size = 620 825
 # automatically expand them to fit in the available space (if there is room
 # for them).
 bucket_size = 50 50
+
+# snap_threshold:
+# Sets the required percentage of non-background pixels that must be found
+# when scanning a single line of a selection rectangle to prohibit it from
+# being passed over when snapping it to text.  This value must lie in the
+# range [0...100] and can take on fractions if neccessary
+snap_threshold = 1
 
 # classes:
 # List of possible classification types based on the component of the journal
