@@ -2,44 +2,55 @@ To Do
 ------
 
 
-<DONE>Investigate possible MEMM training bug: "end-of-page" is getting 0's 
-for all of the "follows X" features.
-
-<DONE>Change the all-in-one script to let you tweak the segmentation.
-
-<DONE>Find a sample journal for Sam to try OCR on.
-    ***TAGGED/jmlr/Cancedda03a
-
-<DONE>Tar up the existing .jtag and .jlog files for JMLR.
-
-<DONE>After that, merge all the figure caption/label pairs.
-    <DONE>TAGGED:
-        allwein
-        antos
-        Calif03a
-        Cancedda
-        CAruana
-        Chan02a
-        Chikering02b
-        Christensen03a
-        Crammer01a
-        Crammer03a
-    <DONE>TEST DATA:
-        BAch02a
-        Canon02a
-        Chickering02a
-        Collobert01a
-        Crammer03n
-
-<DONE>Fix the MEMM bug I found (skipping the end-of-page in training).
-
-<DONE>Re-run the MEMM parts of the test sets, with the new bug fix.
-
 <DONE>Finish the "Best Cuts" implementation of xycuts.
 
-Draft a TOC for my thesis.
+<DONE>Gather papers to read and write parts of my thesis
+
+<DONE>Implement the Run-Length Smoothing Algorithm
+
+<DONE>Implement the Smearing segmentation algorithm
+
+Optimize and test the Smearing segmentation algorithm
+
+Implement the best-merge algorithm
+
+Implement Voronoi Diagrams for best-merge
+
+Test Voronoi Diagrams for best-merge
+
+<DONE>Implement first version of Learn-To-Cut algorithm.
+    <DONE>Decide on "classes" of cuts.
+    <DONE>Decide on a way to order the cuts.
+    <DONE>Come up with the first basic features.
+    <DONE>Write code to generate training data.
+        <NOPE>Consider "optional" cuts while doing this
+    <DONE>Generate some training data.
+    <DONE>Train the classifier.
+    <DONE>Write the cutter that uses the classifier.
+    <DONE>Test the cutter and classifier.
+
+Make some changes to create the 2nd version of Learn-To-Cut
+    <DONE>Make separate classifiers for vertical and horizontal cuts.
+    Add features:
+        Does the cut slice the full page cleanly?
+        Ink densities for R0, R1, and R2.
+        Fraction of page Down and Right for center points of R0, R1, and R2.
+            Boolean vars for left20%, right20%, top20%, bot20%
+        Add a new rectangle: ws1 (whitespace before R1).
+        Last 20% of pages in article (boolean).
+        Width(r0) - Min(width(r1),width(r2))
+        Height(r0) - min(height(r1),height(r2))
+    Script to generate all training and test data sets.
+    Script to test all data (lr-style).
+    Script to test all data (seg-style).
+    Script to show results in some nice manner.
+        
+
+    
 
 Buy a bar document scanner.
+
+
 
 Look into detecting lines in text regions.
 
@@ -47,7 +58,7 @@ Look into inferring font size or line spacing from text regions.
 
 <DONE>Fix up the demo.
 
-Read Ben's thesis.
+<DONE>Skim Ben's thesis.
 
 Consider second reader for thesis:
     -Rich Zemel

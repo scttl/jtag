@@ -45,6 +45,19 @@ function keyPressed(obj,eventdata);
         np;
     elseif (lastChar == 'e') || (lastChar == 'E');
         jt_edit;
+    elseif (lastChar == 'c') || (lastChar == 'C');
+        global class_names;
+        global article;
+        global use;
+        olduse = use;
+        use.dist = true; use.snap = false; use.dens = true; use.mark = false;
+        jt = article.page{article.curpage};
+        classify_pg(class_names, jt.img_file, 'lr_fn', ...
+            '/h/40/klaven/jtag/matlab/results/nosnap/nosnap-jmlr-train.lr.mat');
+        use = olduse;
+        jt = jt_load(jt.jtag_file,0);
+        article.page{article.curpage} = jt;
+        page(article.curpage);
     end;
     
 

@@ -30,15 +30,21 @@ function s = create_training_data(file_list, outfile)
 %     s.pg{i}.features -> matrix containing one row for each selection on the 
 %                         page.  Each column entry corresponds to the results 
 %                         of running that selection on one feature.
+%     s.pg{i}.rects    -> (n x 4) matrix of segments:
+%                             [L T R B;
+%                              L T R B]
 
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.6 2004-07-29 20:41:56 klaven Exp $
+% $Id: create_training_data.m,v 1.7 2004-09-22 21:58:42 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.6  2004-07-29 20:41:56  klaven
+% Revision 1.7  2004-09-22 21:58:42  klaven
+% *** empty log message ***
+%
+% Revision 1.6  2004/07/29 20:41:56  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.5  2004/07/27 21:57:57  klaven
@@ -138,6 +144,7 @@ for i = 1:length(file_list)
 
   s.pg{i}.cid = cids;
   s.pg{i}.features = feats;
+  s.pg{i}.rects = pg_s.rects;
 
 end
 

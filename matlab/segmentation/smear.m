@@ -1,9 +1,16 @@
-function segs = smear(pixels, x_smear, y_smear, drawit);
+function segs = smear(pix_in, x_smear, y_smear, drawit);
 %
-%function segs = smear(pix, x_smear, y_smear);
+%function segs = smear(pix_in, x_smear, y_smear, drawit);
 %
 % pix(top:bot,left:right);
 %
+
+if (ischar(pix_in));
+    pixels = imread(pix_in);
+else;
+    pixels = pix_in;
+end;
+
 bg = 1;
 pix = bg - pixels;
 pix = (pix > 0.5);

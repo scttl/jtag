@@ -1,10 +1,10 @@
-function [score,allscores] = seg_test_xycut(data, HT, VT);
+function [score,allscores] = seg_test_smear(data, HS, VS);
 
-%function [score,allscores] = seg_test_xycut(data, HT, VT);
+%function [score,allscores] = seg_test_smear(data, HS, VS);
 %
 % Counts the total number of segmentation errors made by the
-% xycut algorithm on data, using HT and VT as the horizontal
-% and vertical thresholds respectively.  If HT and VT are not
+% smear algorithm on data, using HS and VS as the horizontal
+% and vertical smearing respectively.  If HS and VS are not
 % provided, the default values are used.
 %
 % -score is the sum of the log-likelihood estimates.
@@ -19,23 +19,23 @@ maxits = 10000;
 clear allscores;
 clear score;
 
-if (length(VT) ~= length(HT));
-    fprintf('VT and HT must have the same length.  They are used in pairs.\n');
+if (length(VS) ~= length(HS));
+    fprintf('VS and HS must have the same length.  They are used in pairs.\n');
     return;
 end;
 
-for tnum=1:length(VT);
-    fprintf('Starting pair %i of %i: ht=%i, vt=%i\n',tnum, length(VT), ...
-            HT(tnum), VT(tnum));
+for tnum=1:length(VS);
+    fprintf('Starting pair %i of %i: hs=%i, vs=%i\n',tnum, length(VS), ...
+            HS(tnum), VS(tnum));
     score(tnum) = 0; 
     for j=1:min([maxits, data.num_pages]); 
         jt=jt_load(char(data.pg_names(j)),0);
         if (nargin < 3);
             s = seg_eval(imread(char(jt.img_file)), ...
-                         xycut(char(jt.img_file)),jt.rects,jt.class_id); 
+                         smear(char(jt.img_file)),jt.rects,jt.class_id); 
         else;
             s = seg_eval(imread(char(jt.img_file)), ...
-                         xycut(char(jt.img_file),HT(tnum),VT(tnum)), ...
+                         smear(char(jt.img_file),HS(tnum),VS(tnum)), ...
                                jt.rects, jt.class_id);
         end;
         score(tnum) = score(tnum) + s; 
@@ -43,5 +43,5 @@ for tnum=1:length(VT);
                 j, min([maxits, data.num_pages]), s, score(tnum)); 
         allscores(tnum,j) = s;
     end;
-    save XYCut_Optimization_in_progress.mat HT VT score allscores;
+    save Smear_Optimization_in_progress.mat HS VS score allscores;
 end;

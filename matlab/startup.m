@@ -1,6 +1,7 @@
 addpath('./logisticregression/');
 addpath('./knn/');
 addpath('./segmentation/');
+addpath('./learntocut/');
 addpath('./features/');
 addpath('./utils/');
 addpath('./memm/');
