@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.7 2004-04-30 01:07:04 klaven Exp $
+% $Id: xycut.m,v 1.8 2004-05-13 21:17:01 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.7  2004-04-30 01:07:04  klaven
+% Revision 1.8  2004-05-13 21:17:01  klaven
+% Working with some new functions for evaluatng the segmentation.
+%
+% Revision 1.7  2004/04/30 01:07:04  klaven
 % This is the version to use for my demo.
 %
 % Revision 1.6  2004/04/30 00:25:42  klaven
@@ -239,15 +242,15 @@ while ~ (l_done & t_done & r_done & b_done)
 	    bottom = bottom - 1;
 	    %fprintf('no area count, bottom = %i, b_markstart = %i ',bottom, b_markstart);
 	else
-	    fprintf('Bottom count = %i, ', count);
+	    %fprintf('Bottom count = %i, ', count);
 	    count = sum(sum((bg - pixels(bottom:b_markstart,left:right))>0));
-	    fprintf('area count = %i, bottom = %i, b_markstart = %i, ',count, bottom, b_markstart);
+	    %fprintf('area count = %i, bottom = %i, b_markstart = %i, ',count, bottom, b_markstart);
 	    if count > (wst * (right - left + 1))
-	        fprintf('done.\n');
+	        %fprintf('done.\n');
 	        bottom = b_markstart;
                 b_done = true;
             else
-	        fprintf('not done.\n');
+	        %fprintf('not done.\n');
                 bottom = bottom - 1;
             end
 	end
