@@ -13,11 +13,14 @@ function res = dump_lr_weights(w, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: dump_lr_weights.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: dump_lr_weights.m,v 1.2 2004-07-22 15:54:44 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: dump_lr_weights.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-22 15:54:44  klaven
+% *** empty log message ***
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.2  2004/06/14 20:20:06  klaven
@@ -26,13 +29,13 @@ function res = dump_lr_weights(w, outfile)
 % Revision 1.1  2003/09/22 17:47:09  scottl
 % Initial revision.
 %
-
-savedweightvar = w;
-evalstr = ['save ' outfile ' savedweightvar;'];
-eval(evalstr);
-res = 0;
-return;
-
+if (strcmp(outfile(end-3:end), '.mat'));
+    savedweightvar = w;
+    evalstr = ['save ' outfile ' savedweightvar;'];
+    eval(evalstr);
+    res = 0;
+    return;
+end;
 
 % LOCAL VARS %
 %%%%%%%%%%%%%%
