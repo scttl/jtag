@@ -5,11 +5,16 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.10 2003-09-05 20:12:06 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.11 2003-09-11 18:27:50 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.10  2003-09-05 20:12:06  scottl
+## Revision 1.11  2003-09-11 18:27:50  scottl
+## Fix to always snap selection when user selects that command (ignore prev.
+## snap value).  Also removed dialog if selections exist during auto predict
+## (these are now used as the basis for classification).
+##
+## Revision 1.10  2003/09/05 20:12:06  scottl
 ## Added bindings for merge,split etc. and implemented a help system for users.
 ##
 ## Revision 1.9  2003/09/05 14:20:26  scottl
@@ -268,6 +273,7 @@ proc ::Jtag::Menus::multi_page_functions {on} {
 }
 
 
+
 # ::Jtag::Menus::auto_prediction --
 #
 #    Enables or disables the ability to have the JTAG application
@@ -385,12 +391,9 @@ proc ::Jtag::Menus::run_prediction {} {
         }
     }
     if {$FoundSels} {
-        set RemoveOk [tk_dialog .dialog "Warning -- Selections found!" \
-            "Existing selections have been found for this page.\nIf you \
-             choose to continue they will be lost!!" "" 1 "Ok" "Cancel"]
-         if {$RemoveOk != 0} {
-             return 
-         }
+        # write these selections to disk... they will be used as basis for
+        # classification
+        ::Jtag::Config::write_data
     }
 
     update
@@ -807,8 +810,7 @@ proc ::Jtag::Menus::SnapCmd {} {
         set Rect [$::Jtag::Image::can(path) find withtag current]
         if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
             set SelRef [::Jtag::Classify::get_selection $Rect]
-            if {$SelRef != "" && \
-                [lindex $::Jtag::Config::data($SelRef) 6] != 1} {
+            if {$SelRef != ""} {
 
                 # backup the original 'data' elements
                 set Class     [string range $SelRef 0 [expr \
