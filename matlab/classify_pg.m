@@ -21,11 +21,15 @@ function res = classify_pg(data, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.2 2003-09-11 17:47:09 scottl Exp $
+% $Id: classify_pg.m,v 1.3 2003-09-11 18:25:23 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.2  2003-09-11 17:47:09  scottl
+% Revision 1.3  2003-09-11 18:25:23  scottl
+% Amended previous fix, to ensure that rectangles are found, if none currently
+% exist in the jtag file.
+%
+% Revision 1.2  2003/09/11 17:47:09  scottl
 % Allowed use of existing rectangles (if found) to be used for classification.
 %
 % Revision 1.1  2003/08/26 20:36:24  scottl
@@ -68,6 +72,9 @@ s.jlog_file = strcat(img_file(1:dot_idx(length(dot_idx))), jlog_extn);
 % jtag file, otherwise build them from scratch
 try
     tmp_struct = parse_jtag(s.jtag_file);
+    if size(tmp_struct.rects,1) < 1
+        error
+    end
     s.rects = tmp_struct.rects;
 catch
     rects = xycut(img_file);
