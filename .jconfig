@@ -1,90 +1,99 @@
-################################################################################
-##
-## FILE: .jconfig
-##
-## DESCRIPTION: Sample configuration file to be distributed with jtag
-##              application.
-##
-## CVS: $Id: .jconfig,v 1.4 2003-07-21 21:32:46 scottl Exp $
-##
-################################################################################
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%% FILE: .jconfig
+%%
+%% DESCRIPTION: Sample configuration file to be distributed with jtag
+%%              application.
+%%
+%% CVS: $Id: .jconfig,v 1.5 2003-07-31 15:11:20 scottl Exp $
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# H E A D E R  I N F O #
-########################
+% H E A D E R  I N F O %
+%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-# B O D Y  I N F O #
-####################
+% B O D Y  I N F O %
+%%%%%%%%%%%%%%%%%%%%
 
-# mode: 
-# Set the default selection mode.  Valid choices are 'crop' or
-# 'simple'.  Crop allows the user to create a bounding box with the mouse, 
-# whereas simple only allows the user to select vertical boundaries by
-# clicking with the mouse (orizontal boundaries are the image width
-# boundaries)
-#mode = simple
+% mode: 
+% Set the default selection mode.  Valid choices are 'crop' or
+% 'simple'.  Crop allows the user to create a bounding box with the mouse, 
+% whereas simple only allows the user to select vertical boundaries by
+% clicking with the mouse (orizontal boundaries are the image width
+% boundaries)
+%mode = simple
 mode = crop
 
-# window_size:
-# Set the default size of the window containing the application.  Must be a 
-# value of the form <width> <height> where each <width> and <height> are 
-# replaced with positive numerical values specifying the number of pixels for 
-# the width and height respectively.
+% window_size:
+% Set the default size of the window containing the application.  Must be a 
+% value of the form <width> <height> where each <width> and <height> are 
+% replaced with positive numerical values specifying the number of pixels for 
+% the width and height respectively.
 window_size = 900 900
 
-# window_pos:
-# Set the default initial position (top left corner) of the window containing
-# the application.  Must be a value of the form <left> <top> where
-# each of the two arguments are numerical integers specifying the number of 
-# pixels to move in from the left, top respectively edges before placing the 
-# window on the screen
+% window_pos:
+% Set the default initial position (top left corner) of the window containing
+% the application.  Must be a value of the form <left> <top> where
+% each of the two arguments are numerical integers specifying the number of 
+% pixels to move in from the left, top respectively edges before placing the 
+% window on the screen
 window_pos = 0 0
 
-# canvas_size:
-# Set the default size of the canvas upon which the image will be displayed.  
-# Must be a value of the form <width> <height> where each <width> and <height> 
-# are # replaced with positive numerical values specifying the number of pixels
-# for the width and height respectively.  These values should be smaller than
-# those specified in the window_size
+% canvas_size:
+% Set the default size of the canvas upon which the image will be displayed.  
+% Must be a value of the form <width> <height> where each <width> and <height> 
+% are replaced with positive numerical values specifying the number of pixels
+% for the width and height respectively.  These values should be smaller than
+% those specified in the window_size
 canvas_size = 620 825
 
-# bucket_size:
-# Set the default size of each classification bucket displayed around the
-# canvas.  These are initial guidelines only, and the application will
-# automatically expand them to fit in the available space (if there is room
-# for them).
+% bucket_size:
+% Set the default size of each classification bucket displayed around the
+% canvas.  These are initial guidelines only, and the application will
+% automatically expand them to fit in the available space (if there is room
+% for them).
 bucket_size = 50 50
 
-# snap_threshold:
-# Sets the required percentage of non-background pixels that must be found
-# when scanning a single line of a selection rectangle to prohibit it from
-# being passed over when snapping it to text.  This value must lie in the
-# range [0...100] and can take on fractions if neccessary
+% snap_threshold:
+% Sets the required percentage of non-background pixels that must be found
+% when scanning a single line of a selection rectangle to prohibit it from
+% being passed over when snapping it to text.  This value must lie in the
+% range [0...100] and can take on fractions if neccessary
 snap_threshold = 1
 
-# classes:
-# List of possible classification types based on the component of the journal
-# that they represent.  Each item will contain a string specifying its name
-# and a string giving its colour (symbolic equivalent of the 8-bit RGB
-# values).  Each classifier will be separted by whitespace/newlines, and the 
-# component name and colour can not contain any spaces.
+% classes:
+% List of possible classification types based on the component of the journal
+% that they represent.  Each item will contain a string specifying its name
+% and a string giving its colour (symbolic equivalent of the 8-bit RGB
+% values).  Each classifier will be separted by whitespace/newlines, and the 
+% component name and colour can not contain any spaces.
 classes = (
-               abstract             red
-               authour_list         tomato
-               decoration           orange
-               end_notes            goldenrod
-               equation_no_number   yellow
-               equation_numbered    khaki
-               footer               OliveDrab
-               footnote             green
-               graph                DarkSeaGreen
-               header               cyan
-               image                DeepSkyBlue
-               main_title           SteelBlue
-               references           Navy
-               section_heading      SlateGray
-               subsection_heading   DarkViolet
-               table                magenta
-               text                 DeepPink
-               toc                  brown
-               )
+               abstract             #FF0000
+               authour_list         #FFE600
+               bullet_item          #33FF00
+               code_block           #00FFB3
+               decoration           #0066FF
+               editor_list          #8000FF
+               end_notes            #FF0099
+               equation_no_number   #DC0000
+               equation_numbered    #DCC600
+               figure_caption       #2CDC00
+               figure_label         #00DC9A
+               footer               #0058DC
+               footnote             #6E00DC
+               graph                #DC0084
+               header               #B80000
+               image                #B8A500
+               inline_heading       #24B800
+               main_title           #00B881
+               pg_number            #0049B8
+               references           #5C00B8
+               section_heading      #B8006E
+               subsection_heading   #940000
+               table                #948500
+               table_label          #1D9400
+               table_caption        #009467
+               text                 #003B94
+               toc                  #4A0094
+           )
