@@ -4,7 +4,10 @@
 
 DOCUMENT HISTORY:
 -- $Log: specification.txt,v $
--- Revision 1.3  2003-07-15 17:06:54  scottl
+-- Revision 1.4  2003-07-17 18:30:22  scottl
+-- Described multi-page implementation.
+--
+-- Revision 1.3  2003/07/15 17:06:54  scottl
 -- Created section 6 discussing major data structure used, plus various updates
 -- throughout the rest of the document.
 --
@@ -114,6 +117,23 @@ DOCUMENT HISTORY:
 2.7 Break multiple page images (single file), into a series of single page
     images (multiple files)
     * Should be handled externally (in a separate application ex. tiffsplit)
+    * Will be able to flip between pages in a split multiple page file,
+      provided that they are named accordingly
+    * If a file is loaded with a format of: <img_base>.aa.<img_format> where
+      <img_base> denotes the file base and <img_format> denotes its type (ex.
+      tiff or jpg), then the document is treated as a split multi-page
+      document, and one can flip between pages, provided that they are named
+      <img_base>.ab.<img_format> for page 2 and so on up to
+      <img_base>.zz.<img_format> for page 26^2
+    * If a non-split multipage file is loaded, only the first page will be
+      displayed.  In the future, a prompt may be issed to the user informing 
+      them as such, but this will require extra programming and will be left 
+      out for now
+    *? If a non-first page of a split multi-page file is loaded, it is treated
+      like any other single file (no page jumping will be allowed)
+    * To reduce jtag file size, all configuration data for multipage split
+      files will only be written to the first page, <img_Base>.cx.<img_format>
+      for example will not have any config data written out with it.
 
 2.8 Use selections made in previous pages, to look ahead and predict tags
     for future pages.
