@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.6 2003-07-16 19:08:37 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.7 2003-07-16 20:28:05 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.6  2003-07-16 19:08:37  scottl
+## Revision 1.7  2003-07-16 20:28:05  scottl
+## Renamed classifiers to classes to avoid confusion with the name.
+##
+## Revision 1.6  2003/07/16 19:08:37  scottl
 ## Increased default size of rectangles.
 ##
 ## Revision 1.5  2003/07/15 16:44:27  scottl
@@ -139,7 +142,7 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     set LF [eval frame $wl.left $f_attribs]
     set RF [eval frame $wr.right $f_attribs]
 
-    # go through each of the configured classifiers, creating a button
+    # go through each of the configured classes, creating a button
     # and packing it to its frame.  Also add a drag&drop receiver for each
     # button
     set Count 1
@@ -270,7 +273,7 @@ proc ::Jtag::Classify::unbind_selection {} {
 #
 # Arguments:
 #    c       The canvas upon which to add the selection.
-#    class   The name of the classifier to which the selection is being added
+#    class   The name of the class to which the selection is being added
 #    x1      The actual image resolution normalized left edge selection pixel
 #    y1      The actual image resolution normalized top edge selection pixel
 #    x2      The actual image resolution normalized right edge selection pixel
@@ -341,7 +344,7 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
 # Arguments:
 #    sel_ref  The 'data' item to be removed.  Note that it must be a string of
 #             the form: "<class>,<num>"  where <class> is the name of a valid 
-#             classifier and <num> is a valid numerical number corresponding 
+#             class and <num> is a valid numerical number corresponding 
 #             to the selection number.  This is the same format as is returned 
 #             by ::Jtag::Classify::get_selection.
 #
@@ -368,7 +371,7 @@ proc ::Jtag::Classify::remove {sel_ref} {
     }
 
     # remove the entry from 'data' and decrement the number of selection
-    # for the associated classifier.  Note that the original may not be 
+    # for the associated class.  Note that the original may not be 
     # the last element, so check this and swap the last element for the 
     # now empty space.
     set CommaPos [string last "," $sel_ref]
@@ -405,7 +408,7 @@ proc ::Jtag::Classify::remove {sel_ref} {
 #    returned.  Note that the string returned is a bit of a hack in that
 #    Tcl/Tk has no real support for multi-dimensional arrays.  Since our data
 #    array is of this form, the string returned is of the form "<class>,<num>"
-#    where <class> is replaced with a valid classifier name, and <num> is
+#    where <class> is replaced with a valid class name, and <num> is
 #    replaced with the appropriate selection number matching the rectangle
 #    given by the id passed.  You can use the string returned to get to the
 #    data as follows: data([get_selection $id]) for example.
@@ -866,10 +869,10 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     set sel(cl_time) [expr ($sel(cl_time) + [expr [clock clicks -milliseconds] \
                       - $sel(start_timer)]) / 1000.]
 
-    # ensure that the button belongs to a valid classifier
+    # ensure that the button belongs to a valid class
     if {$Class == ""} {
         debug {SERIOUS ERROR!}
-        debug {Unable to extract classifier name from button.  Exiting}
+        debug {Unable to extract class name from button.  Exiting}
         exit -1
     }
 
@@ -891,7 +894,7 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     set ClsTime [expr $ClsTime + $sel(cl_time)]
     set Attmpt [expr $Attmpt + 1]
 
-    # highlight the selection in the classifiers colour
+    # highlight the selection in the classes colour
     $c itemconfigure $sel(id) -outline [$b cget -foreground]
 
     # now update the data structure to reflect our new classification
