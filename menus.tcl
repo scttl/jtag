@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.4 2003-07-28 21:37:56 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.5 2003-07-31 19:15:30 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.4  2003-07-28 21:37:56  scottl
+## Revision 1.5  2003-07-31 19:15:30  scottl
+## Implemented snap command.
+##
+## Revision 1.4  2003/07/28 21:37:56  scottl
 ## - Fully implemented delete command.
 ## - Added save to the file menu
 ## - Added pg movement entries to the edit menu
@@ -306,7 +309,11 @@ proc ::Jtag::Menus::EditMenu {path} {
     # now add its commands
     $M add command -label "Delete" -accelerator "<Ctrl-x>" -command \
                                {::Jtag::Menus::DeleteCmd}
+    $M add command -label "Snap Selection" -command {::Jtag::Menus::SnapCmd}
 
+    # now set any global bindings (these work even outside of this widget so
+    # care must be taken to ensure the bindings don't overwrite other widget
+    # bindings
     bind . <Control-x> {::Jtag::Menus::DeleteCmd}
 
 }
@@ -483,8 +490,6 @@ proc ::Jtag::Menus::DeleteCmd {} {
     # declare any local variables needed
     variable Rect
     variable SelRef
-    variable OldBtnBind
-    variable OldMtnBind
 
     if {! $can(created)} {
         return
@@ -522,4 +527,75 @@ proc ::Jtag::Menus::DeleteCmd {} {
         ::Jtag::Classify::remove $SelRef
     }
 
+}
+
+
+# ::Jtag::Menus::SnapCmd --
+#
+#    Method that will snap the next rectangle the user selects (by left
+#    clicking with the mouse), to its bounding box provided that it has been
+#    classified, and manually resized.  The data array is also updated as
+#    appropriate.
+#
+# Arguments:
+#
+# Results:
+#    If the user clicks on a classified rectangle, then if it has been
+#    manually resized, it will be snapped as appropriate.  If it has not, or
+#    the user clicks outside of all the rectangles, nothing happens.
+
+proc ::Jtag::Menus::SnapCmd {} {
+
+    # link any namespace variables needed
+    variable ::Jtag::Image::can
+
+    # declare any local variables needed
+
+    if {! $can(created)} {
+        return
+    }
+
+    # change the cursor and wait for the user to click with the mouse
+    $can(path) configure -cursor crosshair
+    ::Jtag::Classify::unbind_selection
+    bind $can(path) <ButtonPress-1> {
+        set Rect [$::Jtag::Image::can(path) find withtag current]
+        if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
+            set SelRef [::Jtag::Classify::get_selection $Rect]
+            if {$SelRef != "" && \
+                [lindex $::Jtag::Config::data($SelRef) 6] != 1} {
+
+                # backup the original 'data' elements
+                set Class     [string range $SelRef 0 [expr \
+                                            [string last "," $SelRef] - 1]]
+                set Mode      [lindex $::Jtag::Config::data($SelRef) 5]
+                set SelTime   [lindex $::Jtag::Config::data($SelRef) 7]
+                set ClsTime   [lindex $::Jtag::Config::data($SelRef) 8]
+                set ClsAttmpt [lindex $::Jtag::Config::data($SelRef) 9]
+                set ResAttmpt [lindex $::Jtag::Config::data($SelRef) 10]
+
+                # snap the selection (to attain new co-ords)
+                ::Jtag::Classify::snap_selection $Rect
+
+                # store the new co-ords (normalize by zoom to get actual image
+                # co-ords)
+                set Y2 [$::Jtag::Image::can(path) coords $Rect]
+                set X1 [expr round([lindex $Y2 0] / $::Jtag::Image::img(zoom))]
+                set Y1 [expr round([lindex $Y2 1] / $::Jtag::Image::img(zoom))]
+                set X2 [expr round([lindex $Y2 2] / $::Jtag::Image::img(zoom))]
+                set Y2 [expr round([lindex $Y2 3] / $::Jtag::Image::img(zoom))]
+
+                # remove the original's 'data' entry
+                ::Jtag::Classify::remove $SelRef
+
+                # add the now-snapped entry
+                ::Jtag::Classify::add $::Jtag::Image::can(path) $Class \
+                                      $X1 $Y1 $X2 $Y2 $Mode 1 $Rect $SelTime \
+                                      $ClsTime $ClsAttmpt $ResAttmpt
+            }
+        }
+        # restore the old settings
+        ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
+        $::Jtag::Image::can(path) configure -cursor left_ptr
+    }
 }
