@@ -2,7 +2,7 @@ function res = distance_features(rect, pixels, varargin)
 % DISTANCE_FEATURES   Subjects RECT to a variety of distance related features.
 %
 %  DISTANCE_FEATURES(RECT, PAGE, {THRESHOLD})  Runs the 4 element vector RECT
-%  passed against 16 different distance features, each of which returns a
+%  passed against 20 different distance features, each of which returns a
 %  scalar value.  These values along with the feature name are built up as
 %  fields in a struct, with one entry for each feature.  These entries are
 %  combined in a cell array and returned as RES.
@@ -15,11 +15,15 @@ function res = distance_features(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: distance_features.m,v 1.1 2003-08-18 15:42:50 scottl Exp $
+% $Id: distance_features.m,v 1.2 2003-08-26 21:37:50 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: distance_features.m,v $
-% Revision 1.1  2003-08-18 15:42:50  scottl
+% Revision 1.2  2003-08-26 21:37:50  scottl
+% Added 4 new features that calculate the distance from subrectangle edges to
+% associated page edges
+%
+% Revision 1.1  2003/08/18 15:42:50  scottl
 % Initial revision.  Merger of 4 previously individually calculated distance
 % features.
 %
@@ -76,21 +80,30 @@ res{6}.name  = 't_page_dist';
 res{7}.name  = 'r_page_dist';
 res{8}.name  = 'b_page_dist';
 
-% features 9 - 12 compute the distance from one edge of the rectangle to the 
-% next threshold significant non-whitespace region.
-res{9}.name  = 'l_ws_dist';
-res{10}.name = 't_ws_dist';
-res{11}.name = 'r_ws_dist';
-res{12}.name = 'b_ws_dist';
+% features 9 - 12 copmute the distance from one edge of the "snapped"
+% subrectangle to the associated edge of the page.  This is really the sum of
+% the first and second group of features above, i.e.
+% res{9} = res{1} + res{5} etc.
+res{9}.name   = 'l_inksr_page_dist';
+res{10}.name  = 't_inksr_page_dist';
+res{11}.name  = 'r_inksr_page_dist';
+res{12}.name  = 'b_inksr_page_dist';
 
-% features 13 - 16 compute the distance from one edge of the "snapped"
+% features 13 - 16 compute the distance from one edge of the rectangle to the 
+% next threshold significant non-whitespace region.
+res{13}.name  = 'l_ws_dist';
+res{14}.name = 't_ws_dist';
+res{15}.name = 'r_ws_dist';
+res{16}.name = 'b_ws_dist';
+
+% features 17 - 20 compute the distance from one edge of the "snapped"
 % subrectangle to the next threshold significant non-whitespace region.
-% This is really the sum of the first and third group of features above, i.e.
-% res{13} = res{1} + res{9} etc.
-res{13}.name = 'l_inksr_ws_dist';
-res{14}.name = 't_inksr_ws_dist';
-res{15}.name = 'r_inksr_ws_dist';
-res{16}.name = 'b_inksr_ws_dist';
+% This is really the sum of the first and fourth group of features above, i.e.
+% res{17} = res{1} + res{13} etc.
+res{17}.name = 'l_inksr_ws_dist';
+res{18}.name = 't_inksr_ws_dist';
+res{19}.name = 'r_inksr_ws_dist';
+res{20}.name = 'b_inksr_ws_dist';
 
 
 if get_names
@@ -112,8 +125,13 @@ res{6}.val  = (rect(2) - 1) / r;
 res{7}.val  = (c - rect(3)) / c;
 res{8}.val  = (r - rect(4)) / r;
 
+% now calculate features 9 - 12
+res{9}.val  = res{1}.val + res{5}.val;
+res{10}.val = res{2}.val + res{6}.val;
+res{11}.val = res{3}.val + res{7}.val;
+res{12}.val = res{4}.val + res{8}.val;
 
-% now calculate the amount of whitespace from each edge (features 9 - 12).
+% now calculate the amount of whitespace from each edge (features 13 - 16).
 % Note that when determining whitespace above or below a selection, the entire
 % width of the page is scanned.  When determining whitespace to the left or
 % right of a selection, only information at the same height as the selection
@@ -205,15 +223,15 @@ while ~ (l_done & t_done & r_done & b_done)
 
 end  %end while loop
 
-res{9}.val = (rect(1) - left) / c;
-res{10}.val = (rect(2) - top) / r;
-res{11}.val = (right - rect(3)) / c;
-res{12}.val = (bottom - rect(4)) / r;
+res{13}.val = (rect(1) - left) / c;
+res{14}.val = (rect(2) - top) / r;
+res{15}.val = (right - rect(3)) / c;
+res{16}.val = (bottom - rect(4)) / r;
 
 
-% now calculate features 13 - 16 by simply adding the corresponding element
-% from features (1-4) with features (9-12)
-res{13}.val = res{1}.val + res{9}.val;
-res{14}.val = res{2}.val + res{10}.val;
-res{15}.val = res{3}.val + res{11}.val;
-res{16}.val = res{4}.val + res{12}.val;
+% now calculate features 17 - 20 by simply adding the corresponding element
+% from features (1-4) with features (13-16)
+res{17}.val = res{1}.val + res{13}.val;
+res{18}.val = res{2}.val + res{14}.val;
+res{19}.val = res{3}.val + res{15}.val;
+res{20}.val = res{4}.val + res{16}.val;
