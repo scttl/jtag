@@ -8,11 +8,14 @@ exec bltwish "$0" "$@"
 ##
 ## DESCRIPTION: Point of code entry into the jtag application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/main.tcl,v 1.1 2003-07-02 16:16:28 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/main.tcl,v 1.2 2003-07-10 19:18:27 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: main.tcl,v $
-## Revision 1.1  2003-07-02 16:16:28  scottl
+## Revision 1.2  2003-07-10 19:18:27  scottl
+## Terminate the application if UI creation fails for any reason.
+##
+## Revision 1.1  2003/07/02 16:16:28  scottl
 ## Initial revision.
 ##
 ##
@@ -106,8 +109,12 @@ proc main {} {
         }
     }
         
-    # Render and display the UI
-    ::Jtag::UI::create
+    # Attempt to Render and display the UI
+    if {[catch {::Jtag::UI::create} Response]} {
+        debug "Failed to create the user interface.  Reason:\n$Response"
+        debug "Terminating the application"
+        exit -1
+    }
 
 }
 
