@@ -66,6 +66,11 @@ for i=1:length(seg_cands.segs_valid);
     samp.horizontal = h;
     samp.fullpage = f;
     samp.valid = seg_cands.segs_valid(i);
+
+    if (isfield(seg_cands,'cut_before'));
+        samp.cut_before = seg_cands.cut_before(i);
+        samp.cut_after = seg_cands.cut_after(i);
+    end;
     
     s0.l = cs(1);
     s0.r = cs(3);

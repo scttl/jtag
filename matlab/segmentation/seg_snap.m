@@ -57,7 +57,7 @@ if (max(max(1 - subpix)) <= wst);
 end;
 
 if (size(subpix,2) > 1);
-    %If there is any snapping that could be done
+    %If there is any horizontal snapping that could be done
     if (size(subpix,1) > 1);
         prj_on_x = mean(1 - subpix);
     else;
@@ -71,20 +71,23 @@ if (size(subpix,2) > 1);
     end;
 end;
 
-if (size(subpix,2) > 1);
-    prj_on_y = mean(1 - subpix');
-else;
-    prj_on_y = 1 - subpix';
-end;
-ink_y = find(prj_on_y > wst);
-if (length(ink_y) > 0);
-    %fprintf('y-ink starts %i and ends %i from the top: %i\n', ink_y(1), ...
-    %        ink_y(end), top);
-    bot = ink_y(end) + top - 1;
-    top = ink_y(1) + top - 1;
-    %fprintf('      so top=%i, bot=%i\n',top, bot);
-else;
-    %fprintf('Attempting to snap a vertically empty rectangle.  Returning original.\n');
+if (size(subpix,1) >1);
+    %If there is any vertical snapping that could be done
+    if (size(subpix,2) > 1);
+        prj_on_y = mean(1 - subpix');
+    else;
+        prj_on_y = 1 - subpix';
+    end;
+    ink_y = find(prj_on_y > wst);
+    if (length(ink_y) > 0);
+        %fprintf('y-ink starts %i and ends %i from the top: %i\n', ink_y(1), ...
+        %        ink_y(end), top);
+        bot = ink_y(end) + top - 1;
+        top = ink_y(1) + top - 1;
+        %fprintf('      so top=%i, bot=%i\n',top, bot);
+    else;
+        %fprintf('Attempting to snap a vertically empty rectangle.  Returning original.\n');
+    end;
 end;
 
 %fprintf('To       [%i %i %i %i]\n',left,top,right,bot);

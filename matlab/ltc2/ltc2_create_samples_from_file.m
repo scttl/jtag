@@ -107,6 +107,10 @@ end;
 
 function seg_cands = get_seg_cands(cs, cut_cands, pixels, h);
 
+seg_cands = cuts_to_segs(cs,cut_cands,pixels,h);
+return;
+
+
 %fprintf('Examining %i cut candidates, h=%i, cs=.\n', length(cut_cands),h);
 %disp(cs);
 
