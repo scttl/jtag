@@ -1,42 +1,40 @@
                         JTAG TODO LIST
                        ****************
 
-$Id: TODO.txt,v 1.1 2003-06-25 15:28:58 scottl Exp $
+$Id: TODO.txt,v 1.2 2003-07-15 16:55:18 scottl Exp $
 
-Config File Reading
--------------------
- * Write File::parse method to read a config file, creating a list of its
-   elements
- * Complete Config::read_config to locate the config file (curr dir or home)
- * Config::read_config must then set the values for the variables based on
-   what was read
-
-.jatg File Reading
+.jlog File Reading
 ------------------
- * When opening an image must look for and load <img_file>.jtag if it exists
- * Need to parse that file to display selections made
- * Must work to keep it correct during resize / scrolling
+ * Should do at the same time as jtag file reading and follow a format similar
+   to ::Jtag::Config::read_data
+
+.jlog File Writing
+------------------
+ * Must first implement proper auxilliary data handling (selection and
+   classification times need updating to be handled properly)
+ * Will need to write ::Jtag::Config::write_jlog method similar to write_data
 
 Menu Completion
 ---------------
- * Need to create buttons and commands in the file menu to open a file.
  * Need to create buttons and commands for the zoom menu (different presets)
  * Need the ability to flip between pages (if multi-page tiff for ex.)
  * Create a status bar giving info on # of pages, current page, selection mode
+ *? Ability to undo selctions
+ * create 'auto_classify' button that ties into training data and classifier
+   app.
 
 Multiple page files
 -------------------
- * this may be handled externally (ex via tiffsplit), and we will only load
-   multiple page files if they are named in a certain format (ex file1-1.tif, 
-   file1-2.tif)
+ * this will be handled externally (via tiffsplit), and we will only load
+   multiple page files if they are named in the format that results from
+   tiffsplit (i.e. img1aa.tif img1ab.tif ... img1zz.tif)
 
-Selections
-----------
- * Must implement dragging over a selection once complete to place it in a 
-   bucket
- * Must keep a list of current selections, ability to modify arbitrary
-   elements inside the list, and the ability to write the list to a file
-   (.jtag) must be implemented.
+Image Related
+-------------
+ * Investigate why size in memory is so large (ex. 100+Mb for 6Mb tiff file)
+ * Update selection so that when creating rectangle and moving outside of
+   display window, we automatically scroll in the proper direction
+ * Shrink window to the size of the image (should never see blank canvas)
 
 Function Call Hardening
 -----------------------
