@@ -6,11 +6,14 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.9 2003-07-31 19:16:46 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.10 2003-08-25 17:43:39 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.9  2003-07-31 19:16:46  scottl
+## Revision 1.10  2003-08-25 17:43:39  scottl
+## Added a status bar to display status messages during certain actions.
+##
+## Revision 1.9  2003/07/31 19:16:46  scottl
 ## Added resize_attempts to jlog file reading/writing.  Changed comment prefix
 ## to a % (was pound symbol before)
 ##
@@ -107,8 +110,8 @@ namespace eval ::Jtag::Config {
     # documentation directory for more info.
     variable data
 
-    set data(body_text,colour) blue
-    set data(body_text,num_sels) 0
+    set data(text,colour) blue
+    set data(text,num_sels) 0
     set data(title,colour) green
     set data(title,num_sels) 0
     set data(equation,colour) red
@@ -198,6 +201,8 @@ proc ::Jtag::Config::read_config {} {
         debug "Loading hard-coded defaults instead"
         return
     }
+
+    ::Jtag::UI::status_text "Reading config file: ${ConfigPath}$config_file"
 
     # The contents of the file are returned in a big list (Result), each 
     # element of which is also a list representing a setting name element
@@ -439,6 +444,8 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
 
     }
 
+    ::Jtag::UI::status_text "Reading jtag/jlog selection data"
+
 }
 
 
@@ -554,6 +561,8 @@ proc ::Jtag::Config::write_data {} {
     if {$img(jlog_name) != ""} {
         ::Jtag::File::write $img(jlog_name) $LogList
     }
+
+    ::Jtag::UI::status_text "Writing selection data out to jtag/jlog file(s)"
 
 }
 

@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.10 2003-07-28 19:56:19 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.11 2003-08-25 17:43:39 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.10  2003-07-28 19:56:19  scottl
+## Revision 1.11  2003-08-25 17:43:39  scottl
+## Added a status bar to display status messages during certain actions.
+##
+## Revision 1.10  2003/07/28 19:56:19  scottl
 ## Implemented jlog reading/writing functionality.
 ##
 ## Revision 1.9  2003/07/21 21:33:43  scottl
@@ -192,6 +195,7 @@ proc ::Jtag::Image::create_image {file_name} {
     set img(zoom) 1.0
     set img(created) 1
     set img(cksum) [::crc::cksum -file $file_name]
+    ::Jtag::UI::status_text "Creating image $img(file_name)"
 
     set img(file_format) [::Jtag::Image::GetFormat $file_name]
     if {$img(file_format) == 0} {
@@ -241,6 +245,8 @@ proc ::Jtag::Image::create_image {file_name} {
         Response]} {
         debug "Failed to read contents of jtag/jlog file.  Reason:\n$Response"
     }
+
+    ::Jtag::UI::status_text "Image: $img(file_name)"
 }
 
 
@@ -546,6 +552,9 @@ proc ::Jtag::Image::resize {{factor 1.}} {
         }
     }
 
+    # display a message in the status bar
+    ::Jtag::UI::status_text "Resized image by a factor of $img(zoom)"
+
     # allow clicks and binding events again
     ::blt::busy release .
 }
@@ -579,6 +588,8 @@ proc ::Jtag::Image::clear_canvas {} {
     $can(path) delete all
 
     ::Jtag::Classify::unbind_selection
+
+    ::Jtag::UI::status_text "Cleared all items from canvas"
 
 }
 

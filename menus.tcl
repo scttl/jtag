@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.5 2003-07-31 19:15:30 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.6 2003-08-25 17:43:39 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.5  2003-07-31 19:15:30  scottl
+## Revision 1.6  2003-08-25 17:43:39  scottl
+## Added a status bar to display status messages during certain actions.
+##
+## Revision 1.5  2003/07/31 19:15:30  scottl
 ## Implemented snap command.
 ##
 ## Revision 1.4  2003/07/28 21:37:56  scottl
@@ -156,6 +159,8 @@ proc ::Jtag::Menus::create {w} {
 
     # create the help menu and its commands
     ::Jtag::Menus::HelpMenu $help(m)
+
+    ::Jtag::UI::status_text "Creating menus..."
 
     # return the path of the frame back to the caller
     return $f(path)
@@ -418,6 +423,8 @@ proc ::Jtag::Menus::QuitCmd {} {
         exit -1
     }
 
+    ::Jtag::UI::status_text "Shutting down application"
+
     # terminate the application
     exit 0
 
@@ -461,6 +468,8 @@ proc ::Jtag::Menus::OpenCmd {} {
     }
     ::Jtag::Image::clear_canvas
 
+    ::Jtag::UI::status_text "Opening image $File"
+
     # load the new image and jtag data
     if {[catch {::Jtag::Image::create_image $File} Response]} {
         debug "Failed to validate/display new image.  Reason:\n$Response"
@@ -500,18 +509,23 @@ proc ::Jtag::Menus::DeleteCmd {} {
         # change the cursor and wait for the user to click with the mouse
         $can(path) configure -cursor crosshair
         ::Jtag::Classify::unbind_selection
+        ::Jtag::UI::status_text "Select the rectangle to delete with the \
+                                 mouse and left click inside it"
         bind $can(path) <ButtonPress-1> {
             set Rect [$::Jtag::Image::can(path) find withtag current]
             if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
                 # delete the rectangle we are currently over
                 set SelRef [::Jtag::Classify::get_selection $Rect]
                 $::Jtag::Image::can(path) delete $Rect
+                ::Jtag::UI::status_text "Deleted rectangle at: \
+                                   [$::Jtag::Image::can(path) coords $Rect]"
                 if {$SelRef != ""} {
                     ::Jtag::Classify::remove $SelRef
                 }
             }
             # restore the old settings
             ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
+            ::Jtag::UI::status_text ""
             $::Jtag::Image::can(path) configure -cursor left_ptr
         }
         return
@@ -521,6 +535,7 @@ proc ::Jtag::Menus::DeleteCmd {} {
 
     # delete the item from the canvas
     $can(path) delete $Rect
+    ::Jtag::UI::status_text "Deleted rectangle at: [$can(path) coords $Rect]"
 
     # update the 'data' array to reflect this if necessary
     if {$SelRef != ""} {
@@ -558,6 +573,8 @@ proc ::Jtag::Menus::SnapCmd {} {
     # change the cursor and wait for the user to click with the mouse
     $can(path) configure -cursor crosshair
     ::Jtag::Classify::unbind_selection
+    ::Jtag::UI::status_text "Select the rectangle to snap with the \
+                                 mouse and left click inside it"
     bind $can(path) <ButtonPress-1> {
         set Rect [$::Jtag::Image::can(path) find withtag current]
         if {$Rect != "" && $Rect != $::Jtag::Image::can(img_tag)} {
@@ -596,6 +613,7 @@ proc ::Jtag::Menus::SnapCmd {} {
         }
         # restore the old settings
         ::Jtag::Classify::bind_selection $::Jtag::Image::can(path)
+        ::Jtag::UI::status_text ""
         $::Jtag::Image::can(path) configure -cursor left_ptr
     }
 }

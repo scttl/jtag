@@ -6,11 +6,14 @@
 ##              This includes the display of all window components and
 ##              responding to user generated events (key presses mouse etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.3 2003-07-16 19:09:08 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.4 2003-08-25 17:43:39 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: ui.tcl,v $
-## Revision 1.3  2003-07-16 19:09:08  scottl
+## Revision 1.4  2003-08-25 17:43:39  scottl
+## Added a status bar to display status messages during certain actions.
+##
+## Revision 1.3  2003/07/16 19:09:08  scottl
 ## Fix to ensure both button frames maintain equal widths.
 ##
 ## Revision 1.2  2003/07/10 19:19:42  scottl
@@ -64,6 +67,8 @@ namespace eval ::Jtag::UI {
     variable cs_y
     # The list of classification buckets (one for each type of classification)
     variable f_buckets
+    # the statusbar at the bottom of the application
+    variable s_bar ""
 
 } end namespace declaration
 
@@ -93,6 +98,7 @@ proc ::Jtag::UI::create {} {
     variable cs_x
     variable cs_y
     variable f_buckets
+    variable s_bar
 
     # declare any local variables needed
     # store the width and height to scale the image by to fit on screen
@@ -161,6 +167,10 @@ proc ::Jtag::UI::create {} {
         error "failed to create buckets.  Reason:\n$f_buckets"
     }
 
+    # setup the status bar
+    set s_bar [text .status -state disabled -height 1 -relief sunken -wrap none]
+    ::Jtag::UI::status_text "Creating UI widgets..."
+
     if {[::Jtag::Image::exists]} {
         # scale the image so that it fits in our viewing window
         set ScaleW [expr $Width / ($Right - $Left + 0.0)]
@@ -178,6 +188,7 @@ proc ::Jtag::UI::create {} {
     grid [lindex $f_buckets 1] -row 1 -column 3 -sticky nsew
     grid $cs_y -row 1 -column 2 -sticky ns
     grid $cs_x -row 2 -column 1 -sticky ew
+    grid $s_bar -row 3 -column 0 -columnspan 4 -sticky ew
 
     grid columnconfigure . 0 -minsize 0 -uniform buttons
     grid columnconfigure . 1 -weight 2
@@ -188,6 +199,37 @@ proc ::Jtag::UI::create {} {
     autoscroll $cs_y
 
 
+}
+
+
+# ::Jtag::UI::status_text --
+#
+#    Updates the text in the status bar to display that which is passed,
+#    replacing any existing text.
+#
+# Arguments:
+#    s    The text string to display in the status bar.
+#
+# Results:
+#    If the status bar has been created, its text is updated to the value
+#    specified in s.  If it doesn't exist nothing happens.
+
+proc ::Jtag::UI::status_text {s} {
+
+    # link any namespace variables needed
+    variable s_bar
+
+    # declare any local variables necessary
+
+    # check and see if the status bar has been created
+    if {! [info exists s_bar] || $s_bar == ""} {
+        return
+    }
+
+    $s_bar configure -state normal
+    $s_bar delete 1.0 end
+    $s_bar insert end $s
+    $s_bar configure -state disabled
 }
 
 

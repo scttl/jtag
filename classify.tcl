@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.15 2003-07-31 19:18:17 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.16 2003-08-25 17:43:39 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.15  2003-07-31 19:18:17  scottl
+## Revision 1.16  2003-08-25 17:43:39  scottl
+## Added a status bar to display status messages during certain actions.
+##
+## Revision 1.15  2003/07/31 19:18:17  scottl
 ## Added resize_attempts information to the data array.
 ##
 ## Revision 1.14  2003/07/29 21:02:44  scottl
@@ -212,6 +215,8 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     if {[info exists rBuckets]} {
         eval pack $rBuckets -side top -fill both -expand 1
     }
+
+    ::Jtag::UI::status_text "Creating class buttons"
 
     # return a list containing the left and right frame
     return [list $LF $RF]
@@ -548,6 +553,8 @@ proc ::Jtag::Classify::snap_selection id {
     set X2 [expr round([lindex $Y2 2] / $img(zoom))]
     set Y2 [expr round([lindex $Y2 3] / $img(zoom))]
 
+    ::Jtag::UI::status_text "Snapping selection at ($X1, $Y1) ($X2, $Y2)"
+
     # if we are in simple mode, explicitly set X1 and X2 to be the width of
     # the image (rounding may make it larger than the image, causing problems 
     # below)
@@ -755,6 +762,7 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
     
     # link any namespace variables needed
     variable pad
+    variable ::Jtag::Image::img
     
     # declare any local variables needed
     variable R
@@ -766,6 +774,9 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
 
     set R [$c find withtag current]
     set Coords [$c coords $R]
+
+    ::Jtag::UI::status_text "POS: [expr [$c canvasx $x] / $img(zoom)], \
+                                  [expr [$c canvasy $y] / $img(zoom)]"
 
     if {[llength $Coords] == 4} {
         #inside a rectangle
@@ -919,6 +930,7 @@ proc ::Jtag::Classify::SelExpand {c x y m} {
 
     # link any namespace variables needed
     variable sel
+    variable ::Jtag::Image::img
 
     # declare any local variables needed
 
@@ -957,6 +969,10 @@ proc ::Jtag::Classify::SelExpand {c x y m} {
         set sel(x1) $x
     }
 
+    ::Jtag::UI::status_text "DRAG: left=[expr $sel(x1) / $img(zoom)], \
+                                    top=[expr $sel(y1) / $img(zoom)], \
+                                  right=[expr $sel(x2) / $img(zoom)], \
+                                 bottom=[expr $sel(y2) / $img(zoom)]"
     $c coords $sel(id) $sel(x1) $sel(y1) $sel(x2) $sel(y2)
 }
 
