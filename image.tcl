@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.8 2003-07-18 17:56:36 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.9 2003-07-21 21:33:43 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.8  2003-07-18 17:56:36  scottl
+## Revision 1.9  2003-07-21 21:33:43  scottl
+## Implemented multi-page handling even when loading a middle-page first.
+##
+## Revision 1.8  2003/07/18 17:56:36  scottl
 ## Implemented multiple page functionality, by checking for a particular file
 ## format during image creation, and creating a go_to_pg method.
 ##
@@ -152,11 +155,12 @@ proc ::Jtag::Image::create_image {file_name} {
     # declare any local variables needed
     variable FileBase {}
     variable DotPos
-    variable FirstPageSuffix {aa}
     variable JtagExtn {jtag}
     variable Response
     variable ScaleW
     variable ScaleH
+    variable A1
+    variable A2
 
     debug {entering ::Jtag::Image::create_image}
 
@@ -195,12 +199,21 @@ proc ::Jtag::Image::create_image {file_name} {
     } else {
         set FileBase [string range $file_name 0 [expr $DotPos - 1]]
         set DotPos [string last "." $FileBase]
-        if {$DotPos != -1 && [string range $FileBase [expr $DotPos + 1] end] \
-                             == $FirstPageSuffix} {
-            set img(multi_page) 1
-            set img(curr_page) 1
-            # enable mutiple page functions
-            ::Jtag::Menus::multi_page_functions 1
+        if {$DotPos != -1 && [string length [string range $FileBase \
+                             [expr $DotPos + 1] end]] == 2} {
+            # enable mutiple page functionality
+            if {! $img(multi_page)} {
+                set img(multi_page) 1
+                ::Jtag::Menus::multi_page_functions 1
+            }
+
+            # determine the current page by converting its chars to ints
+            # appropriately
+            set A1 [expr [scan [string index $FileBase [expr $DotPos + 1]] \
+                          %c] - 96]
+            set A2 [expr [scan [string index $FileBase [expr $DotPos + 2]] \
+                          %c] - 96]
+            set img(curr_page) [expr (26 * ($A1 - 1)) + $A2]
         }
         set FileBase $FileBase.
     }
@@ -586,8 +599,9 @@ proc ::Jtag::Image::go_to_pg {pg} {
 
     # declare any local variables
     variable Result
-    variable A1
-    variable A2
+    variable A1 ;# the first char. of the 2 char page prefix A1=a & A2=a --> 1
+    variable A2 ;# the second char. of the 2 char page prefix.
+    variable CurrPg
     variable NextPgSuffix
     variable NextPg
 
@@ -619,6 +633,7 @@ proc ::Jtag::Image::go_to_pg {pg} {
 
     set NextPgSuffix [format "%c%c" $A1 $A2]
 
+    set CurrPg $img(file_name)
     set LastCommaPos [string last "." $img(file_name)]
     set NextPg [string range $img(file_name) 0 [expr $LastCommaPos - 3]]
     set NextPg ${NextPg}$NextPgSuffix[string range $img(file_name) \
@@ -637,6 +652,7 @@ proc ::Jtag::Image::go_to_pg {pg} {
     # now open the new page
     if {[catch {::Jtag::Image::create_image $NextPg} Result]} {
         debug "Failed to open page $pg.  Reason:\n$Result"
+        ::Jtag::Image::create_image $CurrPg
     }
 
 }
