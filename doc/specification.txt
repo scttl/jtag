@@ -4,7 +4,10 @@
 
 DOCUMENT HISTORY:
 -- $Log: specification.txt,v $
--- Revision 1.6  2003-07-28 16:02:19  scottl
+-- Revision 1.7  2003-07-31 19:08:27  scottl
+-- Added resize_attempts to data array, and jlog body information.
+--
+-- Revision 1.6  2003/07/28 16:02:19  scottl
 -- Added 'snapped' paramater to jtag file.
 --
 -- Revision 1.5  2003/07/21 21:32:28  scottl
@@ -251,6 +254,9 @@ DOCUMENT HISTORY:
     * Fifth line will contain 'snapped=' followed by a 1 (representing true)
       or a 0 (representing false) depending on whether or not the rectangle
       was snapped into place, or if it was manually sized
+    * Sixth line will contain 'resize_attempts=' followed by a positive
+      integer indictating the total number of times the rectangle has been
+      manually resized
 
     5.3.3 Body Info (.jlog file) Repeated 0 or more times -- each represents
       a single selection
@@ -261,14 +267,14 @@ DOCUMENT HISTORY:
     * Second line contains 'sel_time=' followed by a decimal number
       representing the time in seconds to make the final bounding box selection 
       This includes edit and refinement time.
-    * Third line should contain 'class_attempts=' followed by a positive 
-      integer representing the total number of classification attempts
-      made (i.e. if placed in a bucket, then later changed to another).  Must
-      be >= 1
-    * Fourth line should contain class_time=' followed by the total time taken 
+    * Third line should contain class_time=' followed by the total time taken 
       to classify the selection (i.e. once bounding box created, the time 
       required to drag the selection over a bucket).  Must add time, each time 
       a selection is reclassified -- moved from one bucket to another
+    * Fourth line should contain 'class_attempts=' followed by a positive 
+      integer representing the total number of classification attempts
+      made (i.e. if placed in a bucket, then later changed to another).  Must
+      be >= 1
 
 
 6. MAJOR DATA STRUCTURES
@@ -283,15 +289,15 @@ DOCUMENT HISTORY:
     +-----------+     +--------+----------+------|-+     +------+
          .                                       |
          .         $data(class1,sel1)            v
-         .        +----+----+----+----+----+------+---------+------+------+-------+
-    +-----------+ | id | x1 | y1 | x2 | y2 | mode | snapped | sl_t | cl_t | attmpt|
-    | classn    | +----+----+----+----+----+------+---------+------+------+-------+
+         .        +----+----+----+----+----+---+----+------+------+------+-----+
+    +-----------+ | id | x1 | y1 | x2 | y2 | m | sn | sl_t | cl_t | cl_a | r_a |
+    | classn    | +----+----+----+----+----+---+----+------+------+------+-----+
     +-----------+
 
     6.1.2 Description
     * Top level component in the structure is an associative array called 'data'
       containing the entries class1 ... classn, each of which is labelled
-      according to its classifier name (ex. body_text).
+      according to its classifier name (ex. body_text or pg_number).
     * Each of the classx entries is also an associative array containing a 
       minimum of two elements.  One of which is the colour of the classifier,
       and the second is the number of selections currently existing for that 
@@ -306,10 +312,12 @@ DOCUMENT HISTORY:
       pixel of the right edge, 'y2' the pixel of the bottom edge, 'mode' the 
       selection mode used (crop/simple) to create the rectangle, 'snapped'
       whether the bounding box was snapped, or manually resized to its current
-      position, 'sl_t' the total time in seconds to create/refine the dimensions 
-      of the rectangle, 'cl_t' the total time in seconds to drag the selection to 
-      a classification bucket, 'attempts' the number of times the selection 
-      has been classified/reclassified.
+      position, 'sel_time' the total time in seconds to create/refine the 
+      dimensions of the rectangle, 'class_time' the total time in seconds to 
+      drag the selection to a classification bucket, 'class_attempts' the 
+      number of times the selection has been classified/reclassified, and
+      'resize_attempts' the total number of times the selection has been
+      manually resized.
 
    6.1.3 Referencing
    * Tcl/Tk does not allow nested or multi-dimensional array structures, so a 
