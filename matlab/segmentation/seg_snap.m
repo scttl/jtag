@@ -5,6 +5,21 @@ function segs = seg_snap(pix, segs, white_space_threshold);
 % Snaps the segments segs, based on the pixels pix.
 %
 
+%
+%if (islogical(segs));
+%    s = zeros(size(segs));
+%    s = s + segs;
+%    segs = s;
+%    clear s;
+%end;
+%
+%if (islogical(pix));
+%    p = zeros(size(pix));
+%    p = p + pix;
+%    pix = p;
+%    clear p;
+%end;
+
 wst = 0;
 if (nargin >= 3);
     wst = white_space_threshold;
@@ -18,6 +33,7 @@ end;
 
 
 function seg = snap_simple(pix, seg, white_space_threshold);
+
 
 wst = 0;
 if (nargin >= 3);
@@ -33,16 +49,26 @@ bot = seg(4);
 
 subpix = pix(top:bot, left:right);
 
-prj_on_x = mean(1 - subpix);
-ink_x = find(prj_on_x > wst);
-if (length(ink_x) > 0);
-    %fprintf('x-ink starts %i and ends %i from the left: %i\n', ink_x(1), ...
-    %        ink_x(end), left);
-    right = ink_x(end) + left - 1;
-    left = ink_x(1) + left - 1;
-    %fprintf('      so left=%i, right=%i\n',left,right);
-else;
-    %fprintf('Attempting to snap a horizontally empty rectangle.  Returning original.\n');
+if (max(max(1 - subpix)) <= wst);
+    %Empty segment: snap to the single pixel at the center.
+    seg = [floor((left+right)/2), floor((top+bot)/2), ...
+           floor((left_right)/2), floor((top+bot)/2)];
+    return;
+end;
+
+if (size(subpix,2) > 1);
+    %If there is any snapping that could be done
+    if (size(subpix,1) > 1);
+        prj_on_x = mean(1 - subpix);
+    else;
+        prj_on_x = 1 - subpix;
+    end;
+
+    ink_x = find(prj_on_x > wst);
+    if (length(ink_x) > 0);
+        right = ink_x(end) + left - 1;
+        left = ink_x(1) + left - 1;
+    end;
 end;
 
 if (size(subpix,2) > 1);

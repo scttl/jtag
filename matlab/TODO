@@ -18,9 +18,9 @@ Thesis TOC Gaps:
     
 ----------------------------------------------------
 
-<DONE>Implement the Smearing segmentation algorithm
+Fix bottom-of-page bug and re-run 2-col reflow examples
 
-<DONE>Optimize and test the Smearing segmentation algorithm
+Read Yann Lecunn papers
 
 Implement the best-merge algorithm
 
@@ -28,59 +28,27 @@ Implement Voronoi Diagrams for best-merge
 
 Test Voronoi Diagrams for best-merge
 
-Make some changes to create the 2nd version of Learn-To-Cut
-    <DONE>Make separate classifiers for vertical and horizontal cuts.
-    Add features:
-        <DONE>Does the cut slice the full page cleanly?
-        <DONE>Ink densities for R0, R1, and R2.
-        <DONE>Top, Left, Bottom, Right of R0, R1, and R2.
-            <NOPE>Boolean vars for left20%, right20%, top20%, bot20%
-        <NOPE>Add a new rectangle: ws1 (whitespace before R1).
-        <DONE>Last 20% of pages in article (boolean).
-        <DONE>Width(r0) - Min(width(r1),width(r2))
-        <DONE>Height(r0) - min(height(r1),height(r2))
-    <DONE>Script to generate all training and test data sets.
-    Script to test all data (lr-style).
-    Script to test all data (seg-style).
-    Script to show results in some nice manner.
+Improve the document re-flowing
 
-<DONE>Script for large batch auto-tagging (pre-processor)
+Add extra feature for original Learn-To-Cut
 
-<DONE>Tag some more data
+Implement "optimizing" Learn-To-Cut data collection
 
-<NOPE>Buy a bar document scanner.
+Train "optimizing" Learn-To-Cut
 
-<DONE>Look into detecting lines in text regions.
+Code "optimizing" Learn-To-Cut cutting algorithm
 
-<DONE>Code reflowing of a text region.
+Test "optimizing" Learn-To-Cut cutting algorithm
 
-<DONE>Code reflowing of a page.
-
-<DONE>Code reflowing of a document.
-
-<DONE>Code changing a single-column doc into a double-column.
-
-
-
-
-
-
-
-
-
-
-
+Add classification features:
+    Does it have both vertical AND horizontal lines?
+    Some measure of font size.
+    
 Consider second reader for thesis:
     -Rich Zemel
     -Brendon Frye
     -Aron Hertsmen
     -<Ron Becker>
-
-Note MSC deadline: Jan 30th.
-
-Think about an OCR pre-processor that blanks out the images, and says
-something like "see figure1.jpg'.
-
 
 Find error bars by randomly picking training and test cases for:
     Random articles:
@@ -92,20 +60,14 @@ Find error bars by randomly picking training and test cases for:
         LR
         MEMM
 
-
-Consider trying to infer font size for each region, and using this as a
-feature.
-
-Check out OCR from http://rcat.utoronto.ca/
-
 Implement MEMM
     <DONE>1. By adding booleans for previous class.
              <DONE>NOTE: Include a trailing "end-of-page" tag.
     2. By training a separate classifier for each previous class.
 
-Implement CRF's
+Check for sources of over-fitting: distrubute each paper between the
+test and training data sets
 
-Think about inferring font size before doing segmentation, and using this.
 
 
 

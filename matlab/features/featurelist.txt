@@ -1,0 +1,261 @@
+
+
+--------------------------------------------------
+------------Distance Features (in use)------------
+--------------------------------------------------
+
+Distances to Page Edges
+-----------------------
+% features 5 - 8 compute the distance from one edge of the rectangle 
+% to the associated edge of the page
+res(rr,fnum).name  = 'l_page_dist';
+res(rr,fnum).name  = 't_page_dist';
+res(rr,fnum).name  = 'r_page_dist';
+res(rr,fnum).name  = 'b_page_dist';
+
+Distance From Edges Of Region To Next Ink
+-----------------------------------------
+% features 13 - 16 compute the distance from one edge of the rectangle
+% to the next threshold significant non-whitespace region.
+res(rr,fnum).name  = 'l_ws_dist';
+res(rr,fnum).name = 't_ws_dist';
+res(rr,fnum).name = 'r_ws_dist';
+res(rr,fnum).name = 'b_ws_dist';
+
+Region Dimensions
+-----------------
+% The height, width, area, and aspect ratios of the rectangle.  Note that
+% the aspect ratio features actually use the log of the aspect ratio.
+res(rr,fnum).name = 'height';
+res(rr,fnum).name = 'width';
+res(rr,fnum).name = 'area';
+res(rr,fnum).name = 'height_over_width';
+res(rr,fnum).name = 'width_over_height';
+
+Is It Centered
+--------------
+% Boolean feature indicating whether the region is centered on the page.
+res(rr,fnum).name = 'is_centered';
+
+Is It On The Edges Of The Page
+------------------------------
+% Boolean variables indicating whether the region is on the edge of the page.
+% A region is considered to be on an edge of the page if no other region
+% stands between it and that edge.
+res(rr,fnum).name = 'on_left_edge';
+res(rr,fnum).name = 'on_top_edge';
+res(rr,fnum).name = 'on_right_edge';
+res(rr,fnum).name = 'on_bottom_edge';
+
+Is It The Furthest In Some Direction On The Page
+------------------------------------------------
+% Boolean variables indicating whether this region is the furthest in some
+% direction on the page.  This is different than the above set in that a
+% region being further right than this one would prevent it from being the
+% furthest right, even if that region did not stand directly between this
+% one and the edge of the page.  For example, in:
+%
+% aaaaaa
+%  baaaa
+% aaaa
+%
+% The "b" is on the left edge (since no "a" stands between it and the left
+% edge, but it is NOT the furthest left.
+res(rr,fnum).name = 'furthest_left';
+res(rr,fnum).name = 'furthest_up';
+res(rr,fnum).name = 'furthest_right';
+res(rr,fnum).name = 'furthest_down';
+
+Distances to Neighbouring Regions
+---------------------------------
+% The distances from each edge of the region to the nearest neighbouring
+% region.
+res(rr,fnum).name = 'left_neighbour_dist';
+res(rr,fnum).name = 'top_neighbour_dist';
+res(rr,fnum).name = 'right_neighbour_dist';
+res(rr,fnum).name = 'bottom_neighbour_dist';
+
+Fraction of Neighbours This Region's Projection Covers
+------------------------------------------------------
+% Project the regions nearest neighbour on the left, right, top, and bottom
+% onto this region, and see what fraction of this region is covered.
+res(rr,fnum).name = 'left_neighbour_covers';
+res(rr,fnum).name = 'top_neighbour_covers';
+res(rr,fnum).name = 'right_neighbour_covers';
+res(rr,fnum).name = 'bottom_neighbour_covers';
+
+Fraction of This Region Covered By Neighbours
+---------------------------------------------
+% Project the region up, down, left, and right, and determine what fraction
+% of its nearest neighbour in that direction it covers.
+res(rr,fnum).name = 'covers_left_neighbour';
+res(rr,fnum).name = 'covers_top_neighbour';
+res(rr,fnum).name = 'covers_right_neighbour';
+res(rr,fnum).name = 'covers_bottom_neighbour';
+
+Fraction Of The Way Down The Page
+---------------------------------
+% Order the regions top-to-bottom, left-to-right.  This feature is the
+% fraction of the way through the order that this region sits.
+res(rr,fnum).name = 'rect_order_fraction';
+res(rr,fnum).norm = true;
+
+
+
+------------------------------------------------------------
+------------Snapped Region Features (NOT in use)------------
+------------------------------------------------------------
+
+Distances From Region Edge To Snapped Region Edge
+-------------------------------------------------
+% features 1 - 4 compute the distance from one edge of the rectangle to
+% the associated edge in the "snapped" subrectangle (must contain at 
+% least threshold percent ink)
+res(rr,fnum).name  = 'l_inksr_dist';
+res(rr,fnum).name  = 't_inksr_dist';
+res(rr,fnum).name  = 'r_inksr_dist';
+res(rr,fnum).name  = 'b_inksr_dist';
+
+Distance From Snapped Region Edges To Page Edges
+------------------------------------------------
+% features 9 - 12 copmute the distance from one edge of the "snapped"
+% subrectangle to the associated edge of the page.  This is really the
+% sum of the first and second group of features above, i.e.
+% res(9) = res(1) + res(5) etc.
+res(rr,fnum).name   = 'l_inksr_page_dist';
+res(rr,fnum).name  = 't_inksr_page_dist';
+res(rr,fnum).name  = 'r_inksr_page_dist';
+res(rr,fnum).name  = 'b_inksr_page_dist';
+
+
+Distance From Edges Of Snapped Region To Next Ink
+-------------------------------------------------
+% features 17 - 20 compute the distance from one edge of the "snapped"
+% subrectangle to the next threshold significant non-whitespace region.
+% This is really the sum of the first and fourth group of features
+% above, eg:
+% res(17) = res(1) + res(13) etc.
+res(rr,fnum).name = 'l_inksr_ws_dist';
+res(rr,fnum).name = 't_inksr_ws_dist';
+res(rr,fnum).name = 'r_inksr_ws_dist';
+res(rr,fnum).name = 'b_inksr_ws_dist';
+
+
+
+
+-------------------------------------------------
+------------Density Features (in use)------------
+-------------------------------------------------
+
+Region Ink Density
+-----------------
+% feature 1 counts the percentage of non-background pixels over the total
+% number of pixels inside the rectangle passed.
+res(rr,1).name  = 'rect_dens';
+
+"Snapped Region" Ink Density
+----------------------------
+% feature 2 is similar to 1, but calculates the percentage of non-backgorund
+% pixels over the total number of pixels inside the "snapped" subrectangle of
+% the rectangle passed.
+res(rr,2).name  = 'sr_dens';
+
+Horizontal Sharpness
+--------------------
+% feature 3 is the "sharpness" of the horizontal projection.  This should help
+% distinquish between text and non-text regions (when the document is not
+% skewed
+res(rr,3).name = 'h_sharpness';
+
+Contains a Horizontal Line
+--------------------------
+% feature 4 is a boolean indicating whether there appears to contain a 
+% horizontal line stretching across the region.
+res(rr,4).name = 'h_line';
+
+Contains a Vertical Line
+------------------------
+% feature 5 is a boolean indicating whether there appears to contain a vertical
+% line stretching across the region.
+res(rr,5).name = 'v_line';
+
+Fraction Of Ink In Left Quarter
+-------------------------------
+% feature 6 is the fraction of the total ink falling in the left quarter
+res(rr,6).name = 'left_quarter_ink_fraction';
+
+
+
+-----------------------------------------------------
+------------Marks-Based Features (in use)------------
+-----------------------------------------------------
+
+Number of Marks
+---------------
+% Number of marks in the region.
+res(rr,1).name  = 'num_marks';
+
+Marks Per Hundred Pixels In the Region
+--------------------------------------
+% Number of marks per hundred pixels.  Essentially, marks per unit area.
+res(rr,2).name  = 'marks_per_hundred_pixels';
+
+Marks Per Unit Width
+--------------------
+% Number of marks per unit width of the region.
+res(rr,3).name = 'marks_per_pixel_wide';
+
+Marks Per Unit Height
+---------------------
+% Number of marks per unit height of the region.
+res(rr,4).name = 'marks_per_pixel_high';
+
+Pixels Per Mark: Average
+------------------------
+% Average number of pixels in each mark.
+res(rr,5).name = 'avg_pixels_per_mark';
+
+Pixels Per Mark: Standard Deviation
+-----------------------------------
+% Standard deviation of number of pixels in each mark.  This measures how
+% consistent the size of the marks is, and is a good indicator of whether
+% the region is text or not.
+res(rr,6).name = 'std_pixels_per_mark';
+
+Largest Mark Dimensions
+--------------------------
+res(rr,7).name = 'pixels_in_largest_mark';
+res(rr,8).name = 'largest_mark_height';
+res(rr,9).name = 'largest_mark_width';
+res(rr,10).name = 'largets_mark_area';
+
+Width And Height Of The Highest And Widest Marks
+------------------------------------------------
+res(rr,11).name = 'highest_mark_height';
+res(rr,12).name = 'highest_mark_width';
+res(rr,13).name = 'widest_mark_height';
+res(rr,14).name = 'widest_mark_width';
+
+
+
+-----------------------------------------------------------
+------------Page-Number Based Features (in use)------------
+-----------------------------------------------------------
+
+Is It The First Or Last Page Of The Article
+-------------------------------------------
+% Boolean variables for first and last page
+res(1,1).name = 'is_first_page';
+res(1,2).name = 'is_last_page';
+
+Is It In The Last 15% Of Pages In The Article
+---------------------------------------------
+% Boolean variable indicating if it is in the last 15% of pages in
+% the article.  This is a good indicator of references.
+res(1,3).name = 'in_last_15pct_of_pages';
+
+Fraction Of The Way Through The Article
+---------------------------------------
+res(1,4).name = 'pnum_over_numpages';
+
+
