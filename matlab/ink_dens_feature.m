@@ -10,11 +10,14 @@ function p = ink_dens_feature(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: ink_dens_feature.m,v 1.1 2003-07-23 22:26:34 scottl Exp $
+% $Id: ink_dens_feature.m,v 1.2 2003-07-24 19:28:30 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: ink_dens_feature.m,v $
-% Revision 1.1  2003-07-23 22:26:34  scottl
+% Revision 1.2  2003-07-24 19:28:30  scottl
+% Added checking to threshold passed.
+%
+% Revision 1.1  2003/07/23 22:26:34  scottl
 % Initial revision.
 %
 
@@ -22,7 +25,6 @@ function p = ink_dens_feature(rect, pixels, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-bg = 1;          % default value for background pixels
 threshold = .02; % default threshold for subrectangle ink
 
 
@@ -30,7 +32,10 @@ threshold = .02; % default threshold for subrectangle ink
 error(nargchk(2,3,nargin));
 
 if nargin == 3
-    threshold = varargin{1} / 100;
+    if varargin{1} < 0 | varargin{1} > 1
+        error('THRESH passed must be a percentage (between 0 and 1)');
+    end
+    threshold = varargin{1};
 end
 
 p = rect_dens_feature(sr_ink_feature(rect,pixels,threshold), pixels);
