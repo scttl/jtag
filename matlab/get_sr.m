@@ -2,22 +2,25 @@ function s = get_sr(rect, pixels, varargin)
 % GET_SR   Returns the subrectangle bounding box within the rectangle passed 
 %          that meets an ink percentage threshold.
 %
-%  GET_SR(RECT, PAGE, {THRESHOLD})  This function attempts to shrink the sides 
+%  GET_SR(RECT, PAGE, {THRESHOLD})  This function attempts to shrink the sides
 %  of 4 element vector RECT passed, working in a clockwise manner,
 %  until the number of non-background PAGE pixels counted for the side currently
-%  under consideration is larger than THRESHOLD percentage passed.  If 
-%  THRESHOLD is not specified it defaults to 2 percent of the total pixels of 
+%  under consideration is larger than THRESHOLD percentage passed.  If
+%  THRESHOLD is not specified it defaults to 2 percent of the total pixels of
 %  that side. The return value is a 4 element row vector listing the left,
 %  top, bottom, and right pixel co-ords of the subrectangle.
 
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: get_sr.m,v 1.7 2003-08-25 17:50:50 scottl Exp $
+% $Id: get_sr.m,v 1.8 2004-04-22 16:51:03 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: get_sr.m,v $
-% Revision 1.7  2003-08-25 17:50:50  scottl
+% Revision 1.8  2004-04-22 16:51:03  klaven
+% Assorted changes made while testing lr and knn on larger samples
+%
+% Revision 1.7  2003/08/25 17:50:50  scottl
 % Cropped input rectangle to first non-bg position on each side to improve
 % accuracy.  Changed default threshold to 1 percent instead of 2.
 %
@@ -46,7 +49,7 @@ function s = get_sr(rect, pixels, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-threshold = .01;  % default threshold to use if not passed above
+threshold = .002;  % default threshold to use if not passed above
 bg = 1;           % default value for background pixels
 
 

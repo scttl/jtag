@@ -1,13 +1,37 @@
 
-function [correct,total] = lr_test_file(filePath,wPath);
+function [correct,total,results] = lr_test_file(jt_file,lr_weights);
 
-disp(filePath);
+%function [correct,total,results] = lr_test_file(jt_file,lr_weights);
+%function [correct,total] = lr_test_file(jt_file,lr_weights);
+%
+%Tests a single .jtag file using logistic regression, with the weights
+%specified.
+%
+%jt_file: a parsed jtag file, or the path of a jtag file.
+%lr_weights: a parsed lr_weights file, or the path of a
+%            lr_weights file.
+%correct: The number of correctly classified regions
+%total: The number of regions
+%results: A matrix of results.  Results(pred,cor) is the
+%         number of times ww.classnames(pred) was the
+%         predicted value, and ww.classnames(cor) was
+%         the correct value.
 
-ww=parse_lr_weights(wPath);
+if ischar(in_weights);
+  ww=parse_lr_weights(in_weights);
+else
+  ww=in_weights;
+end;
 
 classes = ww.class_names;
+results = zeros(length(classes),length(classes)+1);
 
-jt = parse_jtag(filePath);
+if ischar(in_file);
+  jt = parse_jtag(in_file);
+else
+  jt = in_file;
+end;
+disp(jt.jtag_file);
 
 pixels = imread(jt.img_file);
 
@@ -15,10 +39,17 @@ correct = 0;
 total = 0;
 
 for ii=1:size(jt.rects,1);
-  total = total + 1; 
-  features = run_all_features(jt.rects(ii,:),pixels); 
-  predID = lr_fn(classes,features,wPath); 
-  disp( strcat('Act=', jt.class_name(jt.class_id(ii)), ' Pred=', classes(predID))); 
+  total = total + 1;
+  features = run_all_features(jt.rects(ii,:),pixels);
+  predID = lr_fn(classes,features,ww);
+  actClass = jt.class_name(jt.class_id(ii));
+  disp( strcat('Act=', actClass, ' Pred=', classes(predID)));
+  jj = 1;
+  while ~(strcmp(actClass,classes(jj)))
+    jj = jj + 1;
+  end;
+  results(predID,jj) = results(predID,jj) + 1;
+
   if (strcmp(jt.class_name(jt.class_id(ii)), classes(predID)));
     correct = correct + 1;
   end;

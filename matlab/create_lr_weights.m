@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.2 2004-01-19 01:44:57 klaven Exp $
+% $Id: create_lr_weights.m,v 1.3 2004-04-22 16:51:03 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.2  2004-01-19 01:44:57  klaven
+% Revision 1.3  2004-04-22 16:51:03  klaven
+% Assorted changes made while testing lr and knn on larger samples
+%
+% Revision 1.2  2004/01/19 01:44:57  klaven
 % Updated the changes made over the last couple of months to the CVS.  I really should have learned how to do this earlier.
 %
 % Revision 1.1  2003/09/22 20:50:04  scottl
@@ -63,7 +66,6 @@ cc = [];
 % ff is the list of all selections feature values
 ff = [];
 for i = 1:data.num_pages
-    %Edited by Kevin cc = [cc, data.pg{i}.cid];
     cc = [cc; data.pg{i}.cid];
     ff = [ff, data.pg{i}.features'];
 end

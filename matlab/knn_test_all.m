@@ -1,4 +1,5 @@
 function [ssum_cor,ssum_tot] = lr_test_all(tstDir,tdFile);
+%function [ssum_cor,ssum_tot] = lr_test_all(tstDir,tdFile);
 
 ssum_cor = 0;
 ssum_tot = 0;

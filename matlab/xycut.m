@@ -4,26 +4,29 @@ function m = xycut(img_file, varargin)
 %
 %   M = XYCUT(IMG_FILE, {H_THRESH, V_THRESH})  splits the page specified by
 %   IMG_FILE into segments recursively by making cuts into the most prominent
-%   valley in the horizontal and vertical directions at each step.  This 
-%   process bottoms out when the valleys are less than H_THRESH and V_THRESH 
+%   valley in the horizontal and vertical directions at each step.  This
+%   process bottoms out when the valleys are less than H_THRESH and V_THRESH
 %   pixels in length.
-%   
+%
 %   The nx4 matrix M returned lists the left,top,bottom,right co-ordinates of
 %   each of the n segments created.
 %
 %   H_THRESH and V_THRESH are optional, and if left unspecified H_THRESH
-%   defaults to: 30 and V_THRESH defaults to: 30
+%   defaults to: 40 and V_THRESH defaults to: 20
 %
 %   If there is a problem at any point, an error is returned to the caller.
 
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.2 2003-08-12 22:21:42 scottl Exp $
-% 
+% $Id: xycut.m,v 1.3 2004-04-22 16:51:04 klaven Exp $
+%
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.2  2003-08-12 22:21:42  scottl
+% Revision 1.3  2004-04-22 16:51:04  klaven
+% Assorted changes made while testing lr and knn on larger samples
+%
+% Revision 1.2  2003/08/12 22:21:42  scottl
 % Changed default thresholds to 30 and 30.
 %
 % Revision 1.1  2003/08/01 22:01:36  scottl
@@ -34,8 +37,8 @@ function m = xycut(img_file, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-ht = 30;  % default horizontal threshold (if not passed above)
-vt = 30;  % default vertical threshold (if not passed above)
+ht = 40;  % default horizontal threshold (if not passed above)
+vt = 20;  % default vertical threshold (if not passed above)
 
 
 % first do some argument sanity checking on the argument passed
