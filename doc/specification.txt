@@ -4,8 +4,11 @@
 
 DOCUMENT HISTORY:
 -- $Log: specification.txt,v $
--- Revision 1.1  2003-06-11 17:52:21  scottl
--- Initial revision
+-- Revision 1.2  2003-06-13 20:44:54  scottl
+-- Fixes and corrections based on discussion with Sam
+--
+-- Revision 1.1.1.1  2003/06/11 17:52:21  scottl
+-- Initial Version
 --
 
 
@@ -34,67 +37,81 @@ DOCUMENT HISTORY:
     automatic classification, then interpret the results from that application
     to display to the user the classifications it predicted.  The user can then 
     look through the classified journal and make any necessary corrections 
-    manually.
+    manually.  The user can also choose to turn off classification suggestions
+    and make their own classifications without aid of the external application.
 
 
 2. MAJOR FUNCTIONALITY
 ----------------------
 
 2.1 Display image representations of scanned journal articles
-    * should handle various image formats (tiff, pdf at a minimum)
-    * must be able to flip between pages in multiple page docs
-    *? how to handle odd resolutions or large images -- normalize selections? 
-    *? possibility of batch processing i.e. load all docs from a single dir
+    * should handle various image formats (tiff, jpg, bmp, etc.)
+      - Use Img package since it supports all of the above transparently
+    * should have the ability to zoom in/out of the displayed image
+    * provide scrollbars to navigate over portions of the image if it is
+      too large to fit in the window
+    * must be able to flip between pages in multiple page images (note that
+      separate functionality will be provided to break up such images into 
+      multiple files -- see 2.7)
 
 2.2 Select and "Crop" any portion of the displayed journal with the mouse
-    *? work with quadrilaterals only
+    * work with quadrilaterals only
     * 2 different modes:
       - typical "crop" to make a complete bounding box
       - simple horizontal selection.  Bound by page width to create bounding
         box
     * ability to redo or refine selection
+    * ensure that selections are unique, and that no pixels are classified
+      two or more times
     * store x,y co-ords of selection.  Since always square, need 4 #'s
       x_left, x_right, y_min, y_max.  Use UNIX conv. 0,0 = top left corner
     * store time to make each selection + time to classify selection (move it
-      to a bucket)
-    * display cropped selection in default colour (black?) until it has
+      to a bucket) by timestamping each event
+    * display cropped selection in default colour (black) until it has
       been classified (moved to a bucket)
 
 2.3 Classify selected portion
     * "buckets" around document setup so that selections can be dragged over
-       it
+       them (each bucket represents a different journal component)
     * bucket border width should change when a selection can be placed over
-      it (selection itself could be transparent / blank square)
+      it (selection itself will be a small icon)
     * must be able to configure (add/remove) buckets (through config file on
       startup only)
     * use of colour coding for each bucket/selection
-    * ability to reclassify selections.  Use a stack and display most recent
-      selection in each bucket
+    * ability to reclassify selections.  Make a classified selection active by
+      clicking on it, then drag to a new bucket to reclassify.
     * store number of times selection was reclassified (user changed bucket)
     * Must save selections between iterations of opening and closing file
       (See section 5)
 
 2.4 Display selections made
-    * Should be able to display all selections, poss. use of colour coding to
-      show what each was classified as.
+    * Should be able to display all selections made so far
+    * Will use colour coding to show what each selection has been classified as
 
 2.5 Read in Configuration Data from a file on startup
     * on program startup look in current directory, then $HOME for a file
-      named .jtag
+      named .jconfig
     * if not found, load some default set of config options
     * Data in config file will include:
-      - list of valid classification types
-      -? configure default selection mode
+      - list of valid classification types and their associated colour
+      - default selection mode (crop vs. simple)
       - default output directory / filename suffix
-      - turn on/off look-ahead feature (see 2.6)
+      - turn on/off look-ahead feature (see 2.8)
 
 2.6 Store current classifications efficiently in memory, dump to file on
     save/exit
-    * Will have to store order of classification to allow reclassifying.
-    * Multiple stacks (one per bucket) seems logical.
-    *? Order written out to disk probably unimportant?
+    * When user changes active selection, must be able to retrieve the 
+      selection based on where user clicks with mouse
+    * Write to disk in order of top left corner pos, x value, then y value
+    * See section 5 for output file format
 
-2.7 Use selections made in previous pages, to look ahead and predict tags
+2.7 Break multiple page images (single file), into a series of single page
+    images (multiple files)
+    * Make use of tiffinfo to determine if file contains multiple pages
+    * calls to tiffsplit (plus a prefix stored in config file) can do the
+      actual breaking apart
+
+2.8 Use selections made in previous pages, to look ahead and predict tags
     for future pages.
     * feature not required in initial version, but will be implemented in time
     * will make use of calls to helper application
@@ -106,8 +123,8 @@ DOCUMENT HISTORY:
 3.1 Platform / Software / Libraries
     * Must run on CSLab machines (Red Hat Linux)
     * Write in Tcl/Tk
-      - Will require img widget (for displaying tiff files)
-      - img in turn requires libtiff.so
+      - Will require Img package (for displaying tiff files)
+      - Img in turn requires libtiff.so
     *? Others??
 
 3.2 Must save selections between invocations of program on given file
@@ -121,7 +138,7 @@ DOCUMENT HISTORY:
 ----------------------------
 
 4.1 File Name
-    * .jtag
+    * .jconfig
 
 4.2 Location
     * Will be searched for in current directory, and if not found, in $HOME
@@ -140,13 +157,15 @@ DOCUMENT HISTORY:
     * First line will contain 'def_mode=' followed by a string representing
       the default mode.  Valid values are "crop" or "simple"
     * Next lines will contain a 'classifiers=[' followed by a list of 
-      classification types, each is comma separated and may span multiple 
+      classification types, each of which has an '=' followed by a colour
+      representing what colour selections of that type will be displayed as.
+      Each list item is comma separated and may span multiple 
       lines.  End when closing ']' is reached.  Each classification type 
       is a string representing what a portion of the journal may be.  e.x.
-           classifiers=[text,
-                          equation,
-                   title,
-                       graph   ]
+           classifiers=[text=blue,
+                          equation=red,
+                   title=green,
+                       graph=orange   ]
     *? Other configuration attributes??
 
 
@@ -154,7 +173,8 @@ DOCUMENT HISTORY:
 ---------------------
 
 5.1 Name
-    * <in_file_name_prefix>.tag
+    * <in_file_name_prefix>.jtag
+    * <in_file_name_prefix>.jlog
 
 5.2 Location
     * Same directory as input file
@@ -167,13 +187,14 @@ DOCUMENT HISTORY:
 
     5.3.1 Header Info
     * First line contains 'img=' followed by the associated image file name
-    * Second line contains 'type=' followed by the image file type (tiff/pdf)
+    * Second line contains 'type=' followed by the image file type (tiff/bmp)
     * Third line contains 'resolution=' followed by the image resolution (in 
       pixels e.x. 640x480)
-    *? Fourth line contains 'cksum=' followed by a checksum of the associated 
+    * Fourth line contains 'cksum=' followed by a checksum of the associated 
       image file
 
-    5.3.2 Body Info (Repeated 0 or more times -- each rep. a single selection)
+    5.3.2 Body Info (.jtag file) Repeated 0 or more times -- each represents
+      a single selection
     * First line contains a separator of '---'
     * Second line contains 'class=' followed by the classification type e.x. 
       text or title
@@ -182,14 +203,20 @@ DOCUMENT HISTORY:
       resolution)
     * Fourth line should contain 'mode=' followed by a string representing the
       mode used ("crop" or "simple")
-    * Fifth line contains 'sel_time=' followed by a decimal number
+    * Fifth line contains 'colour=' followed by a string representing the
+      colour used for the selection ("blue or "red" etc.)
+    *? Anything else??
+
+    5.3.3 Body Info (.jlog file) Repeated 0 or more times -- each represents
+      a single selection
+    * First line contains 'sel_time=' followed by a decimal number
       representing the time in seconds to make the final bounding box selection 
       This includes edit and refinement time.
-    * Sixth line should contain 'class_attempts=' followed by a positive 
+    * Second line should contain 'class_attempts=' followed by a positive 
       integer representing the total number of classification attempts
       made (i.e. if placed in a bucket, then later changed to another).  Must
       be >= 1
-    * Seventh line should contain class_time=' followed by the total time taken 
+    * Third line should contain class_time=' followed by the total time taken 
       to classify the selection (i.e. once bounding box created, the time 
       required to drag the selection over a bucket).  Must add time, each time 
       a selection is reclassified -- moved from one bucket to another
