@@ -5,17 +5,16 @@ function s = parse_jtag(file)
 %   Attempts to validate and open FILE passed, reading its header and selection
 %   information into fields of structure S as follows:
 %
-%     s.jtag_file -> the full path and name to the .jtag file used to create s
-%     s.img_file  -> the full path and name to the associated image file
-%     s.<class_1>
-%      ...        -> each of <class_1> etc. is replaced by a class name and 
-%     s.<class_n>    will contain a vector of selections for that specific
-%                    class.  Each element in the vector will be a structure
-%                    that has the following fields (assuming looking at the
-%                    j'th element of vector belonging to <class_i>:
-%        
-%          s.<class_i>(j).rect -> 4 element column vector giving left, top, 
-%                                 right,bottom pixel co-ords of its bounding box
+%     s.jtag_file  -> the full path and name to the .jtag file used to create s
+%     s.img_file   -> the full path and name to the associated image file
+%     s.rects      -> n x 4 matrix listing the 4 position values L,T,R,B of
+%                     each of the n selection rectangles made for this image
+%     s.class_id   -> n x 1 matrix listing the number of the class belonging
+%                     to the associated selection rectangle in s.rects
+%     s.class_name -> column vector whose entries represent the string name of
+%                     the class associated with that row number (note that
+%                     these entries may be padded with trailing blanks to keep
+%                     the matrix rectangular).
 %
 %   If there is a problem at any point during file parsing or structure
 %   creation, an appropriate error is returned to the caller.
@@ -23,11 +22,14 @@ function s = parse_jtag(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jtag.m,v 1.1 2003-07-23 16:23:01 scottl Exp $
+% $Id: parse_jtag.m,v 1.2 2003-07-24 19:12:49 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jtag.m,v $
-% Revision 1.1  2003-07-23 16:23:01  scottl
+% Revision 1.2  2003-07-24 19:12:49  scottl
+% Changed structure to be easier to manipulate.
+%
+% Revision 1.1  2003/07/23 16:23:01  scottl
 % Initial revision.
 %
 
@@ -43,9 +45,7 @@ img_prefix = 'img'; % used to denote the path and name of the image file
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,1,nargin));
 
-[r, c] = size(file);
-
-if iscell(file) | ~ ischar(file) | r ~= 1
+if iscell(file) | ~ ischar(file) | size(file,1) ~= 1
     error('FILE must contain a single string.');
 end
 
@@ -74,6 +74,9 @@ end
 
 % now loop to parse and add each of the selections, should be in multiples
 % of 3 (4 including the separator)
+s.rects      = [];
+s.class_id   = [];
+s.class_name = [];
 while ~ feof(fid)
 
     class_line = parse_line(fgetl(fid));
@@ -81,17 +84,27 @@ while ~ feof(fid)
     mode_line = parse_line(fgetl(fid));
 
     class_name = deblank(class_line(2,:));
-    data = struct('rect', str2num([pos_line(2:5,:)]));
+    data = str2num([pos_line(2:5,:)]);
+    data = data';
 
-    if ~ isfield(s, class_name)
-        % first entry for this class
-        r = 1;
-    else
-        [r, c] = size(class_name);
-        r = r + 1;
+    found = false;
+    for i=1:size(s.class_name,1)
+        if strcmp(deblank(s.class_name(i,:)), class_name)
+            id = i;
+            found = true;
+            break;
+        end
     end
 
-    evalc(['s.' class_name '(r) = data']);
+    if ~ found
+        % add the new entry
+        id = size(s.class_name,1) + 1;
+        s.class_name = strvcat(s.class_name, class_name);
+    end
+
+    % add this selection's data to the arrays
+    s.class_id(size(s.rects,1) + 1, :) = id;
+    s.rects(size(s.rects,1) + 1, :) = data;
 
     % next line must be a separator (if more lines exist)
     fgetl(fid);
