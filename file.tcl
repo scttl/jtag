@@ -4,11 +4,14 @@
 ##
 ## DESCRIPTION: Responsible for all things file related within the application
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/file.tcl,v 1.2 2003-07-10 16:22:06 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/file.tcl,v 1.3 2003-07-10 21:04:51 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: file.tcl,v $
-## Revision 1.2  2003-07-10 16:22:06  scottl
+## Revision 1.3  2003-07-10 21:04:51  scottl
+## Removed hard coded magic from separator string (now accessed from config file)
+##
+## Revision 1.2  2003/07/10 16:22:06  scottl
 ## Implemented write and parse methods.
 ##
 ## Revision 1.1  2003/07/07 18:43:12  scottl
@@ -61,6 +64,7 @@ proc ::Jtag::File::parse {fileToRead} {
 
     # declare any local variables needed
     variable FID
+    variable ::Jtag::Config::separator
     variable Line
     variable Data {}
     variable CommentPos
@@ -83,8 +87,8 @@ proc ::Jtag::File::parse {fileToRead} {
         if {$CommentPos != -1} {
             set Line [string range $Line 0 [expr $CommentPos -1]]
         }
-        if {$Line == ""} {
-            # emtpy line (or removed comment line)
+        if {$Line == "" || $Line == $separator} {
+            # empty/comment/separator line
             continue
         } elseif {! $MultiOn && 
                   [regexp ^(.+)=(.*)\\((.*)$ $Line Match Name Vals Vals2]} {
