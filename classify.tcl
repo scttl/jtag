@@ -5,11 +5,15 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.2 2003-07-10 19:25:12 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.3 2003-07-14 15:09:17 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.2  2003-07-10 19:25:12  scottl
+## Revision 1.3  2003-07-14 15:09:17  scottl
+## Created add procedure to update the contents of the data array and optionally
+## create rectangles if neccessary.
+##
+## Revision 1.2  2003/07/10 19:25:12  scottl
 ## Get classifications from data array instead of cnfg.
 ## Removed temporary debugging puts outputs.
 ## Normailzed selection co-ordinates when stored in the data array.
@@ -201,6 +205,77 @@ proc ::Jtag::Classify::bind_selection {w} {
     pack $Token.label
 
 }
+
+
+# ::Jtag::Classify::add --
+#
+#   This procedure adds the data passed to create a new entry in the data
+#   array, creating and displaying a new selection on the canvas if necessary.
+#
+# Arguments:
+#    c       The canvas upon which to add the selection.
+#    class   The name of the classifier to which the selection is being added
+#    x1      The actual image resolution normalized left edge selection pixel
+#    y1      The actual image resolution normalized top edge selection pixel
+#    x2      The actual image resolution normalized right edge selection pixel
+#    y2      The actual image resolution normalized bottom edge selection pixel
+#    mode    The selection mode used (crop or simple)
+#    id      (optional) The full path to the selection rectangle if one has
+#            already been created.  Specify "" to create a new one
+#    sl_time (optional) The total time in seconds to create the rectangle
+#    cl_time (optional) The total time in seconds to drag the selection to a
+#            classification bucket
+#    attmpts (optional) The number of times the selection has been
+#            classified/reclassified
+#
+# Results:
+#    Adds the data passed to the 'data' array, creating a new rectangle
+#    selection if neccessary.  
+
+proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
+                            {cl_time ""} {attmpts ""}} {
+
+    # link any namespace variables needed
+    variable ::Jtag::Config::data
+    variable ::Jtag::Image::img
+
+    # declare any local variables needed
+
+    debug {entering ::Jtag::Classify::add}
+
+    # create rectangle if neccessary
+    if {$id == ""} {
+        # since co-ords are in actual image size, we must multiply them by 
+        # the current zoom factor to create corect sized rectangle
+        set id [$c create rectangle [expr $img(zoom) * $x1] \
+                           [expr $img(zoom) * $y1] [expr $img(zoom) * $x2] \
+                           [expr $img(zoom) * $y2]]
+        set sl_time 0.
+        set cl_time 0.
+        set attmpts 1
+        # hack to create transparent rectangles
+        ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
+        $c itemconfigure $id -activewidth 2 -fill black -stipple null1 \
+           -outline $data($class,colour)
+    }
+
+    if {$sl_time == ""} {
+        set sl_time 0.
+    }
+    if {$cl_time == ""} {
+        set cl_time 0.
+    }
+    if {$attmpts == ""} {
+        set attmpts 1
+    }
+
+    # update the data array
+    set data($class,$data($class,num_sels)) [list $id $x1 $y1 $x2 $y2 \
+              $mode $sl_time $cl_time $attmpts]
+    incr data($class,num_sels)
+
+}
+
 
 
 # PRIVATE PROCEDURES #
@@ -540,7 +615,7 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     variable ::Jtag::Image::img
 
     # declare any local variables
-    variable Class [string range $b [expr 1+ [string last "." $b]] \
+    variable Class [string range $b [expr 1 + [string last "." $b]] \
                    [string length $b]]
     variable ReclassRef
     variable ReclassBase
@@ -595,17 +670,19 @@ proc ::Jtag::Classify::AddToBucket {c b} {
     set ClsTime [expr $ClsTime + $sel(cl_time)]
     set Attmpt [expr $Attmpt + 1]
 
-    # now update the data structure to reflect our new classification
-    set data($Class,$data($Class,num_sels)) [list $sel(id) \
-              [expr $sel(x1) / $img(zoom)] [expr $sel(y1) / $img(zoom)] \
-              [expr $sel(x2) / $img(zoom)] [expr $sel(y2) / $img(zoom)] \
-              $cnfg(mode) $SelTime $ClsTime $Attmpt]
-    set data($Class,num_sels) [expr $data($Class,num_sels) + 1]
-
-    #puts [parray data]
-
     # highlight the selection in the classifiers colour
     $c itemconfigure $sel(id) -outline [$b cget -foreground]
+
+    # now update the data structure to reflect our new classification
+    ::Jtag::Classify::add $c $Class [expr $sel(x1) / $img(zoom)] \
+               [expr $sel(y1) / $img(zoom)] [expr $sel(x2) / $img(zoom)] \
+               [expr $sel(y2) / $img(zoom)] $cnfg(mode) $sel(id) \
+               $SelTime $ClsTime $Attmpt
+
+    # uncomment the following line to dump the data array contents (for
+    # debugging purposes)
+    #puts [parray data]
+
 }
 
 
