@@ -15,11 +15,14 @@ function [left, top, right, bottom] = rect_outer_ws_feature(rect, pixels, ...
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: rect_outer_ws_feature.m,v 1.1 2003-07-23 21:31:57 scottl Exp $
+% $Id: rect_outer_ws_feature.m,v 1.2 2003-07-23 22:28:33 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: rect_outer_ws_feature.m,v $
-% Revision 1.1  2003-07-23 21:31:57  scottl
+% Revision 1.2  2003-07-23 22:28:33  scottl
+% Small bugfix for when pixel location begins at 1,1.
+%
+% Revision 1.1  2003/07/23 21:31:57  scottl
 % Initial revision.
 %
 
@@ -38,7 +41,7 @@ error(nargchk(2,3,nargin));
 
 if ndims(rect) > 2 | size(rect) ~= 4
     error('RECT passed must have exactly 4 elements');
-elseif rect(1) < 0 | rect(2) < 0 | rect(3) > c | rect(4) > r
+elseif rect(1) < 1 | rect(2) < 1 | rect(3) > c | rect(4) > r
     error('RECT passed exceeds PAGE boundaries');
 end
 
