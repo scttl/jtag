@@ -13,11 +13,14 @@ function res = dump_jfiles(s)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: dump_jfiles.m,v 1.1 2003-08-12 22:25:32 scottl Exp $
+% $Id: dump_jfiles.m,v 1.2 2003-08-22 15:12:21 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: dump_jfiles.m,v $
-% Revision 1.1  2003-08-12 22:25:32  scottl
+% Revision 1.2  2003-08-22 15:12:21  scottl
+% Changes to reflect the change in class_name and mode to cell arrays.
+%
+% Revision 1.1  2003/08/12 22:25:32  scottl
 % Initial revision.
 %
 
@@ -86,15 +89,22 @@ header = char(hpre_img, s.img_file, hpre_type, img_type, hpre_res, img_res, ...
 % setup our jtag value fields
 if isfield(s, 'class_id') & isfield(s, 'class_name') & ...
          size(s.class_id,1) == size(s.rects,1)
-    btval_class = s.class_name(s.class_id,:);
-else
-    btval_class = repmat(btval_class, size(s.rects,1), 1);
+    btval_class = {};
+    for i = 1:size(s.class_id,1)
+        btval_class{i} = s.class_name{s.class_id(i)};
+    end
+elseif size(s.rects,1) > 0
+    tmp = btval_class;
+    clear btval_class;
+    [btval_class{1:size(s.rects,1)}] = deal(tmp);
 end
 
 if isfield(s, 's.mode') & size(s.mode,1) == size(s.rects,1)
     btval_mode = s.mode;
-else
-    btval_mode = repmat(btval_mode, size(s.rects,1), 1);
+elseif size(s.rects,1) > 0
+    tmp = btval_mode;
+    clear btval_mode;
+    [btval_mode{1:size(s.rects,1)}] = deal(tmp);
 end
 
 if isfield(s, 's.snapped') & size(s.snapped,1) == size(s.rects,1)
@@ -106,8 +116,8 @@ end
 % now build up the jtag selections
 jtag_sels = [];
 for i = 1:size(s.rects,1)
-    jtag_sels = strvcat(jtag_sels, btpre_class, btval_class(i,:), btpre_pos, ...
-    int2str(s.rects(i,:)), btpre_mode, btval_mode(i,:), btpre_snapped, ...
+    jtag_sels = strvcat(jtag_sels, btpre_class, btval_class{i}, btpre_pos, ...
+    int2str(s.rects(i,:)), btpre_mode, btval_mode{i}, btpre_snapped, ...
     int2str(btval_snapped(i)));
 end
 
