@@ -1,8 +1,8 @@
-function class_id = knn_fn(class_names, features, data, varargin)
+function class_id = knn_fn(class_names, features, in_data, varargin)
 % KNN_FN    Implements the k-nearest neighbour classification algorithm.
 %
-%   CLASS_ID = KNN_FN(CLASS_NAMES, FEATURES, DATA, {K})  This function runs an 
-%   implementation of the k-nearest neighbours algorithm using the training 
+%   CLASS_ID = KNN_FN(CLASS_NAMES, FEATURES, IN_DATA, {K})  This function runs 
+%   an implementation of the k-nearest neighbours algorithm using the training 
 %   DATA, CLASS_NAMES,  and FEATURES passed.  DATA should either be a string 
 %   specifying the path to a valid  ASCII training data file, or it can be 
 %   structured according to that returned by CREATE_TRAINING_DATA.  CLASS_NAMES
@@ -18,11 +18,15 @@ function class_id = knn_fn(class_names, features, data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.2 2003-09-19 15:28:51 scottl Exp $
+% $Id: knn_fn.m,v 1.3 2003-09-19 18:19:15 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.2  2003-09-19 15:28:51  scottl
+% Revision 1.3  2003-09-19 18:19:15  scottl
+% Made data a static (persistent) variable, thus drastically reducing running
+% times over multiple calls.
+%
+% Revision 1.2  2003/09/19 15:28:51  scottl
 % Updated to get training data as an extra argument.  Checks to ensure
 % class_names passed much up to those in the training data etc.
 %
@@ -47,6 +51,7 @@ num_elems = 0;  % number of training data elements considered thus far.
 
 class_id = nan;
 
+persistent data;  % so we don't have to recalculate data after each call
 
 
 % first do some sanity checking on the arguments passed
@@ -57,8 +62,10 @@ if nargin == 4
 end
 
 % see if we have to load the training data from file
-if ischar(data)
-    data = parse_training_data(data);
+if ischar(in_data) & isempty(data)
+    data = parse_training_data(in_data);
+elseif isempty(data)
+    data = in_data;
 end
 
 if ~isfield(data, 'num_pages') | data.num_pages <= 0 | ~isfield(data, 'pg') ...
