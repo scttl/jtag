@@ -1,39 +1,29 @@
                         JTAG TODO LIST
                        ****************
 
-$Id: TODO.txt,v 1.3 2003-07-28 16:01:10 scottl Exp $
-
-.jlog File Reading
-------------------
- * Should do at the same time as jtag file reading and follow a format similar
-   to ::Jtag::Config::read_data
-
-.jlog File Writing
-------------------
- * Must first implement proper auxilliary data handling (selection and
-   classification times need updating to be handled properly)
- * Will need to write ::Jtag::Config::write_jlog method similar to write_data
+$Id: TODO.txt,v 1.4 2003-07-31 19:14:10 scottl Exp $
 
 Menu Completion
 ---------------
  * Need to create buttons and commands for the zoom menu (different presets)
- * Need the ability to flip between pages (if multi-page tiff for ex.)
  * Create a status bar giving info on # of pages, current page, selection mode
  *? Ability to undo selctions
  * create 'auto_classify' button that ties into training data and classifier
    app.
-
-Multiple page files
--------------------
- * this will be handled externally (via tiffsplit), and we will only load
-   multiple page files if they are named in the format that results from
-   tiffsplit (i.e. img1aa.tif img1ab.tif ... img1zz.tif)
 
 Image Related
 -------------
  * Update selection so that when creating rectangle and moving outside of
    display window, we automatically scroll in the proper direction
  * Shrink window to the size of the image (should never see blank canvas)
+
+Classification Related
+----------------------
+ * Create command/ability to split a box into 2 (user could then
+   resize/reclassify it as necc)
+ * Create/record ability for user to group selections together.  Write info to
+   jtag file (i.e. box 1 group with box 3 and 4)
+
 
 Function Call Hardening
 -----------------------
@@ -44,3 +34,9 @@ Function Call Hardening
    terminates
  * same goes for library/internal calls.  Guard against unexpected errors with
    catches
+
+Application Design
+------------------
+ * Audit all code, and potentially redesign/re-engineer where needed (ex. poss. 
+   separate file to deal with all things related to a single selection, move 
+   code around etc.)
