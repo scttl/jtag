@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.4 2003-07-11 21:58:23 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.5 2003-07-14 14:32:54 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.4  2003-07-11 21:58:23  scottl
+## Revision 1.5  2003-07-14 14:32:54  scottl
+## Once image has been created, allow classifications to occur by binding
+## selections made on the canvas.
+##
+## Revision 1.4  2003/07/11 21:58:23  scottl
 ## Reordered call dependancy between canvas and image creation.  There must now
 ## exist a valid canvas object before we can create an image.
 ##
@@ -166,6 +170,9 @@ proc ::Jtag::Image::create_image {file_name} {
     set ScaleW [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
     set ScaleH [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
     ::Jtag::Image::resize [expr $ScaleW <= $ScaleH ? $ScaleW : $ScaleH]
+
+    # allow classifications to be performed on the image/canvas
+    ::Jtag::Classify::bind_selection $can(path)
 
     # check and see if a valid jtag file exists for this image
     set JtagFile [string range $file_name 0 [string last "." $file_name]]
