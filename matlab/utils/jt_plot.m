@@ -1,7 +1,26 @@
-function jt = jt_plot(jtpath);
-% function jt = jt_plot(jtpath);
+function jt = jt_plot(jtpath, fighandle);
+%
+% function res = jt_plot(jtpath);
+%
+% Plots the tagged journal at jtpath.
+%
+% Inputs: jtpath is the file path of the .jtag file to be plotted
+%
+% Output: jt is a structure containing the jtag information of
+%               the file at jtpath
+%
 
-jt = parse_jtag(jtpath);
+if (nargin == 1);
+    f = figure;
+else
+    f = fighandle;
+end;
+
+if (iscell(jtpath) || isstr(jtpath));
+    jt = parse_jtag(jtpath);
+else
+    jt = jtpath;
+end;
 
 colours = zeros(3,length(jt.class_id));
 for i = 1:length(jt.class_id);
@@ -35,22 +54,23 @@ for i = 1:length(jt.class_id);
             colours(:,i) = [0.7;0.7;0];
         case 'header'
             colours(:,i) = [0.88;0.88;0];
+            colours(:,i) = [1;0.5;0];
         case 'graph'
             colours(:,i) = [1;1;0];
         
-        case 'toc'
+        case 'toc' 
             colours(:,i) = [0.45;0;0.45];
         case 'figure_caption'
             colours(:,i) = [0.55;0;0.55];
         case 'decoration'
-            colours(:,i) = [0.75;0;0.75];
+            colours(:,i) = [1;0;0.5];
         case 'figure_label'
             colours(:,i) = [1;0;1];
         
         case 'image'
             colours(:,i) = [0;0.4;0.4];
         case 'eq_number'
-            colours(:,i) = [0;0.6;0.6];
+            colours(:,i) = [0;0.7;0.5];
         case 'text'
             colours(:,i) = [0;0.8;0.8];
         case 'pg_number'
@@ -60,6 +80,7 @@ for i = 1:length(jt.class_id);
             colours(:,i) = [0;0;0];
         case 'footnote'
             colours(:,i) = [0.5;0.5;0.5];
+            colours(:,i) = [1;0.6;0.6];
         case 'table'
             colours(:,i) = [0.7;0.7;0.7];
         case 'table_label'
@@ -70,6 +91,6 @@ for i = 1:length(jt.class_id);
     end;
 end;
 
-seg_plot(imread(jt.img_file),jt.rects,colours);
+seg_plot(imread(jt.img_file),jt.rects,f,colours);
 
 

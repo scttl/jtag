@@ -1,10 +1,172 @@
-% FILE: /h/40/klaven/jtag/matlab/utils/colour_guide.jlog
-% DUMPED: Fri Jun 25 11:39:22 2004
+% FILE: /w/24/klaven/Journals/Distribution/MS/colour_guide.jlog
+% DUMPED: Wed Jun 30 11:58:48 2004
 
 % IMAGE INFO:
-img = /h/40/klaven/jtag/matlab/utils/colour_guide.jpg
+img = /w/24/klaven/Journals/Distribution/MS/colour_guide.jpg
 type = jpeg
-resolution = 500x700
-cksum = 3199520892
+resolution = 183x612
+cksum = 4228248954
 
 % CLASSIFICATION INFO:
+---
+pos = 7 549 34 564
+sel_time = 0.0
+class_time = 0.556
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 8 461 128 480
+sel_time = 1.721
+class_time = 1.168
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 8 30 88 47
+sel_time = 1.721
+class_time = 0.896
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 8 50 80 66
+sel_time = 1.721
+class_time = 0.448
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 5 281 43 301
+sel_time = 1.721
+class_time = 0.7
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 4 325 49 343
+sel_time = 1.721
+class_time = 0.682
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 6 437 112 458
+sel_time = 1.721
+class_time = 0.802
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 4 366 72 384
+sel_time = 1.721
+class_time = 0.72
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 8 388 75 409
+sel_time = 1.721
+class_time = 0.75
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 11 91 80 107
+sel_time = 1.721
+class_time = 0.584
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 5 304 49 321
+sel_time = 1.721
+class_time = 0.837
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 11 111 74 129
+sel_time = 1.721
+class_time = 1.625
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 8 569 114 589
+sel_time = 0.0
+class_time = 0.828
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 4 238 43 257
+sel_time = 1.721
+class_time = 0.72
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 6 483 42 501
+sel_time = 1.721
+class_time = 0.857
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 5 216 76 234
+sel_time = 1.721
+class_time = 0.895
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 7 528 94 545
+sel_time = 1.721
+class_time = 2.192
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 5 347 98 363
+sel_time = 1.721
+class_time = 0.905
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 7 261 58 278
+sel_time = 1.721
+class_time = 1.178
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 7 504 74 524
+sel_time = 1.721
+class_time = 1.919
+class_attempts = 2
+resize_attempts = 0
+---
+pos = 6 134 74 151
+sel_time = 1.721
+class_time = 0.526
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 6 413 80 433
+sel_time = 1.721
+class_time = 0.759
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 6 174 111 191
+sel_time = 1.721
+class_time = 0.71
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 8 7 62 26
+sel_time = 1.721
+class_time = 0.779
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 11 69 80 88
+sel_time = 1.721
+class_time = 0.758
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 5 196 93 213
+sel_time = 1.721
+class_time = 0.818
+class_attempts = 1
+resize_attempts = 0
+---
+pos = 6 154 64 171
+sel_time = 1.721
+class_time = 3.171
+class_attempts = 1
+resize_attempts = 0
