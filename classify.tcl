@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.14 2003-07-29 21:02:44 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.15 2003-07-31 19:18:17 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.14  2003-07-29 21:02:44  scottl
+## Revision 1.15  2003-07-31 19:18:17  scottl
+## Added resize_attempts information to the data array.
+##
+## Revision 1.14  2003/07/29 21:02:44  scottl
 ## bugfix to prevent destroying sel. and class time data on writeout.
 ##
 ## Revision 1.13  2003/07/28 19:55:19  scottl
@@ -316,15 +319,17 @@ proc ::Jtag::Classify::unbind_selection {} {
 #    sl_time (optional) The total time in seconds to create the rectangle
 #    cl_time (optional) The total time in seconds to drag the selection to a
 #            classification bucket
-#    attmpts (optional) The number of times the selection has been
+#    cl_att  (optional) The number of times the selection has been
 #            classified/reclassified
+#    re_att  (optional) The number of time the selection has been manually
+#            resized
 #
 # Results:
 #    Adds the data passed to the 'data' array, creating a new rectangle
 #    selection if neccessary.  
 
 proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode snapped {id ""} \
-                            {sl_time ""} {cl_time ""} {attmpts ""}} {
+                            {sl_time ""} {cl_time ""} {cl_att ""} {re_att ""}} {
 
     # link any namespace variables needed
     variable ::Jtag::Config::data
@@ -353,14 +358,17 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode snapped {id ""} \
     if {$cl_time == ""} {
         set cl_time 0.
     }
-    if {$attmpts == ""} {
-        set attmpts 1
+    if {$cl_att == ""} {
+        set cl_att 1
+    }
+    if {$re_att == ""} {
+        set re_att 0
     }
 
     # update the data array
     set data($class,$data($class,num_sels)) [list $id [expr round($x1)] \
                   [expr round($y1)] [expr round($x2)] [expr round($y2)] \
-                  $mode $snapped $sl_time $cl_time $attmpts]
+                  $mode $snapped $sl_time $cl_time $cl_att $re_att]
     incr data($class,num_sels)
 
 }
@@ -888,6 +896,7 @@ proc ::Jtag::Classify::ResizeStart {c r pos} {
     set sel(modifying) 1
     # record current time (in seconds) to determine selection time
     set sel(start_timer) [clock clicks -milliseconds]
+    set sel(sl_time) 0.
 }
 
 
@@ -1023,7 +1032,7 @@ proc ::Jtag::Classify::SelEnd {c x y m} {
        set Class [string range $ResizeRef 0 [expr \
                                     [string last "," $ResizeRef] -1]]
        set sel(start_timer) [clock clicks -milliseconds]
-       set sel(cl_time) 0 ;# don't add any additional time to classification
+       set sel(cl_time) 0. ;# don't add any additional time to classification
        ::Jtag::Classify::AddToClass $c $Class $data($Class,colour)
     }
 
@@ -1138,7 +1147,9 @@ proc ::Jtag::Classify::AddToClass {c class colour} {
     variable LastNum
     variable SelTime 0.
     variable ClsTime 0.
-    variable Attmpt 0
+    variable ClsAttmpt 0
+    variable ResAttmpt 0
+    variable epsilon 0.01 ;# since we set cl_timer to 0 above
 
     # stop the classification timer, and adjust to seconds
     set sel(cl_time) [expr $sel(cl_time) + (([clock clicks -milliseconds] \
@@ -1156,22 +1167,27 @@ proc ::Jtag::Classify::AddToClass {c class colour} {
     set  ReclassRef [::Jtag::Classify::get_selection $sel(id)]
     if {$ReclassRef != ""} {
         # reclassification attempt
-        set SelTime [lindex $data($ReclassRef) 7]
-        set ClsTime [lindex $data($ReclassRef) 8]
-        set Attmpt  [lindex $data($ReclassRef) 9]
+        set SelTime    [lindex $data($ReclassRef) 7]
+        set ClsTime    [lindex $data($ReclassRef) 8]
+        set ClsAttmpt  [lindex $data($ReclassRef) 9]
+        set ResAttmpt  [lindex $data($ReclassRef) 10]
 
         # remove the original's 'data' entry
         ::Jtag::Classify::remove $ReclassRef
     }
 
     # update metrics
+    if {$sel(cl_time) >= $epsilon} {
+        # only increment ClsAttmpt, if we have actually changed the class
+        # (instead of manually resizing the same classified selection)
+        incr ClsAttmpt
+    } else {
+        # increment the number of manual resize attempts
+        incr ResAttmpt
+        set sel(cl_time) 0.
+    }
     set SelTime [expr $SelTime + $sel(sl_time)]
     set ClsTime [expr $ClsTime + $sel(cl_time)]
-    if {$sel(cl_time) != 0.} {
-        # only increment Attmpt, if we have actually changed the class
-        # (instead of manually resizing the same classified selection)
-        incr Attmpt
-    }
 
     # highlight the selection in the classes colour
     $c itemconfigure $sel(id) -outline $colour
@@ -1180,7 +1196,7 @@ proc ::Jtag::Classify::AddToClass {c class colour} {
     ::Jtag::Classify::add $c $class [expr $sel(x1) / $img(zoom)] \
               [expr $sel(y1) / $img(zoom)] [expr $sel(x2) / $img(zoom)] \
               [expr $sel(y2) / $img(zoom)] $cnfg(mode) $sel(snapped) $sel(id) \
-              $SelTime $ClsTime $Attmpt
+              $SelTime $ClsTime $ClsAttmpt $ResAttmpt
 
     # uncomment the following line to dump the data array contents (for
     # debugging purposes)
