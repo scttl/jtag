@@ -3,7 +3,7 @@
 ##
 ## FILE: jstor_rtrv.pl
 ##
-## CVS: $Id: jstor_rtrv.pl,v 1.2 2003-06-04 22:39:15 scottl Exp $
+## CVS: $Id: jstor_rtrv.pl,v 1.3 2003-06-05 15:56:45 scottl Exp $
 ##
 ## DESCRIPTION: Perl script to parse a list of Stable URL's taken from
 ##              STDIN  and download the appropriate format of article.
@@ -19,17 +19,20 @@
 #############
 
 use strict;
+
 use LWP::UserAgent;
 use HTTP::Cookies;
 
+use IO::Handle;                        # to flush output right away
 #use LWP::Debug(qw(+));                # use when debugging only - very verbose
+
 
 
 ## VARIABLES ##
 ###############
 
 my $out_dir = ".";                    # where to save the downloaded articles
-my $log_file = "RESULTS.log";         # where to write result information
+my $log_file = $out_dir . "/RESULTS.log";  # where to write result information
 
 my $ua;                               # LWP::UserAgent object
 my $rua;                              # UserAgent object reference
@@ -53,6 +56,9 @@ my $ck_val;                                 # value for the cookie
 my $ck_path = "/";
 my $ck_dom = "www.jstor.org";
 
+my $url_count = 0;
+my $fail_count = 0;
+
 
 
 ########################
@@ -74,14 +80,34 @@ $cookie_jar->set_cookie(undef, $ck_key, $ck_val, $ck_path, $ck_dom,
                         undef, 0, 0, 60*60, 0);
 $ua->cookie_jar($cookie_jar);
 
+# create a file handle and use that to to store all logging information
+open(LOG, ">> $log_file") or die "Unable to open log file: " . $log_file . "\n";
+LOG->autoflush(1);
+print LOG localtime() . ": S T A R T  U R L  P R O C E S S I N G\n" .
+     "----------------------------------------------------------\n\n";
+
 # while we still have URL's to read
 START: while (<STDIN>) {
 
+    $url_count += 1;
+
     # acquire and process each one
     chomp $_;
-    process_url($rua, $rresp, $_);
+    if(! process_url($rua, $rresp, $_)) {
+        $fail_count += 1; 
+        print LOG "Failed to Process URL: " . $_ . "\n";
+    }
+
 
 } # end main processing loop
+
+# print summary 
+print LOG "\n" . localtime() . ": E N D  U R L  P R O C E S S I N G\n" .
+      "------------------------------------------------------------\n" .
+      "   # of URL failures = " . $fail_count . "\n" .
+      "   # of URL's successfully processed = " . $url_count-$fail_count . "\n";
+
+close(LOG);
 
 # cleanup declared objects
 undef $cookie_jar;
