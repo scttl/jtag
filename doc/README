@@ -1,0 +1,45 @@
+##################################################################################
+## FILE: README
+##
+## CVS: $Id: README,v 1.1 2003-09-15 18:11:43 scottl Exp $
+##
+## DESCRIPTION: Text file describing this directory structure, its contents,
+##              useage, and other notes.
+##
+## ARGUMENTS:
+##
+## REQUIRES:
+##
+################################################################################
+
+
+1. Directory Contents
+---------------------
+
+This directory contains all the collected documentation on the JTAG
+application, and should be the main source for information (other than the
+README files in each directory).  Ideally, as the application and its helper
+components continue to evolve, this documentation will continue to evolve
+along with it.
+
+
+2. File Contents
+----------------
+
+README - this file
+TODO.txt - An irregularly updated text file containing a list of things that
+           still must be completed for the JTAG application or any of its 
+           helper scripts and components.
+segmentation_alg_survey.ps - This postscript file contains a survey of several
+                             bottom-up and top-down page segmentation 
+                             algorithms, and was used as the basis for the 
+                             matlab/xycut.m file (currently used to segment 
+                             pages by the JTAG MATLAB helper scripts).
+specification.txt - This text file outlines the original specification of the
+                    JTAG application.  It was this file that was used to
+                    discern necessary functionality and drive the design and
+                    implementation of the JTAG application.  It is a good
+                    place to start reading if you want to get into (and
+                    further develop) the internals of the JTAG application.
+useage.txt - This text file contains end-user instruction and details how one 
+             actually uses the JTAG application.
