@@ -15,11 +15,14 @@ function rects = line_detect(pixels, rect)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: line_detect.m,v 1.1 2003-08-12 22:26:17 scottl Exp $
+% $Id: line_detect.m,v 1.2 2003-08-13 19:30:49 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: line_detect.m,v $
-% Revision 1.1  2003-08-12 22:26:17  scottl
+% Revision 1.2  2003-08-13 19:30:49  scottl
+% Fixed bug in bounds check ordering, and changed when first_y gets updated.
+%
+% Revision 1.1  2003/08/12 22:26:17  scottl
 % Initial revision.
 %
 
@@ -55,7 +58,8 @@ curr = [];
 row_num = first_y;
 while row_num <= rect(1,4)
     blank_start = row_num;
-    while non_bg_length(pixels(row_num,:)) < min_thresh & row_num <= rect(1,4)
+
+    while row_num <= rect(1,4) & non_bg_length(pixels(row_num,:)) < min_thresh
         row_num = row_num + 1;
     end
 
@@ -69,7 +73,7 @@ while row_num <= rect(1,4)
 
     % transition from blank --> non-blank
 
-    while non_bg_length(pixels(row_num,:)) >= min_thresh & row_num <= rect(1,4)
+    while row_num <= rect(1,4) & non_bg_length(pixels(row_num,:)) >= min_thresh
        curr = [curr; non_bg_length(pixels(row_num,:))];
        row_num = row_num + 1;
     end
@@ -88,8 +92,8 @@ while row_num <= rect(1,4)
 
        % split the rectangle horizontally at the appropriate point
        rects = [rects; rect(1,1) first_y rect(1,3) second_y];
+       first_y = second_y;
     end
-    first_y = second_y;
     prev_avg = mean(curr);
     curr = [];
 end
