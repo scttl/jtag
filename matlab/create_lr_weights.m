@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.3 2004-04-22 16:51:03 klaven Exp $
+% $Id: create_lr_weights.m,v 1.4 2004-06-09 19:20:17 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.3  2004-04-22 16:51:03  klaven
+% Revision 1.4  2004-06-09 19:20:17  klaven
+% Started working on marks-based features.
+%
+% Revision 1.3  2004/04/22 16:51:03  klaven
 % Assorted changes made while testing lr and knn on larger samples
 %
 % Revision 1.2  2004/01/19 01:44:57  klaven
@@ -60,6 +63,7 @@ end
 % initialize output struct and fields
 w.class_names = data.class_names;
 w.weights = [];
+w.feature_names = data.feat_names;
 
 % cc is the list of all selections class id's
 cc = [];
