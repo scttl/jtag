@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.4 2004-04-26 22:53:22 klaven Exp $
+% $Id: xycut.m,v 1.5 2004-04-28 18:53:54 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.4  2004-04-26 22:53:22  klaven
+% Revision 1.5  2004-04-28 18:53:54  klaven
+% Tweaking the elimination of whitespace from the xycut algorithm.  In progress.
+%
+% Revision 1.4  2004/04/26 22:53:22  klaven
 % Changed xycut to include wst.  The wst is the White Space Threshold - the minimum fraction of black pixels that still counts as whitespace.  Setting this to 0 leaves the algorithm the same as before.
 %
 % Revision 1.3  2004/04/22 16:51:04  klaven
@@ -40,9 +43,9 @@ function m = xycut(img_file, varargin)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-ht = 40;  % default horizontal threshold (if not passed above)
-vt = 20;  % default vertical threshold (if not passed above)
-wst = 0;  % minimum percent ink in whitespace to count as valley
+ht = 20;  % default horizontal threshold (if not passed above)
+vt = 18;  % default vertical threshold (if not passed above)
+wst = 0.009;  % minimum percent ink in whitespace to count as valley
 
 
 % first do some argument sanity checking on the argument passed
@@ -91,11 +94,15 @@ vmeans = mean(1 - p(y1:y2, x1:x2), 2);
 [vrunlength, vrunpos] = long_valley(vmeans, wst);
 
 if vrunlength > vt & vrunlength >= hrunlength
+    vrunstart = vrunpos - floor(vrunlength / 2);
+    vrunend = vrunpos + floor(vrunlength / 2);
     % make a horizontal cut along the vertical midpoint
     res = [segment(p, x1, y1, x2, (y1 + vrunpos), ht, vt, wst); ...
            segment(p, x1, (y1 + vrunpos), x2, y2, ht, vt, wst)];
 
 elseif hrunlength > ht & hrunlength >= vrunlength
+    hrunstart = hrunpos - floor(hrunlength / 2);
+    hrunend = hrunpos + floor(hrunlength / 2);
     % make a vertical cut along the horizontal midpoint
     res = [segment(p, x1, y1, (x1 + hrunpos), y2, ht, vt, wst); ...
            segment(p, (x1 + hrunpos), y1, x2, y2, ht, vt, wst)];
@@ -103,6 +110,89 @@ else
     % non-recursive case, don't split anything
     res = [x1, y1, x2, y2];
 end
+
+
+function [left,top,right,bottom] = snap(pixels, x1, y1, x2, y2, wst)
+% loop over the 4 sides, trimming our current bounding box until we have met
+% our ink thresholds
+
+bg = 1;           % default value for background pixels
+
+[left,top,right,bottom] = [x1,y1,x2,y2];
+
+l_done = false;
+t_done = false;
+r_done = false;
+b_done = false;
+
+while ~ (l_done & t_done & r_done & b_done)
+
+    if left >= right | top >= bottom
+        warning('Did not find sufficient ink.  Returning orig. subrectangle');
+        [left, top, right, bottom] = [x1, y1, x2, y2];
+        return;
+    end
+
+    if ~ l_done
+        count = 0;
+        for i = top:bottom
+            if pixels(i, left) ~= bg
+                count = count + 1;
+            end
+        end
+        if count > (wst * (bottom - top + 1))
+            l_done = true;
+        else
+            left = left + 1;
+        end
+    end
+
+    if ~ t_done
+        count = 0;
+        for i = left:right
+            if pixels(top,i) ~= bg
+                count = count + 1;
+            end
+        end
+        if count > (wst * (right - left + 1))
+            t_done = true;
+        else
+            top = top + 1;
+        end
+    end
+
+    if ~ r_done
+        count = 0;
+        for i = top:bottom
+            if pixels(i, right) ~= bg
+                count = count + 1;
+            end
+        end
+        if count > (wst * (bottom - top + 1))
+            r_done = true;
+        else
+            right = right - 1;
+        end
+    end
+
+    if ~ b_done
+        count = 0;
+        for i = left:right
+            if pixels(bottom, i) ~= bg
+                count = count + 1;
+            end
+        end
+        if count > (wst * (right - left + 1))
+            b_done = true;
+        else
+            bottom = bottom - 1;
+        end
+    end
+
+end  %end while loop
+
+
+
 
 
 function [longlength, mid] = long_valley(means, wst)
@@ -143,3 +233,11 @@ for i = s:e
         currlength = 0;
     end
 end
+
+
+
+
+
+
+
+
