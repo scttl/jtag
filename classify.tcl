@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.13 2003-07-28 19:55:19 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.14 2003-07-29 21:02:44 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.13  2003-07-28 19:55:19  scottl
+## Revision 1.14  2003-07-29 21:02:44  scottl
+## bugfix to prevent destroying sel. and class time data on writeout.
+##
+## Revision 1.13  2003/07/28 19:55:19  scottl
 ## - Cleaned up timers.
 ## - Implemented jlog functionality.
 ## - Added snapped parameter to data structure.
@@ -338,9 +341,6 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode snapped {id ""} \
         set id [$c create rectangle [expr $img(zoom) * $x1] \
                            [expr $img(zoom) * $y1] [expr $img(zoom) * $x2] \
                            [expr $img(zoom) * $y2]]
-        set sl_time 0.
-        set cl_time 0.
-        set attmpts 1
         # hack to create transparent rectangles
         ::blt::bitmap define null1 { { 1 1 } { 0x0 } }
         $c itemconfigure $id -width 2 -activewidth 4 -fill black \
