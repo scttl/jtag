@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.1 2003-07-04 17:04:14 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.2 2003-07-15 16:45:56 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.1  2003-07-04 17:04:14  scottl
+## Revision 1.2  2003-07-15 16:45:56  scottl
+## Created an edit menu.  Implemented the Quit, Open, and Delete commands.
+##
+## Revision 1.1  2003/07/04 17:04:14  scottl
 ## Initial (incomplete) revision.
 ##
 ##
@@ -44,6 +47,12 @@ namespace eval ::Jtag::Menus {
     set file(m) {}
     set file(attribs) {-text File -underline 0}
 
+    # the edit menu
+    variable edit
+    set edit(btn) {}
+    set edit(m) {}
+    set edit(attribs) {-text Edit -underline 0}
+
     # the zoom menu
     variable zoom
     set zoom(btn) {}
@@ -54,8 +63,15 @@ namespace eval ::Jtag::Menus {
 
     # the help menu
     variable help
+    set help(btn) {}
+    set help(m) {}
+    set help(attribs) {-text Help -underline 0}
 
-
+    # the default filetypes to show in the open dialog
+    variable types { {{jtag image formats} \
+                      {.tif .tiff .jpg .jpeg .png .gif} \
+                     } }
+     
 
 }
 
@@ -83,11 +99,12 @@ proc ::Jtag::Menus::create {w} {
     # link any namespace variables needed
     variable f
     variable file
+    variable edit
     variable zoom
     variable help
 
     # declare any local variables needed
-    # the options to set for the frame
+    variable I
 
     debug {entering ::Jtag::Menus::create}
 
@@ -96,13 +113,12 @@ proc ::Jtag::Menus::create {w} {
     eval frame $f(path) $f(attribs)
 
     # setup all the menu buttons
-    set file(btn) $f(path).file
-    set file(m) $file(btn).menu
-    eval menubutton $file(btn) -menu $file(m) $file(attribs)
+    foreach I {file edit zoom help} {
+        set ${I}(btn) $f(path).$I
+        eval set ${I}(m) $${I}(btn).menu
+        eval menubutton $${I}(btn) -menu $${I}(m) [subst $${I}(attribs)]
+    }
 
-    set zoom(btn) $f(path).zoom
-    set zoom(m) $zoom(btn).menu
-    eval menubutton $zoom(btn) -menu $zoom(m) $zoom(attribs)
     set zoom(in_btn) $f(path).zoom_in
     button $zoom(in_btn) -text {Zoom In (+)} -relief solid -overrelief raised \
            -command {::Jtag::Image::resize 2}
@@ -111,19 +127,23 @@ proc ::Jtag::Menus::create {w} {
            raised -command {::Jtag::Image::resize 0.5}
 
     # pack all on left except help (on right)
-    pack $file(btn) $zoom(btn) $zoom(in_btn) $zoom(out_btn) -side left
-    #pack $help()
+    pack $file(btn) $edit(btn) $zoom(btn) $zoom(in_btn) $zoom(out_btn) \
+         -side left
+    pack $help(btn) -side right
 
-    # create the file menu and its commands
+    # create the file menu
     ::Jtag::Menus::FileMenu $file(m)
 
-    # create the zoom menu and its commands
+    # create the edit menu
+    ::Jtag::Menus::EditMenu $edit(m)
+
+    # create the zoom menu
     ::Jtag::Menus::ZoomMenu $zoom(m)
 
     # create the help menu and its commands
 
     # inform Tk that these are all menus
-    tk_menuBar $f(path) $file(btn)
+    tk_menuBar $f(path) $file(btn) $edit(btn) $zoom(btn)
 
     # return the path of the frame back to the caller
     return $f(path)
@@ -136,8 +156,8 @@ proc ::Jtag::Menus::create {w} {
 
 # ::Jtag::Menus::FileMenu --
 #
-# Private helper to create the File menu and bind appropriate commands to its
-# items.
+#    Private helper to create the File menu and bind appropriate commands to 
+#    its items.
 #
 # Arguments:
 #    path    The full Tk widget heirarchy path where this widget will be
@@ -155,26 +175,65 @@ proc ::Jtag::Menus::FileMenu {path} {
     # the menu reference
     variable M
 
-    debug {entering ::Jtag::Menus::FileMenu}
+    # create the menu
+    set M [menu $path]
+
+    # now add its commands
+    $M add command -label "Open" -accelerator "<Ctrl-o>" -command \
+                              {::Jtag::Menus::OpenCmd}
+    $M add command -label "Quit" -accelerator "<Ctrl-q>" -command \
+                              {::Jtag::Menus::QuitCmd}
+
+    # now set any global bindings (these work even outside of this widget so
+    # care must be taken to ensure the bindings don't overwrite other widget
+    # bindings
+    bind . <Control-q> {::Jtag::Menus::QuitCmd}
+    bind . <Control-o> {::Jtag::Menus::OpenCmd}
+
+}
+
+
+# ::Jtag::Menus::EditMenu --
+#
+#    Private helper to create the Edit menu and bind appropriate commands to 
+#    its items.
+#
+# Arguments:
+#    path    The full Tk widget heirarchy path where this widget will be
+#            created within.
+#
+# Results:
+#    An error is returned if there is a problem at any point during menu
+#    creation or binding, otherwise nothing is returned.
+
+proc ::Jtag::Menus::EditMenu {path} {
+
+    # link any namespace variables needed
+
+    # declare any local variables needed
+    # the menu reference
+    variable M
 
     # create the menu
     set M [menu $path]
 
     # now add its commands
-    $M add command -label "Quit" -accelerator "<Ctrl-q>" -command {exit 0}
+    $M add command -label "Delete" -accelerator "<Ctrl-x>" -command \
+                               {::Jtag::Menus::DeleteCmd}
 
-    # now set any global bindings (these work even outside of this widget so
-    # care must be taken to ensure the bindings don't overwrite other widget
-    # bindings
-    bind . <Control-q> {exit 0}
+    bind . <Control-x> {::Jtag::Menus::DeleteCmd}
+
+    # next page (if multi-page)
+
+    # previous page (if multi-page)
 
 }
 
 
 # ::Jtag::Menus::ZoomMenu --
 #
-# Private helper to create the Zoom menu and bind appropriate commands to its
-# items.
+#    Private helper to create the Zoom menu and bind appropriate commands to 
+#    its items.
 #
 # Arguments:
 #    path    The full Tk widget heirarchy path where this widget will be
@@ -193,8 +252,6 @@ proc ::Jtag::Menus::ZoomMenu {path} {
     # the menu reference
     variable M
 
-    debug {entering ::Jtag::Menus::ZoomMenu}
-
     # create the menu
     set M [menu $path]
 
@@ -209,5 +266,122 @@ proc ::Jtag::Menus::ZoomMenu {path} {
     # bindings
     bind . + "$zoom(in_btn) invoke"
     bind . - "$zoom(out_btn) invoke"
+
+}
+
+
+# ::Jtag::Menus::QuitCmd --
+#
+#    Method that will perform any cleanup operations and terminate the
+#    application gracefully when called.
+#
+# Arguments:
+#
+# Results:
+#    All current selection information is written out to the appropriate jtag
+#    and jlog files, then the application is terminated.
+
+proc ::Jtag::Menus::QuitCmd {} {
+
+    # link any namespace variables needed
+
+    # declare any local variables needed
+    variable Result
+
+    # write out selection information
+    if {[ catch {::Jtag::Config::write_data} Result]} {
+        debug "Failed to write out selection information.  Reason:\n$Result"
+        exit -1
+    }
+
+    # terminate the application
+    exit 0
+
+}
+
+
+# ::Jtag::Menus::OpenCmd --
+#
+#    Method that will open a new image file (and its associated jtag file) i
+#    after saving the existing file and its selections (if any)
+#
+# Arguments:
+#
+# Results:
+#    After the user selects a file from a browser dialog, the existing file
+#    selections are written out, and the new file is attempted to be opened.
+#    If the open is successful, its jtag file is searched out, and any
+#    selections listed for it are created and added.
+
+proc ::Jtag::Menus::OpenCmd {} {
+
+    # link any namespace variables needed
+    variable types
+    variable ::Jtag::Classify::data
+
+    # declare any local variables needed
+    variable File
+    variable Response
+    variable Rects
+    variable I
+
+    # open a file browser
+    set File [tk_getOpenFile -filetypes $types]
+
+    # write out and remove the current selections and array data
+    if {[ catch {::Jtag::Config::write_data} Response]} {
+        debug "Failed to write old selection information.  Reason:\n$Response"
+    }
+    foreach I [array names data -regexp {(.*)(,)([0-9])+}] {
+        ::Jtag::Classify::remove $I
+        puts [parray data]
+    }
+    ::Jtag::Image::clear_canvas
+
+    # load the new image and jtag data
+    if {[catch {::Jtag::Image::create_image $File} Response]} {
+        debug "Failed to validate/display new image.  Reason:\n$Response"
+    }
+}
+
+
+# ::Jtag::Menus::DeleteCmd --
+#
+#    Method that will delete the rectangle that the mouse is over (if it is
+#    currently over a rectangle) and update the data array appropriately.
+#
+# Arguments:
+#
+# Results:
+#    If the mouse is over a rectangle, then it is removed and the 'data' array
+#    is updated.  Otherwise nothing happens
+
+proc ::Jtag::Menus::DeleteCmd {} {
+
+    # link any namespace variables needed
+    variable ::Jtag::Image::can
+
+    # declare any local variables needed
+    variable Rect
+    variable SelRef
+
+    if {! $can(created)} {
+        return
+    }
+
+    set Rect [$can(path) find withtag current]
+    if {$Rect == "" || $Rect == $can(img_tag)} {
+        return
+    }
+
+    set SelRef [::Jtag::Classify::get_selection $Rect]
+
+    # delete the item from the canvas
+    $can(path) delete $Rect
+
+    # update the 'data' array to reflect this if necessary
+    if {$SelRef != ""} {
+        ::Jtag::Classify::remove $SelRef
+    }
 
 }
