@@ -9,16 +9,15 @@ function s = parse_jtag(file)
 %     s.img_file   -> the full path and name to the associated image file
 %     s.rects      -> n x 4 matrix listing the 4 position values L,T,R,B of
 %                     each of the n selection rectangles made for this image
-%     s.class_id   -> n x 1 matrix listing the number of the class belonging
+%     s.class_id   -> n element vector listing the number of the class belonging
 %                     to the associated selection rectangle in s.rects
-%     s.class_name -> column vector whose entries represent the string name of
-%                     the class associated with that row number (note that
-%                     these entries may be padded with trailing blanks to keep
-%                     the matrix rectangular).
-%     s.mode       -> n x 1 matrix listing 'simple' if the rectangle was
-%                     selected in simple mode or 'crop' if selected in crop mode
-%     s.snapped    -> n x 1 matrix listing a 1 if the rectangle was created by
-%                     snapping its bounding box to ink, or a 0 if it was 
+%     s.class_name -> cell array whose entries represent the string name of
+%                     the class associated with that row number.
+%     s.mode       -> cell array listing elements as 'simple' if the rectangle 
+%                     was selected in simple mode or 'crop' if selected in crop 
+%                     mode
+%     s.snapped    -> n element vector listing a 1 if the rectangle was created 
+%                     by snapping its bounding box to ink, or a 0 if it was 
 %                     manually sized by the user
 %
 %   If there is a problem at any point during file parsing or structure
@@ -27,11 +26,14 @@ function s = parse_jtag(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jtag.m,v 1.4 2003-08-12 22:21:13 scottl Exp $
+% $Id: parse_jtag.m,v 1.5 2003-08-22 15:11:17 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jtag.m,v $
-% Revision 1.4  2003-08-12 22:21:13  scottl
+% Revision 1.5  2003-08-22 15:11:17  scottl
+% Changed class_name and mode to cell arrays.
+%
+% Revision 1.4  2003/08/12 22:21:13  scottl
 % Made error handling more robust, changed comment char to percent symbol.
 %
 % Revision 1.3  2003/07/29 21:01:06  scottl
@@ -87,8 +89,8 @@ end
 % of 4 (5 including the separator)
 s.rects      = [];
 s.class_id   = [];
-s.class_name = [];
-s.mode       = [];
+s.class_name = {};
+s.mode       = {};
 s.snapped    = [];
 while ~ feof(fid)
 
@@ -118,8 +120,8 @@ while ~ feof(fid)
     data = data';
 
     found = false;
-    for i=1:size(s.class_name,1)
-        if strcmp(deblank(s.class_name(i,:)), class_name)
+    for i=1:length(s.class_name)
+        if strcmp(s.class_name{i}, class_name)
             id = i;
             found = true;
             break;
@@ -128,13 +130,13 @@ while ~ feof(fid)
 
     if ~ found
         % add the new entry
-        id = size(s.class_name,1) + 1;
-        s.class_name = strvcat(s.class_name, class_name);
+        id = length(s.class_name) + 1;
+        s.class_name{id} = class_name;
     end
 
     % add this selection's data to the arrays
     s.class_id(size(s.rects,1) + 1, :) = id;
-    s.mode = strvcat(s.mode, ddeblank(mode_line(2,:)));
+    s.mode{end + 1} = ddeblank(mode_line(2,:));
     s.snapped(size(s.rects,1) + 1, :) = str2num(snapped_line(2,1));
     s.rects(size(s.rects,1) + 1, :) = data;
 
