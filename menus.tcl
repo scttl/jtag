@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.11 2003-09-11 18:27:50 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.12 2003-09-19 15:25:58 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.11  2003-09-11 18:27:50  scottl
+## Revision 1.12  2003-09-19 15:25:58  scottl
+## Removed td_loc variable.  Now everythin is passed as an argument to the
+## learner through the learner_args variable.
+##
+## Revision 1.11  2003/09/11 18:27:50  scottl
 ## Fix to always snap selection when user selects that command (ignore prev.
 ## snap value).  Also removed dialog if selections exist during auto predict
 ## (these are now used as the basis for classification).
@@ -313,12 +317,6 @@ proc ::Jtag::Menus::auto_prediction {} {
     destroy $edit(predict_btn)
     catch {$edit(m) delete "Auto Predict Selections"}
 
-    # have we specified a valid training data file
-    if {! [file exists $cnfg(td_loc)]} {
-        debug {failed to set auto_prediction: training data file doesn't exist}
-        return 0
-    }
-
     # does matlab exist in the path
     if {[exec which $matlab_exe {2>/dev/null}] == ""} {
         debug {failed to set auto_prediction: $matlab_exe not in path}
@@ -382,14 +380,21 @@ proc ::Jtag::Menus::run_prediction {} {
     variable FoundSels 0
     variable RemoveOk 0
     variable I
+    variable Classes
 
-    # see if there are existing selections that will be lost
+    debug {entering ::Jtag::Menus::run_prediction}
+
+    # see if there are existing selections that will be lost, and build up
+    # the list of class names to be used for prediction
+    set Classes "{"
     foreach I [array names data -regexp {(.*)(,)(num_sels)}] {
+        regexp (.*)(,)(num_sels) $I Dummy ClassName
+        set Classes "$Classes '$ClassName' "
         if {$data($I) > 0} {
             set FoundSels 1
-            break
         }
     }
+    set Classes "$Classes }"
     if {$FoundSels} {
         # write these selections to disk... they will be used as basis for
         # classification
@@ -402,11 +407,10 @@ proc ::Jtag::Menus::run_prediction {} {
     # build a temporary matlab script that can be used
     lappend TmpScript "addpath $MatlabPath"
     if {$cnfg(learner_args) == ""} {
-        eval lappend TmpScript "{classify_pg( parse_training_data( \
-                      '$cnfg(td_loc)'), '$img(file_name)', '$cnfg(learner)')}"
+        eval lappend TmpScript "{classify_pg( $Classes, '$img(file_name)', \
+                      '$cnfg(learner)')}"
     } else {
-        eval lappend TmpScript "{classify_pg( parse_training_data( \
-                      '$cnfg(td_loc)'), '$img(file_name)', \
+        eval lappend TmpScript "{classify_pg( $Classes, '$img(file_name)', \
                       '$cnfg(learner)', $cnfg(learner_args))}"
     }
     if {[catch {::Jtag::File::write $TmpFile $TmpScript} Response]} {
