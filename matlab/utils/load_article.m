@@ -29,6 +29,10 @@ function res = load_article(article_name);
 
 global article;
 
+if (strcmp(article_name(1:2), './') || strcmp(article_name(1:3), '../'));
+    article_name = [pwd '/' article_name];
+end;
+
 tmp = dir([article_name, '.*.jtag']);
 
 jt_files = {tmp.name};
@@ -46,6 +50,7 @@ for i=1:length(jt_files);
     article.page{i} = jt_load([dirpath,jt_files{i}],false);
 end;
 
+fprintf('Loading colourguide.\n');
 cg = colourguide;
 
 %f = figure('KeyPressFcn',@keyPressed);
@@ -57,15 +62,5 @@ page(1);
 res = article;
 
 
-function keyPressed(obj,eventdata);
-    lastChar = get(obj,'CurrentCharacter');
-    if ((lastChar == char(28)) || (lastChar == char(30)) || ...
-        (lastChar == 'p') || (lastChar == 'P'));
-        pp;
-    elseif ((lastChar == char(29)) || (lastChar == char(31)) || ...
-            (lastChar == 'n') || (lastChar == 'N'));
-        np;
-    end;
-    
 
 

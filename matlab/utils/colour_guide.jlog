@@ -81,12 +81,6 @@ class_time = 1.625
 class_attempts = 1
 resize_attempts = 0
 ---
-pos = 8 569 114 589
-sel_time = 0.0
-class_time = 0.828
-class_attempts = 1
-resize_attempts = 0
----
 pos = 4 238 43 257
 sel_time = 1.721
 class_time = 0.72
@@ -108,12 +102,6 @@ resize_attempts = 0
 pos = 7 528 94 545
 sel_time = 1.721
 class_time = 2.192
-class_attempts = 1
-resize_attempts = 0
----
-pos = 5 347 98 363
-sel_time = 1.721
-class_time = 0.905
 class_attempts = 1
 resize_attempts = 0
 ---

@@ -8,21 +8,15 @@ function res = build_all_td(batchname);
     jmlrTrainDirs = {'/p/learning/klaven/Journals/TAGGED/jmlr/'};
     jmlrTestDirs = {'/p/learning/klaven/Journals/TEST_DATA/jmlr/'};
 
-%     fprintf('For nips training data:\n');
-%     build_td(nipsTrainDirs,[batchname '-nips-train'],false);
-%     fprintf('For nips test data:\n');
-%     build_td(nipsTestDirs,[batchname '-nips-test'],false);
-% 
-%     fprintf('For jmlr training data:\n');
-%     build_td(jmlrTrainDirs,[batchname '-jmlr-train'],false);
-%     fprintf('For jmlr test data:\n');
-%     build_td(jmlrTestDirs,[batchname '-jmlr-test'],false);
-
-    fprintf('Now doing lr and memm optimization for nips:\n');
+    fprintf('For nips training data:\n');
     build_td(nipsTrainDirs,[batchname '-nips-train'],true);
-    
-    fprintf('Now doing lr and memm optimization for jmlr:\n');
+    fprintf('For nips test data:\n');
+    build_td(nipsTestDirs,[batchname '-nips-test'],false);
+
+    fprintf('For jmlr training data:\n');
     build_td(jmlrTrainDirs,[batchname '-jmlr-train'],true);
+    fprintf('For jmlr test data:\n');
+    build_td(jmlrTestDirs,[batchname '-jmlr-test'],false);
 
     
 
@@ -32,13 +26,6 @@ function res = build_all_td(batchname);
 
 function res = build_td(dirs,fname,dolr);
 
-    if (nargin == 3) && dolr && exist(strcat(fname,'.knn.mat'));
-        tmp_td = parse_training_data(strcat(fname,'.knn.mat'));
-        %build_lr(tmp_td,fname);
-        build_memm(tmp_td,fname);
-        res = 1;
-        return;
-    end;
 
     trnfiles = {};
     for i=1:length(dirs);
@@ -57,6 +44,12 @@ function res = build_td(dirs,fname,dolr);
     dump_training_data(tmp_td, strcat(fname, '.knn.mat'));
     res = 1;
 
+    if (nargin == 3) && dolr;
+        tmp_td = parse_training_data(strcat(fname,'.knn.mat'));
+        build_lr(tmp_td,fname);
+        build_memm(tmp_td,fname);
+        res = 1;
+    end;
 
 function res = build_lr(td, fname);
 
@@ -65,6 +58,9 @@ function res = build_lr(td, fname);
 
     fprintf('     Done LR optimization.  Saving results.');
     dump_lr_weights(tmp_lrweights, strcat(fname, '.lr.mat'));
+
+    weights_to_csv(tmp_lrweights, [fname '-lr-weights.csv']);
+    
     res = 1;
 
 function res = build_memm(td,fname);
@@ -73,4 +69,5 @@ function res = build_memm(td,fname);
     tmp_memm_weights = memm_train(td,1e-3,1e4, strcat(fname,'.memm.mat'));
     fprintf('    Done MEMM optimization.  Results saved');
 
+    weights_to_csv(tmp_memm_weights, [fname '-memm-weights.csv']);
     res = 1;

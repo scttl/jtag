@@ -2,10 +2,10 @@
 % DUMPED: Wed Jun 30 11:58:48 2004
 
 % IMAGE INFO:
-img = /w/24/klaven/Journals/Distribution/MS/colour_guide.jpg
+img = /h/40/klaven/jtag/matlab/utils/colour_guide.jpg
 type = jpeg
 resolution = 183x612
-cksum = 4228248954
+cksum = 1226615332
 
 % CONFIGURATION INFO:
  bucket_size = 50 50
@@ -24,7 +24,7 @@ cksum = 4228248954
     references #5C00B8
     bullet_item #33FF00
     table_label #1D9400
-    end_notes #FF0099
+    figure #FF0099
     header #B80000
     authour_list #FFE600
     code_block #00FFB3
@@ -32,10 +32,8 @@ cksum = 4228248954
     figure_label #00DC9A
     image #B8A500
     text #003B94
-    toc #4A0094
     equation #DC0000
     footnote #6E00DC
-    inline_heading #24B800
     figure_caption #2CDC00
     decoration #0066FF
     abstract #FF0000
@@ -44,7 +42,6 @@ cksum = 4228248954
     eq_number #A37C90
     editor_list #8000FF
     table_caption #009467
-    equation_numbered #DCC600
     pg_number #0049B8
  )
 
@@ -110,11 +107,6 @@ pos = 11 111 74 129
 mode = crop
 snapped = 1
 ---
-class = toc
-pos = 8 569 114 589
-mode = crop
-snapped = 1
----
 class = footer
 pos = 4 238 43 257
 mode = crop
@@ -135,11 +127,6 @@ pos = 7 528 94 545
 mode = crop
 snapped = 1
 ---
-class = inline_heading
-pos = 5 347 98 363
-mode = crop
-snapped = 1
----
 class = footnote
 pos = 7 261 58 278
 mode = crop
@@ -150,7 +137,7 @@ pos = 7 504 74 524
 mode = crop
 snapped = 1
 ---
-class = end_notes
+class = figure
 pos = 6 134 74 151
 mode = crop
 snapped = 1

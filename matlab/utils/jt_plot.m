@@ -22,7 +22,7 @@ else
     jt = jtpath;
 end;
 
-colours = zeros(3,length(jt.class_id));
+colours = zeros(3,size(jt.rects,1));
 for i = 1:length(jt.class_id);
     switch (jt.class_name{jt.class_id(i)});
         case 'code_block'
@@ -31,7 +31,7 @@ for i = 1:length(jt.class_id);
             colours(:,i) = [0.72;0;0];
         case 'references'
             colours(:,i) = [0.82;0;0];
-        case 'inline_heading'
+        case 'figure'
             colours(:,i) = [1;0;0];
         
         case 'section_heading'
@@ -43,7 +43,7 @@ for i = 1:length(jt.class_id);
         
         case 'authour_list'
             colours(:,i) = [0;0;0.6];
-        case {'equation', 'equation_numbered'}
+        case 'equation'
             colours(:,i) = [0;0;0.8];
         case 'bullet_item'
             colours(:,i) = [0;0;1];
@@ -91,6 +91,7 @@ for i = 1:length(jt.class_id);
     end;
 end;
 
+fprintf('Plotting %s', jt.img_file);
 seg_plot(imread(jt.img_file),jt.rects,f,colours);
 
 
