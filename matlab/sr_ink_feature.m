@@ -12,11 +12,14 @@ function s = sr_ink_feature(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: sr_ink_feature.m,v 1.1 2003-07-23 20:11:24 scottl Exp $
+% $Id: sr_ink_feature.m,v 1.2 2003-07-23 21:31:03 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: sr_ink_feature.m,v $
-% Revision 1.1  2003-07-23 20:11:24  scottl
+% Revision 1.2  2003-07-23 21:31:03  scottl
+% Fixed bug involving passed threshold value.
+%
+% Revision 1.1  2003/07/23 20:11:24  scottl
 % Initial revision.
 %
 
@@ -40,10 +43,10 @@ elseif rect(1) < 0 | rect(2) < 0 | rect(3) > c | rect(4) > r
 end
 
 if nargin == 3
-    if varargin(1) < 0 | varargin(1) > 100
+    if varargin{1} < 0 | varargin{1} > 100
         error('THRESHOLD passed must be a percentage (between 0 and 100)');
     end
-    threshold = varargin(1) / 100;
+    threshold = varargin{1} / 100;
 end
 
 % loop over the 4 sides, trimming our current bounding box until we have met
