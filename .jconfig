@@ -5,7 +5,7 @@
 %% DESCRIPTION: Sample configuration file to be distributed with jtag
 %%              application.
 %%
-%% CVS: $Id: .jconfig,v 1.10 2004-06-28 16:22:38 klaven Exp $
+%% CVS: $Id: .jconfig,v 1.11 2004-11-02 23:46:53 klaven Exp $
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -71,8 +71,9 @@ snap_threshold = 0.001
 % The name of the learning algorithm to be used during automatic "prediction"
 % by the application.  See the matlab/README file for more information on
 % available learners.
-learner = knn_fn
-% learner = lr_fn
+% learner = knn_fn
+learner = lr_fn
+% learner = memm_fn
 
 % learner_args:
 % Any additional arguments that the learning algorithm expects to be passed to
@@ -82,9 +83,9 @@ learner = knn_fn
 % as an argument.  Each argument you do specify should be separated by
 % whitespace.  For more information see the matlab file associated with the
 % learner specified above and the matlab/README file.
-% learner_args = '/h/42/scottl/research/TRAINING_DATA/nips.data'
-learner_args = '/h/40/klaven/klaven/Journals/TRAINING_DATA/nips-2004-06-21.knn.data'
-% learner_args = '/h/40/klaven/jtag/matlab/results/jmlr-2004-06-07.lr.data'
+% learner_args = '/h/40/klaven/jtag/matlab/features/nips-train-nomarks.knn.mat'
+learner_args = '/h/40/klaven/jtag/matlab/logisticregression/jmlr-train-nomarks.lr.mat'
+% learner_args = '/h/40/klaven/jtag/matlab/memm/memm-jmlr.memm.mat'
 
 % classes:
 % List of possible classification types based on the component of the journal
@@ -93,15 +94,14 @@ learner_args = '/h/40/klaven/klaven/Journals/TRAINING_DATA/nips-2004-06-21.knn.d
 % values).  Each classifier will be separted by whitespace/newlines, and the
 % component name and colour can not contain any spaces.
 classes = (
+               figure               #1983F2
                abstract             #FF0000
                authour_list         #FFE600
                bullet_item          #33FF00
                code_block           #00FFB3
                decoration           #0066FF
                editor_list          #8000FF
-               end_notes            #FF0099
-               equation_no_number   #DC0000
-               equation_numbered    #DCC600
+               equation             #DC0000
                eq_number            #A37C90
                figure_caption       #2CDC00
                figure_label         #00DC9A
@@ -110,7 +110,6 @@ classes = (
                graph                #DC0084
                header               #B80000
                image                #B8A500
-               inline_heading       #24B800
                main_title           #00B881
                pg_number            #0049B8
                references           #5C00B8
@@ -120,7 +119,6 @@ classes = (
                table_label          #1D9400
                table_caption        #009467
                text                 #003B94
-               toc                  #4A0094
            )
 
 

@@ -107,7 +107,17 @@ while (<@ARGV>) {
             open(FILE, "> $dir/$file") or die;
 
 	    while (defined($line = <OLDFILE>)) {
-	        print FILE $line;
+            if ($line =~ "    inline_heading") {
+                print "Found the inline_heading line\n";
+            } elsif ($line =~ "    equation_numbered") {    
+                print "Found the equation_numbered line\n";
+            } elsif ($line =~ "    end_notes") {
+                print "Found the end_notes line\n";
+            } elsif ($line =~ "    toc") {
+                print "Found the toc line\n";
+            } else {
+                print FILE $line;
+            }
  
 #            foreach $line (<FILE>) {
 #		$lineCount = $lineCount + 1;
@@ -120,7 +130,7 @@ while (<@ARGV>) {
 		    # print "Found target at ", tell(FILE), "\n";
 		    # if (seek(FILE, tell(FILE), 0)) {
 			#  print "Trying to output to line ", tell(FILE), "\n";
-                        print FILE "    eq_number #A37C90\n";
+                        print FILE "    figure #18A318\n";
 		    # } else {
 			# print "Seek failed.\n";
 		    # }
