@@ -15,11 +15,14 @@ function res = distance_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: distance_features.m,v 1.2 2004-07-29 20:41:56 klaven Exp $
+% $Id: distance_features.m,v 1.3 2004-08-04 20:51:19 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: distance_features.m,v $
-% Revision 1.2  2004-07-29 20:41:56  klaven
+% Revision 1.3  2004-08-04 20:51:19  klaven
+% Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
+%
+% Revision 1.2  2004/07/29 20:41:56  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.1  2004/06/19 00:27:27  klaven
@@ -209,7 +212,7 @@ res(rr,38).name = 'bottom_neighbour_dist';
 res(rr,38).norm = false;
 
 res(rr,39).name = 'left_neighbour_covers';
-res(rr,39).norm = true1;
+res(rr,39).norm = true;
 res(rr,40).name = 'top_neighbour_covers';
 res(rr,40).norm = true;
 res(rr,41).name = 'right_neighbour_covers';

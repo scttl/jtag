@@ -18,6 +18,8 @@ function [ll,dll] = mefun(lamvec,cc,ff,sigma)
 C=length(lamvec(:))/(M+1);
 lambda = reshape(lamvec(:),M+1,C);
 
+%fprintf('Inside mefun, M=%i,N=%i,C=%i\n',M,N,C);
+
 lqq=lambda'*[ff;ones(1,N)];
 %qq=exp(lqq);
 %qqn=sum(qq,1);
@@ -25,6 +27,13 @@ lqqn = logsum(lqq,1);
 logprobc = lqq-repmat(lqqn,C,1);
 %probc = qq./repmat(qqn,C,1);
 %probc=exp(logprobc);
+ccidx = zeros(C,N);
+for i=1:N;
+    if (cc(i)==0);
+        fprintf('Found cc(%i) was 0.\n',i);
+    end;
+    ccidx(cc(i),i) = 1;
+end;
 ccidx = sub2ind([C,N],cc(:),(1:N)');
 
 ccmat = zeros(C,N);

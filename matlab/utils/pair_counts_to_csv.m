@@ -11,8 +11,8 @@ paircounts = zeros(length(class_names));
 for pp=1:length(td.pg);
     pg = td.pg{pp};
     for c1 = 1:(length(pg.cid)-1);
-        paircounts(pg.cid(c1),pg.cid(c1+1)) = ...
-            paircounts(pg.cid(c1),pg.cid(c1+1)) + 1;
+        paircounts(pg.cid(pg.ordered_index(c1)),pg.cid(pg.ordered_index(c1+1))) = ...
+            paircounts(pg.cid(pg.ordered_index(c1)),pg.cid(pg.ordered_index(c1+1))) + 1;
     end;
 end;
 

@@ -22,11 +22,14 @@ function [feature_vals,f_norm] = run_all_features(rects, pix_file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
+% $Id: run_all_features.m,v 1.4 2004-08-04 20:51:19 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.3  2004-07-29 20:41:56  klaven
+% Revision 1.4  2004-08-04 20:51:19  klaven
+% Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
+%
+% Revision 1.3  2004/07/29 20:41:56  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.2  2004/07/27 21:57:58  klaven
@@ -101,13 +104,13 @@ end
 if get_names
     data = distance_features;
     feature_vals = {data.name};
-    f_norm = data.fnorm;
+    f_norm = [data.norm];
     data = density_features;
     feature_vals = [feature_vals,{data.name}];
-    f_norm = [f_norm data.fnorm];
+    f_norm = [f_norm [data.norm]];
     data = pnum_features;
     feature_vals = [feature_vals,{data.name}];
-    f_norm = [f_norm data.fnorm];
+    f_norm = [f_norm [data.norm]];
     %data = marks_features;
     %feature_vals = [feature_vals,{data.name}];
 
@@ -120,13 +123,13 @@ if get_names
 else
     data = distance_features(rects,pixels);
     feature_vals = reshape([data.val],size(data));
-    f_norm = data.fnorm;
+    f_norm = [data.norm];
     data = density_features(rects,pixels);
     feature_vals = [feature_vals,reshape([data.val],size(data))];
-    f_norm = [f_norm data.fnorm];
+    f_norm = [f_norm [data.norm]];
     data = pnum_features(rects,pixels,pix_file);
     feature_vals = [feature_vals,reshape([data.val],size(data))];
-    f_norm = [f_norm data.fnorm];
+    f_norm = [f_norm [data.norm]];
     %data = marks_features(rects,pixels);
     %feature_vals = [feature_vals,reshape([data.val],size(data))];
 

@@ -19,11 +19,14 @@ function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.4 2004-07-29 20:41:56 klaven Exp $
+% $Id: knn_fn.m,v 1.5 2004-08-04 20:51:19 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.4  2004-07-29 20:41:56  klaven
+% Revision 1.5  2004-08-04 20:51:19  klaven
+% Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
+%
+% Revision 1.4  2004/07/29 20:41:56  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.3  2004/07/27 21:59:36  klaven
@@ -71,12 +74,6 @@ num_elems = 0;  % number of training data elements considered thus far.
 class_id = nan;
 
 
-persistent data;  % so we don't have to recalculate data after each call
-
-%Normalize the features based on the norm values in data
-features = normalize_feats(features,data);
-
-
 % first do some sanity checking on the arguments passed
 error(nargchk(4,5,nargin));
 
@@ -88,9 +85,16 @@ end
 % see if we have to load the training data from file
 if ischar(in_data) & isempty(data)
     data = parse_training_data(in_data);
-elseif isempty(data)
+else;
     data = in_data;
 end
+
+%disp(data);
+
+%Normalize the features based on the norm values in data
+fprintf('Normalizing features based on data with %i files.\n', data.num_pages);
+features = normalize_feats(features,data);
+fprintf('Done normalizing the features.\n');
 
 if (ischar(jtag_file) || iscell(jtag_file));
     jt_path = jtag_file;
@@ -165,7 +169,7 @@ for ff = 1:size(features,1);
             end
         end
     end
-
+    %fprintf('Picked %s, with dist %f\n',names(1), distances(1));
 
     % now determine the majority class_id (from our input list of class_names),
     % and output it

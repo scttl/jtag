@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.3 2004-07-29 20:41:56 klaven Exp $
+% $Id: create_lr_weights.m,v 1.4 2004-08-04 20:51:19 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.3  2004-07-29 20:41:56  klaven
+% Revision 1.4  2004-08-04 20:51:19  klaven
+% Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
+%
+% Revision 1.3  2004/07/29 20:41:56  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.2  2004/07/01 16:45:50  klaven
@@ -59,7 +62,7 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-
+global class_names;
 
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,3,nargin));
@@ -90,13 +93,21 @@ cc = [];
 % ff is the list of all selections feature values
 ff = [];
 for i = 1:data.num_pages
-    cc = [cc; data.pg{i}.cid];
+    if (min(data.pg{i}.cid) <= 0);
+        %fprintf('Found pg{%i} if %s has a cid of 0.\n',i,char(data.pg_names(i)));
+        error('ERROR - invalid cid');
+    end;
+    cc = [cc; reshape(data.pg{i}.cid,length(data.pg{i}.cid),1)];
     ff = [ff, data.pg{i}.features'];
 end
 
-C = max(cc(:));
+%fprintf('cc(42)=%i\n',cc(42));
+
+%C = max(cc(:));
+C = length(class_names);
 [M,N] = size(ff);
 
+fprintf('C=%i, M=%i, N=%i\n',C,M,N);
 [weightmatrix,llprogress,iterations] = ...
      minimize(sqrt(sigma)*randn((M+1)*C,1),'mefun',maxevals,cc,ff,sigma);
 

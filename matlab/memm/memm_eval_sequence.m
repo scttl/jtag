@@ -42,6 +42,9 @@ end;
 % disp(size(ff'));
 % fprintf('smth\n');
 % disp(smth);
+
+
+
 [ll,dll] = mefun(weights.weights,cid',ff',smth);
 
 loglikelihood = -ll;

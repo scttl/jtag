@@ -36,9 +36,13 @@ function path = predict_page(pg,w,jt);
 
 global class_names;
 
-pg.features = normalize_feats(pg.features,w);
-
+%fprintf('Starting best_page_guess, which does its own normalizing.\n');
 firstguess = best_page_guess(pg,w,jt);
+%fprintf('Done best_page_guess; no more normalizing.\n');
+
+%fprintf('Starting to normalize page features.\n');
+pg.features = normalize_feats(pg.features,w);
+%fprintf('Done normalizing page features.\n');
 
 prev_path(1).labels = {'start_of_page'};
 prev_path(1).ll = log(1);
@@ -158,5 +162,9 @@ function path = best_page_guess(pg,w,jt);
 
     path.labels=[{'start_of_page'},class_names(cids([pg.ordered_index,end]))];
 
+    %disp(size(feats));
+    %disp(size(path.labels));
+    %disp(size(w));
+    
     path.ll = memm_eval_sequence(feats, path.labels, w, 0);
 

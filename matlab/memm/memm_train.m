@@ -29,11 +29,14 @@ function w = memm_train(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: memm_train.m,v 1.4 2004-07-29 20:41:57 klaven Exp $
+% $Id: memm_train.m,v 1.5 2004-08-04 20:51:20 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: memm_train.m,v $
-% Revision 1.4  2004-07-29 20:41:57  klaven
+% Revision 1.5  2004-08-04 20:51:20  klaven
+% Assorted debugging has been done.  As of this version, I was able to train and test all methods successfully.  I have not yet tried using them all in the jtag software yet.
+%
+% Revision 1.4  2004/07/29 20:41:57  klaven
 % Training data is now normalized if required.
 %
 % Revision 1.3  2004/07/27 22:01:27  klaven
@@ -51,7 +54,7 @@ function w = memm_train(data, sigma, maxevals, outfile)
 % LOCAL VARS %
 %%%%%%%%%%%%%%
 
-
+global class_names;
 
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,4,nargin));
@@ -102,7 +105,8 @@ for i = 1:data.num_pages;
 end
 
 
-C = max(cc(:));
+%C = max(cc(:));
+C = length(class_names);
 [M,N] = size(ff);
 
 [weightmatrix,llprogress,iterations] = ...

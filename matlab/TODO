@@ -74,114 +74,59 @@ take a while.
 
 <DONE>Normalize the features in each data set before saving (do some research to make sure this is done right).
 
-Test that the normalization is:
+<DONE>Test that the normalization is:
     <DONE>1. Working.
-    2. Begin done in the right places.
+    <DONE>2. Begin done in the right places.
 
-Re-extract all feature data.
+<DONE>Re-extract all feature data.
 
-Retrain all lr, knn, and memm classifiers.
-Retest all lr, knn, and memm classifiers.
+<DONE>Retrain all classifiers:
+    <DONE>lr
+    <DONE>knn
+    <DONE>memm
+
+Retest all classifiers:
+    <DONE>lr
+    <DONE>knn
+    memm
 
 Train all classifiers without the "snapped" features.
 Test all classifiers without the "snapped" features.
 
+Train all classifiers with the "marks" features.
+Test all classifiers with the "makrs" features.
+
+Write a script that goes from a URL to a segmented image.
+
+Test out LOO error for KNN on the training data.
+
+Draft a TOC for my thesis.
 
 
+Find error bars by randomly picking training and test cases for:
+    Random articles:
+        KNN
+        LR
+        MEMM
+    Random pages:
+        KNN
+        LR
+        MEMM
 
-
-<DONE> Change the way the feature extraction functions work so that they accept all the rectangles at once, rather than one at a time.
-
-<DONE> Make sure the above changes work.
-
-<DONE> Add some new distance features:
-  <DONE>-Height
-  <DONE>-Width
-  <DONE>-Area
-  <DONE>-Aspect Ratio (what's the best way to do this?)
-  <DONE>-distance to neighbouring regions
-  <DONE>-% overlap of projection on nieghbouring features
-  <DONE>-Boolean "is centered"
-  <DONE>-Boolean "on (left/right/top/botton) edge"
-
-<DONE> Debug the new features
-  -Getting negative values, when we shouldn't
-
-<DONE> Normalize the new features
-
-
-<DONE> Add some "marks" features:
-  <DONE>-Number of marks
-  <DONE>-Ratio of # of marks to area
-  <DONE>-Width of widest mark (as fraction of total?)
-  <DONE>-Height of tallest mark (as fraction of total?)
-  <DONE>-Area of largest mark (as fraction of total?)
-  <DONE>-Pixels in largest mark
-
-<DONE> Make the marks features reasonably quick to compute.
-
-<DONE> Create a single train/test script
-
-<DONE> Re-train and re-test with new features
 
 Figure out why the marks features are decreasing performance.
 
-<DONE>Clean up test data
-    Bach02
-    Cannon02
-    Chickering02a
-    Collobert01a
-    Crammer03b
+Consider trying to infer font size for each region, and using this as a
+feature.
 
-<DONE>Clean up training data
-    Allwein00a
-    Antos02a
-    Callif03a
-    Cancedda03a
-    Caruana03a
-    Chan02a
-    Chickering02b
-    Christensen03a
-    Crammer01a
-    Crammer03a
+Check out OCR from http://rcat.utoronto.ca/
 
-<DONE>Fix up "snapping" errors in test and training data
-
-<CANCELLED>Check out OCR from http://rcat.utoronto.ca/
-
-<CANCELLED>Check out "NCA" for KNN (talk to Jacob)
-
-
-
-<DONE>Read about MEMM's
 Implement MEMM
     <DONE>1. By adding booleans for previous class.
              <DONE>NOTE: Include a trailing "end-of-page" tag.
     2. By training a separate classifier for each previous class.
 
-Check over the feature extraction code for:
-    1. on_left_edge
-    2. on_top_edge
-    3. on_right_edge
-    4. on_bottom_edge
-    5. furthest_left
-    6. h_sharpness
-
-
-
-
-
-<DONE>Read about CRF's (Conditional Random Fields)
 Implement CRF's
-
-<DONE>Make changes requested by Sam for MS package
-
-<DONE> Get ready to send stuff to Microsoft
-
-<DONE> Decide on consistent style for Inline Heading, Author List, and 
-References.
-
-<DONE>Go over test data and training data, to make above items consistent.
 
 Think about inferring font size before doing segmentation, and using this.
 
