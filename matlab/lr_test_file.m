@@ -31,7 +31,6 @@ if ischar(in_file);
 else
   jt = in_file;
 end;
-disp(jt.jtag_file);
 
 pixels = imread(jt.img_file);
 
@@ -43,7 +42,6 @@ for ii=1:size(jt.rects,1);
   features = run_all_features(jt.rects(ii,:),pixels);
   predID = lr_fn(classes,features,ww);
   actClass = jt.class_name(jt.class_id(ii));
-  disp( strcat('Act=', actClass, ' Pred=', classes(predID)));
   jj = 1;
   while ~(strcmp(actClass,classes(jj)))
     jj = jj + 1;
@@ -54,4 +52,4 @@ for ii=1:size(jt.rects,1);
     correct = correct + 1;
   end;
 end;
-disp(strcat('total=',int2str(total),',correct=', int2str(correct)));
+

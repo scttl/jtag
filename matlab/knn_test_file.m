@@ -1,7 +1,16 @@
 
 function [correct,total] = lr_test_file(filePath,tdPath);
 
-disp(filePath);
+%function [correct,total] = lr_test_file(filePath,tdPath);
+%
+%Tests a single .jtag file using K Nearest Neighbours, with the
+%training data stored in the file at tdPath.
+%
+%fielPath: The path of a jtag file.
+%tdPath: The path of a training data file.  Parse this file
+%        using the parse_training_data function.
+%correct: The number of correctly classified regions
+%total: The number of regions
 
 ss=parse_training_data(tdPath);
 
@@ -18,9 +27,8 @@ for ii=1:size(jt.rects,1);
   total = total + 1;
   features = run_all_features(jt.rects(ii,:),pixels);
   predID = knn_fn(classes,features,tdPath);
-  disp( strcat('Act=', jt.class_name(jt.class_id(ii)), ' Pred=', classes(predID)));
   if (strcmp(jt.class_name(jt.class_id(ii)), classes(predID)));
     correct = correct + 1;
   end;
 end;
-disp(strcat('total=',int2str(total),',correct=', int2str(correct)));
+

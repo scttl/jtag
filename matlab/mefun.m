@@ -1,7 +1,17 @@
 function [ll,dll] = mefun(lamvec,cc,ff,sigma)
+
 % [ll,dll] = mefun(lamvec,cc,ff,sigma)
-
-
+% Provides the Log Likelihood value (ll), as well as the gradient (dll)
+% for use by the minimize function.
+%
+% lamvec: Weight vector at the start of this iteration
+%
+% ff: Features.  Each column contains the features for one data item.
+%
+% cc: Class ID's.  Each row contains the classID for one data item.
+%
+% sigma: the smoothing
+%
 % ff should NOT have the default feature, mefun will add that
 
 [M,N] = size(ff);

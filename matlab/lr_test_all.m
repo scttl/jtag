@@ -1,4 +1,21 @@
 function [correct,total,results] = lr_test_all(tstDir,lr_weights);
+%function [correct,total,results] = lr_test_all(tstDir,lr_weights);
+%function [correct,total] = lr_test_all(tstDir,lr_weights);
+%
+%Tests a all .jtag files in a directory using logistic regression, 
+%with the weights specified.
+%
+%tstDir: the location of a directory containing the .jtag files you
+%        want to test.
+%lr_weights: a parsed lr_weights file, or the path of a
+%            lr_weights file.
+%correct: The number of correctly classified regions
+%total: The number of regions
+%results: A matrix of results.  Results(pred,cor) is the
+%         number of times ww.classnames(pred) was the
+%         predicted value, and ww.classnames(cor) was
+%         the correct value.
+
 
 if ischar(lr_weights);
   ww=parse_lr_weights(lr_weights);
