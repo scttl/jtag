@@ -12,11 +12,14 @@ function s = sr_ink_feature(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: sr_ink_feature.m,v 1.2 2003-07-23 21:31:03 scottl Exp $
+% $Id: sr_ink_feature.m,v 1.3 2003-07-23 22:28:51 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: sr_ink_feature.m,v $
-% Revision 1.2  2003-07-23 21:31:03  scottl
+% Revision 1.3  2003-07-23 22:28:51  scottl
+% Small bugfix for when selection location begins at 1,1.
+%
+% Revision 1.2  2003/07/23 21:31:03  scottl
 % Fixed bug involving passed threshold value.
 %
 % Revision 1.1  2003/07/23 20:11:24  scottl
@@ -38,7 +41,7 @@ error(nargchk(2,3,nargin));
 
 if ndims(rect) > 2 | size(rect) ~= 4
     error('RECT passed must have exactly 4 elements');
-elseif rect(1) < 0 | rect(2) < 0 | rect(3) > c | rect(4) > r
+elseif rect(1) < 1 | rect(2) < 1 | rect(3) > c | rect(4) > r
     error('RECT passed exceeds PAGE boundaries');
 end
 
