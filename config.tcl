@@ -6,11 +6,15 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.8 2003-07-28 19:57:12 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.9 2003-07-31 19:16:46 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.8  2003-07-28 19:57:12  scottl
+## Revision 1.9  2003-07-31 19:16:46  scottl
+## Added resize_attempts to jlog file reading/writing.  Changed comment prefix
+## to a % (was pound symbol before)
+##
+## Revision 1.8  2003/07/28 19:57:12  scottl
 ## Implemented jlog reading and writing functionality to dump auxiliary 'data'
 ##
 ## Revision 1.7  2003/07/21 21:36:16  scottl
@@ -139,7 +143,8 @@ namespace eval ::Jtag::Config {
     set blpre(pos) {pos}
     set blpre(sel_time) {sel_time}
     set blpre(class_time) {class_time}
-    set blpre(attempts) {class_attempts}
+    set blpre(class_attempts) {class_attempts}
+    set blpre(resize_attempts) {resize_attempts}
 
 }
 
@@ -247,11 +252,12 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
     variable Snapped
     variable SelTime ""
     variable ClassTime ""
-    variable Attempts ""
+    variable ClassAttempts ""
+    variable ResizeAttempts ""
     variable Colour
     variable FBuckets
     variable CkSumPos 3 ;# the line in the header the cksum field is to appear
-    variable SelElements 4 ;# number of element comprising a single selection
+    variable SelElements 4 ;# num of element comprising a single jtag selection
 
 
     debug {entering ::Jtag::Config::read_data}
@@ -403,10 +409,18 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
 
                     set ElemList [lindex $JLogResult [expr $K + 3]]
                     if {[llength $ElemList] != 2 || \
-                        [lindex $ElemList 0] != $blpre(attempts)} {
+                        [lindex $ElemList 0] != $blpre(class_attempts)} {
                         error "Corrupt data in $jlog_file at line:\n$ElemList"
                     } else {
-                        set Attempts [lindex $ElemList 1]
+                        set ClassAttempts [lindex $ElemList 1]
+                    }
+
+                    set ElemList [lindex $JLogResult [expr $K + 4]]
+                    if {[llength $ElemList] != 2 || \
+                        [lindex $ElemList 0] != $blpre(resize_attempts)} {
+                        error "Corrupt data in $jlog_file at line:\n$ElemList"
+                    } else {
+                        set ResizeAttempts [lindex $ElemList 1]
                     }
 
                     break;
@@ -420,7 +434,8 @@ proc ::Jtag::Config::read_data {jtag_file {jlog_file ""}} {
         # now add the selection data into memory (if no jlog file exists, no
         # auxiliary data is actually added)
         ::Jtag::Classify::add $Canvas $Class $X1 $Y1 $X2 $Y2 $Mode $Snapped \
-                              "" $SelTime $ClassTime $Attempts
+                              "" $SelTime $ClassTime $ClassAttempts \
+                              $ResizeAttempts
 
     }
 
@@ -459,7 +474,7 @@ proc ::Jtag::Config::write_data {} {
     variable LogList {}
     variable FileName
     variable LogFileName
-    variable CommentPre {# }
+    variable CommentPre {% }
 
 
     debug {entering ::Jtag::Config::write_data}
@@ -517,7 +532,8 @@ proc ::Jtag::Config::write_data {} {
         set Snapped [lindex $data($I) 6]
         set SelTime [lindex $data($I) 7]
         set ClTime [lindex $data($I) 8]
-        set Attmpts [lindex $data($I) 9]
+        set ClAttmpts [lindex $data($I) 9]
+        set ReAttmpts [lindex $data($I) 10]
         lappend DList $separator \
                       "${btpre(class)} = $Class" \
                       "${btpre(pos)} = $Pos" \
@@ -528,7 +544,8 @@ proc ::Jtag::Config::write_data {} {
                       "${blpre(pos)} = $Pos" \
                       "${blpre(sel_time)} = $SelTime" \
                       "${blpre(class_time)} = $ClTime" \
-                      "${blpre(attempts)} = $Attmpts"
+                      "${blpre(class_attempts)} = $ClAttmpts" \
+                      "${blpre(resize_attempts)} = $ReAttmpts"
     }
 
     # now send the data off to the jtag file for writing (catching any errors)
