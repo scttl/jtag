@@ -6,11 +6,14 @@
 ##              This includes the display of all window components and
 ##              responding to user generated events (key presses mouse etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.4 2003-08-25 17:43:39 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/ui.tcl,v 1.5 2003-08-29 18:52:17 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: ui.tcl,v $
-## Revision 1.4  2003-08-25 17:43:39  scottl
+## Revision 1.5  2003-08-29 18:52:17  scottl
+## Updated status bar to display message once all components are loaded.
+##
+## Revision 1.4  2003/08/25 17:43:39  scottl
 ## Added a status bar to display status messages during certain actions.
 ##
 ## Revision 1.3  2003/07/16 19:09:08  scottl
@@ -198,6 +201,7 @@ proc ::Jtag::UI::create {} {
     autoscroll $cs_x
     autoscroll $cs_y
 
+    ::Jtag::UI::status_text "Ready!"
 
 }
 
