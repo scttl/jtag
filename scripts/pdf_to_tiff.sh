@@ -3,7 +3,7 @@
 ##
 ## FILE: pdf_to_tiff.sh
 ##
-## CVS: $Id: pdf_to_tiff.sh,v 1.1 2003-07-17 18:09:44 scottl Exp $
+## CVS: $Id: pdf_to_tiff.sh,v 1.2 2003-08-28 16:50:14 scottl Exp $
 ##
 ## DESCRIPTION: script that takes as input a directory containing pdf files,
 ##              and converts each of them into multiple tiff files (one per
@@ -81,12 +81,12 @@ for curr in `ls ${ROOT}/*.pdf`; do
               -sOutputFile=$outfile $curr
 
     # split into multiple files (one page per file)
-    if [ $USE_SPLIT ]; then
+    if [ $USE_SPLIT == true ]; then
         $SPLIT_CMD $outfile ${OUTDIR}/`basename $curr pdf`
     fi
 
     # remove the original multipage tiff
-    if [ $USE_SPLIT ] && [ $RM_ORIG_TIFF ]; then
+    if [ $USE_SPLIT == true ] && [ $RM_ORIG_TIFF == true ]; then
         rm -f $outfile
     fi
 done
