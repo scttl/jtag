@@ -1,9 +1,12 @@
 
-CVS: $Header: /p/learning/cvs/projects/jtag/doc/Attic/Manual_Tagging_Rules.txt,v 1.1 2004-01-23 18:04:38 klaven Exp $
+CVS: $Header: /p/learning/cvs/projects/jtag/doc/Attic/Manual_Tagging_Rules.txt,v 1.2 2004-08-05 16:50:02 klaven Exp $
 
 REVISION HISTORY:
 $Log: Manual_Tagging_Rules.txt,v $
-Revision 1.1  2004-01-23 18:04:38  klaven
+Revision 1.2  2004-08-05 16:50:02  klaven
+*** empty log message ***
+
+Revision 1.1  2004/01/23 18:04:38  klaven
 Added files describing desired improvements to jtag, as well as a first draft of the rules for manual tagging.
 
 
@@ -92,7 +95,7 @@ should each be given a separate region.
 
 'equation_numbered'
 -This is a depricated tag, and should not be used.  It should be replaced with 
-an "equation_no_number" / "eq_number" pair.
+an "equation" / "eq_number" pair.
 
 
 'pg_number'
@@ -130,14 +133,14 @@ contents of the paper.
 -So far s I know, these are not used.
 
 
-'equation_no_number'
+'equation'
 -An equation.  The "no_number" indicates that the equation number (if provided) 
 should be given its own region.
 
 
 'eq_number'
 -The number (or letter) assigned to a particular equation.  Always paired with
-an "equation_no_number" region.
+an "equation" region.
 
 
 'authour_list'

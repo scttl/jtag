@@ -1,0 +1,17 @@
+Here are the (hopefully) final changes that I plan to make in the classes:
+
+1. Add a "figure" class.
+    1.1 Divide figures into "image" for actual images, "graph" for anything
+        that is clearly a graph, and "figure" for all others.
+
+2. Remove the "Inline Heading" class altogether.  By its definition, this 
+   class requires weird segmentation to exist.
+
+3. Remove the "Equation_Numbered" class altogether.  All instances of it have
+   already been removed, so there is no point in keeping it around.
+
+4. Remove the "end_notes" class altogether.  It has not been used.
+
+5. Remove the "toc" class altogether.  It has not been used.
+
+
