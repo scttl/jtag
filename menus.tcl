@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.2 2003-07-15 16:45:56 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.3 2003-07-18 18:01:36 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.2  2003-07-15 16:45:56  scottl
+## Revision 1.3  2003-07-18 18:01:36  scottl
+## - Fixed bug in OpenCmd where 'data' array elements not being removed properly
+## - Implemented multiple page previous and next buttons.
+##
+## Revision 1.2  2003/07/15 16:45:56  scottl
 ## Created an edit menu.  Implemented the Quit, Open, and Delete commands.
 ##
 ## Revision 1.1  2003/07/04 17:04:14  scottl
@@ -52,6 +56,8 @@ namespace eval ::Jtag::Menus {
     set edit(btn) {}
     set edit(m) {}
     set edit(attribs) {-text Edit -underline 0}
+    set edit(next_btn) {}
+    set edit(prev_btn) {}
 
     # the zoom menu
     variable zoom
@@ -142,13 +148,72 @@ proc ::Jtag::Menus::create {w} {
 
     # create the help menu and its commands
 
-    # inform Tk that these are all menus
-    tk_menuBar $f(path) $file(btn) $edit(btn) $zoom(btn)
-
     # return the path of the frame back to the caller
     return $f(path)
 
 }
+
+
+# ::Jtag::Menus::multi_page_functions --
+#
+#    Enables or disables the ability to perform commands and display buttons
+#    related to multiple documents (that meet the form described in the
+#    specifications.txt document)
+#
+# Arguments:
+#    on    Set to 1 if we are enabling mutiple page functionality, all other
+#          values assume we are disabling functionality
+#
+# Results:
+#    If on is set to 1 we enable the user to flip between consecutive pages of
+#    a multi-page document by displaying buttons and menu commands to do so.
+#    Otherwise we remove this buttons and commands from the menu
+
+proc ::Jtag::Menus::multi_page_functions {on} {
+
+    # link any namespace variables necessary
+    variable f
+    variable edit
+    variable ::Jtag::Image::img
+
+    # declare any local variables necessary
+
+    debug {entering ::Jtag::Menus::multi_page_functions}
+
+    if {$on && $img(multi_page)} {
+        if {$f(path) == ""} {
+            debug "No generated menus present, can't enable multi_page"
+            return
+        }
+
+        set edit(next_btn) $f(path).next
+        set edit(prev_btn) $f(path).prev
+
+        # remove the buttons if they already exist
+        destroy $edit(next_btn) $edit(prev_btn)
+
+        button $edit(next_btn) -text {Next Page} -relief solid \
+              -overrelief raised -command \
+                          {::Jtag::Image::go_to_pg \
+                          [expr $::Jtag::Image::img(curr_page) + 1]}
+        button $edit(prev_btn) -text {Prev Page} -relief solid \
+              -overrelief raised -command \
+                          {::Jtag::Image::go_to_pg \
+                          [expr $::Jtag::Image::img(curr_page) - 1]}
+
+        bind . <Next> {::Jtag::Image::go_to_pg \
+                       [expr $::Jtag::Image::img(curr_page) + 1]}
+        bind . <Prior> {::Jtag::Image::go_to_pg \
+                       [expr $::Jtag::Image::img(curr_page) - 1]}
+
+        pack $edit(next_btn) $edit(prev_btn) -side left
+
+    } else {
+        destroy $edit(next_btn)
+        destroy $edit(prev_btn)
+    }
+}
+
 
 
 # PRIVATE PROCEDURES #
@@ -317,13 +382,12 @@ proc ::Jtag::Menus::OpenCmd {} {
 
     # link any namespace variables needed
     variable types
-    variable ::Jtag::Classify::data
+    variable ::Jtag::Config::data
 
     # declare any local variables needed
     variable File
     variable Response
     variable Rects
-    variable I
 
     # open a file browser
     set File [tk_getOpenFile -filetypes $types]
@@ -332,9 +396,9 @@ proc ::Jtag::Menus::OpenCmd {} {
     if {[ catch {::Jtag::Config::write_data} Response]} {
         debug "Failed to write old selection information.  Reason:\n$Response"
     }
-    foreach I [array names data -regexp {(.*)(,)([0-9])+}] {
-        ::Jtag::Classify::remove $I
-        puts [parray data]
+    while {[array names data -regexp {(.*)(,)([0-9])+}] != ""} {
+        ::Jtag::Classify::remove [lindex \
+             [array names data -regexp {(.*)(,)([0-9])+}] 0]
     }
     ::Jtag::Image::clear_canvas
 
