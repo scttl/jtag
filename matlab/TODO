@@ -1,0 +1,30 @@
+To Do
+------
+
+Normalize the features in each data set before saving (do some research to make sure this is done right).
+
+Analyze which distance features are useful (how do I do this?  FA?  PCA?  Look this up).
+
+Remove the non-useful distance features.
+
+Add some new distance features:
+  -Height
+  -Width
+  -Aspect Ratio (what's the best way to do this?)
+  -More/other???
+
+
+  
+  
+  
+Add some "marks" features:
+  -Number of marks
+  -Ratio of # of marks to area
+  -Width of widest mark (as fraction of total?)
+  -Height of tallest mark (as fraction of total?)
+  -Area of largest mark (as fraction of total?)
+  -Pixels in largest mark
+
+Create a single train/test script
+
+Re-train and re-test with new features

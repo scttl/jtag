@@ -15,11 +15,14 @@ function res = density_features(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: density_features.m,v 1.1 2003-08-18 15:46:18 scottl Exp $
+% $Id: density_features.m,v 1.2 2004-05-14 17:21:32 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: density_features.m,v $
-% Revision 1.1  2003-08-18 15:46:18  scottl
+% Revision 1.2  2004-05-14 17:21:32  klaven
+% Working on features for classification.  Realized that the distance features need some work.  Specifically, I think they are not being normalized properly, and several of them are redundant.
+%
+% Revision 1.1  2003/08/18 15:46:18  scottl
 % Initial revision.  Merger of 2 previously individualy calculated density
 % features.
 %
@@ -70,6 +73,24 @@ res{1}.name  = 'rect_dens';
 % the rectangle passed.
 res{2}.name  = 'sr_dens';
 
+% feature 3 is the "sharpness" of the horizontal projection.  This should help
+% distinquish between text and non-text regions (when the document is
+% properly aligned).
+res{3}.name = 'h_sharpness';
+
+% feature 4 is a boolean indicating whether there appears to be a horizontal
+% line stretching across the region.
+res{4}.name = 'h_line';
+
+% feature 5 is a boolean indicating whether there appears to be a vertical
+% line stretching across the region.
+res{5}.name = 'v_line';
+
+% feature 6 is the fraction of the total ink falling in the left quarter
+res{6}.name = 'left_quarter_ink_fraction';
+
+% features 7 and on deal with the number of marks on the page, and their sizes
+
 
 if get_names
     return;
@@ -96,3 +117,37 @@ res{1}.val = ink_count / ((bottom - top + 1) * (right - left + 1));
 % now calculate feature 2 value
 sr = get_sr(rect, pixels, threshold);
 res{2}.val = ink_count / ((sr(4) - sr(2) + 1) * (sr(3) - sr(1) + 1));
+
+
+% calculate feature 3 value
+h = mean(pixels(top:bottom,left:right),2);
+h = h(2:end) - h(1:(end-1));
+h = h .* h;
+res{3}.val = mean(h);
+
+
+% calculate feature 4 value
+temp = max(mean(1 - pixels(top:bottom,left:right),2));
+if (temp > 0.9)
+    res{4}.val = 1;
+else
+    res{4}.val = 0;
+end;
+
+
+% calculate feature 5 value
+temp = max(mean(1 - pixels(top:bottom,left:right),1));
+if (temp > 0.9)
+    res{5}.val = 1;
+else
+    res{5}.val = 0;
+end;
+
+
+% calculate feature 6 value
+v = mean(1 - pixels(top:bottom,left:right),1)
+res{6}.val = sum(v(1:(round(end / 4)))) / sum(v);
+
+
+
+
