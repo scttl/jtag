@@ -36,7 +36,7 @@ while (~ isempty(live_segs));
     cs = live_segs(1,:);
     %fprintf('Checking [%i %i %i %i] for cuts.\n',cs(1),cs(2),cs(3),cs(4));
     candidates = ltc_find_cand(pixels, live_segs(1,:), act_reg_map);
-    samps = ltc_make_samples_from_cands(candidates,pixels);
+    samps = ltc_make_samples_from_cands(candidates,pixels,jt);
     samples = [samples, samps];
     %for i=1:length(samps);
     %    sampdupe = false;

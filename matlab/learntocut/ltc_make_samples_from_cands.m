@@ -1,5 +1,9 @@
-function samps = ltc_make_samples_from_cands(candidates, pix);
+function samps = ltc_make_samples_from_cands(candidates, pix, jt);
 samps = [];
+
+%First, calculate features that appy to all samples on this page.
+fakerect = [1 2 3 4];
+pnum_feats = pnum_features(fakerect, pix, char(jt.img_file));
 
 for i=1:length(candidates);
     cand = candidates(i);
@@ -88,8 +92,69 @@ for i=1:length(candidates);
     samp.feat_names{12} = 'ws_area';
     samp.feat_vals(12) = (ws.b - ws.t + 1) * (ws.r - ws.l + 1);
 
+    samp.feat_names{13} = 'cuts_full_page';
+    if (samp.horizontal);
+        wsbox = pix(ws.t:ws.b, 1:size(pix,2));
+        if (min(max(1-wsbox')) == 0);
+            samp.feat_vals(13) = 1;
+        else;
+            samp.feat_vals(13) = 0;
+        end;
+    else;
+        wsbox = pix(1:size(pix,1),ws.l:ws.r);
+        if (min(max(1-wsbox)) == 0);
+            samp.feat_vals(13) = 1;
+        else;
+            samp.feat_vals(13) = 0;
+        end;
+    end;
 
+    samp.feat_names{14} = 's0.dens';
+    samp.feat_vals(14) = mean(mean(1-pix(s0.t:s0.b,s0.l:s0.r)));
+    samp.feat_names{15} = 's1.dens';
+    samp.feat_vals(15) = mean(mean(1-pix(s1.t:s1.b,s1.l:s1.r)));
+    samp.feat_names{16} = 's2.dens';
+    samp.feat_vals(16) = mean(mean(1-pix(s2.t:s2.b,s2.l:s2.r)));
+    
+    samp.feat_names{17} = 'h_reduction';
+    samp.feat_vals(17) = (s0.r-s0.l+1) - min([(s1.r-s1.l+1),(s2.r-s2.l+1)]);
+
+    samp.feat_names{18} = 'v_reduction';
+    samp.feat_vals(18) = (s0.b-s0.t+1) - min([(s1.b-s1.t+1),(s2.b-s2.t+1)]);
+
+    samp.feat_names{19} = 's0.l';
+    samp.feat_vals(19) = s0.l;
+    samp.feat_names{20} = 's0.r';
+    samp.feat_vals(20) = s0.r;
+    samp.feat_names{21} = 's0.t';
+    samp.feat_vals(21) = s0.t;
+    samp.feat_names{22} = 's0.b';
+    samp.feat_vals(22) = s0.b;
+
+    samp.feat_names{23} = 's1.l';
+    samp.feat_vals(23) = s1.l;
+    samp.feat_names{24} = 's1.r';
+    samp.feat_vals(24) = s1.r;
+    samp.feat_names{25} = 's1.t';
+    samp.feat_vals(25) = s1.t;
+    samp.feat_names{26} = 's1.b';
+    samp.feat_vals(26) = s1.b;
+
+    samp.feat_names{27} = 's2.l';
+    samp.feat_vals(27) = s2.l;
+    samp.feat_names{28} = 's2.r';
+    samp.feat_vals(28) = s2.r;
+    samp.feat_names{29} = 's2.t';
+    samp.feat_vals(29) = s2.t;
+    samp.feat_names{30} = 's2.b';
+    samp.feat_vals(30) = s2.b;
+
+    for j=1:size(pnum_feats,2);
+        samp.feat_names{30 + j} = pnum_feats(j).name;
+        samp.feat_vals(30 + j) = pnum_feats(j).val;
+    end;
     samps = [samps,samp];
 end;
+
 
 

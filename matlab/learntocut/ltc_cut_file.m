@@ -37,10 +37,15 @@ while (~ isempty(live_segs));
     cs = live_segs(1,:);
     %fprintf('Checking [%i %i %i %i] for cuts.\n',cs(1),cs(2),cs(3),cs(4));
     candidates = ltc_find_cand(pixels, live_segs(1,:));
-    ch = candidates(find([candidates.horizontal]));
-    cv = candidates(find(1 - [candidates.horizontal]));
+    if (length(candidates) > 0);
+        ch = candidates(find([candidates.horizontal]));
+        cv = candidates(find(1 - [candidates.horizontal]));
+    else;
+        ch = [];
+        cv = [];
+    end;
     if (length(ch) > 0);
-        sh = ltc_make_samples_from_cands(ch,pixels);
+        sh = ltc_make_samples_from_cands(ch,pixels,jt);
         h_feats = reshape([sh.feat_vals], ...
                           length(sh(1).feat_vals),length(sh));
         h_cids = lr_fn(cut_classes(5:8),h_feats','null',ww.wh) + 3;
@@ -56,7 +61,7 @@ while (~ isempty(live_segs));
     end;
 
     if (length(cv) > 0);
-        sv = ltc_make_samples_from_cands(cv,pixels);
+        sv = ltc_make_samples_from_cands(cv,pixels,jt);
         v_feats = reshape([sv.feat_vals], ...
                           length(sv(1).feat_vals),length(sv));
         v_cids = lr_fn(cut_classes(1:4),v_feats','null',ww.wv) - 1;

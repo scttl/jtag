@@ -1,4 +1,4 @@
-function res = build_all_td(batchname);
+function res = ltc_build_all_td(batchname);
 
     nipsTrainDirs = {'/p/learning/klaven/Journals/TAGGED/nips_2001/', ...
                      '/p/learning/klaven/Journals/TAGGED/nips_2002/'};
@@ -42,42 +42,19 @@ function res = build_td(dirs,fname,dolr);
     tmpfname = [fname '.ltc.mat'];
 
     tmp_td = ltc_create_td(trnfiles, {tmpfname});
-    res = 0;
-    return;
-
-
-
-
-
-
-    fprintf('     Done feature extraction.  Saving knn data.\n');
-    dump_training_data(tmp_td, strcat(fname, '.knn.mat'));
     res = 1;
 
+    fprintf('     Done feature extraction.\n');
+
     if (nargin == 3) && dolr;
-        tmp_td = parse_training_data(strcat(fname,'.knn.mat'));
         build_lr(tmp_td,fname);
-        build_memm(tmp_td,fname);
         res = 1;
     end;
 
 function res = build_lr(td, fname);
 
-    fprintf('     Starting LR optimization');
-    tmp_lrweights = create_lr_weights(td,1e-3,1e4);
+    fprintf('     Starting LR optimization.\n');
+    tmp_lrweights = ltc_create_lr_weights(td,1e-3,1e4, [fname '.lr.mat']);
 
-    fprintf('     Done LR optimization.  Saving results.');
-    dump_lr_weights(tmp_lrweights, strcat(fname, '.lr.mat'));
-
-    weights_to_csv(tmp_lrweights, [fname '-lr-weights.csv']);
+    %weights_to_csv(tmp_lrweights, [fname '-lr-weights.csv']);
     
-    res = 1;
-
-function res = build_memm(td,fname);
-    
-    fprintf('    Starting MEMM optimization');
-    tmp_memm_weights = memm_train(td,1e-3,1e4, strcat(fname,'.memm.mat'));
-    fprintf('    Done MEMM optimization.  Results saved');
-
-    weights_to_csv(tmp_memm_weights, [fname '-memm-weights.csv']);
-    res = 1;
