@@ -1,6 +1,6 @@
 function res = dump_training_data(s, outfile)
-% DUMP_JFILES   Formats and writes out the contents of the structure S to an
-%               ascii flat file.
+% DUMP_TRAINING_DATA   Formats and writes out the contents of the structure S 
+%                      to an ascii flat file.
 %
 %   RES = DUMP_TRAINING_DATA(S, OUTFILE)  Attempts to write the contents of 
 %   struct S (formatted along the lines of that returned by
@@ -13,11 +13,14 @@ function res = dump_training_data(s, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: dump_training_data.m,v 1.1 2003-08-19 20:51:55 scottl Exp $
+% $Id: dump_training_data.m,v 1.2 2003-09-22 17:46:48 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: dump_training_data.m,v $
-% Revision 1.1  2003-08-19 20:51:55  scottl
+% Revision 1.2  2003-09-22 17:46:48  scottl
+% Fixed incorrect comment.
+%
+% Revision 1.1  2003/08/19 20:51:55  scottl
 % Initial revision.
 %
 
