@@ -4,7 +4,10 @@
 
 DOCUMENT HISTORY:
 -- $Log: specification.txt,v $
--- Revision 1.7  2003-07-31 19:08:27  scottl
+-- Revision 1.8  2003-08-27 15:09:13  scottl
+-- Moved resize attempts to jlog file.
+--
+-- Revision 1.7  2003/07/31 19:08:27  scottl
 -- Added resize_attempts to data array, and jlog body information.
 --
 -- Revision 1.6  2003/07/28 16:02:19  scottl
@@ -138,11 +141,6 @@ DOCUMENT HISTORY:
       displayed.  In the future, a prompt may be issed to the user informing 
       them as such, but this will require extra programming and will be left 
       out for now
-    *? If a non-first page of a split multi-page file is loaded, it is treated
-      like any other single file (no page jumping will be allowed)
-    * To reduce jtag file size, all configuration data for multipage split
-      files will only be written to the first page, <img_Base>.cx.<img_format>
-      for example will not have any config data written out with it.
 
 2.8 Use selections made in previous pages, to look ahead and predict tags
     for future pages.
@@ -254,9 +252,6 @@ DOCUMENT HISTORY:
     * Fifth line will contain 'snapped=' followed by a 1 (representing true)
       or a 0 (representing false) depending on whether or not the rectangle
       was snapped into place, or if it was manually sized
-    * Sixth line will contain 'resize_attempts=' followed by a positive
-      integer indictating the total number of times the rectangle has been
-      manually resized
 
     5.3.3 Body Info (.jlog file) Repeated 0 or more times -- each represents
       a single selection
@@ -275,6 +270,9 @@ DOCUMENT HISTORY:
       integer representing the total number of classification attempts
       made (i.e. if placed in a bucket, then later changed to another).  Must
       be >= 1
+    * Fifth line will contain 'resize_attempts=' followed by a positive
+      integer indictating the total number of times the rectangle has been
+      manually resized
 
 
 6. MAJOR DATA STRUCTURES
@@ -331,4 +329,4 @@ DOCUMENT HISTORY:
      the body_text classifier, you would use the following: 
      $data(body_text,4) .  You can then use lindex on the item returned to 
      pick out particular components of the selection ex.  to get the mode 
-     (item 6) use [lindex $data(body_text,4) 5] since lists start numbering at 0.
+     (item 6) use [lindex $data(body_text,4) 5] since lists start numbering at 0
