@@ -1,10 +1,10 @@
-function res = classify_pg(class_names, img_file, class_fn, varargin)
+function res = classify_pg(class_names, jtag_file, class_fn, varargin)
 % CLASSIFY_PG    Attempts to find and classify each rectangular subrectangle
 %                of IMG_FILE as one of the clases in CLASS_NAMES by running 
 %                the CLASS_FN algorithm.
 %
 %   RES = CLASSIFY_PG(CLASS_NAMES, IMG_FILE, CLASS_FN, {ARGS})  Opens the 
-%   IMG_FILE passed, then determines a collection of rectangular subregions 
+%   JTAG_FILE passed, then determines a collection of rectangular subregions 
 %   using the xycut algorithm.  Each subregion is then classified 
 %   as one of the classes listed in CLASS_NAMES using the classification 
 %   algorithm defined by CLASS_FN and any additional arguments in ARGS.
@@ -20,11 +20,14 @@ function res = classify_pg(class_names, img_file, class_fn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: classify_pg.m,v 1.8 2004-06-28 16:22:38 klaven Exp $
+% $Id: classify_pg.m,v 1.9 2004-07-27 22:06:15 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: classify_pg.m,v $
-% Revision 1.8  2004-06-28 16:22:38  klaven
+% Revision 1.9  2004-07-27 22:06:15  klaven
+% classify_pg.m now passes the jtag file on to the classification functions.  This will allow these functions to use the file path of the image to determine what page number it is and how many pages are in the article.  This information can now be used as features.
+%
+% Revision 1.8  2004/06/28 16:22:38  klaven
 % *** empty log message ***
 %
 % Revision 1.7  2004/06/19 00:25:17  klaven
@@ -71,30 +74,28 @@ error(nargchk(3,inf,nargin));
 if ~iscell(class_names) | size(class_names,1) ~= 1
     error('CLASS_NAMES must be a cell array listing one class per column');
 end
-if iscell(img_file) | ~ ischar(img_file) | size(img_file,1) ~= 1
-    error('IMG_FILE must contain a single string.');
+if iscell(jtag_file) | ~ ischar(jtag_file) | size(jtag_file,1) ~= 1
+    error('JTAG_FILE must contain a single string.');
 end
 
 % initialize components of the structure
 s.class_name = class_names;
-s.img_file = img_file;
+s.img_file = jtag_file;
 s.rects = [];
 
 res = nan;
 
-% attempt to open and load the pixel contents of IMG_FILE passed (to ensure it
-% exists)
-pixels = imread(img_file);
-
 % parse file_name to determine name of jtag and jlog files
-dot_idx = regexp(img_file, '\.');
-s.jtag_file = strcat(img_file(1:dot_idx(length(dot_idx))), jtag_extn);
-s.jlog_file = strcat(img_file(1:dot_idx(length(dot_idx))), jlog_extn);
+dot_idx = regexp(jtag_file, '\.');
+s.jtag_file = strcat(jtag_file(1:dot_idx(length(dot_idx))), jtag_extn);
+s.jlog_file = strcat(jtag_file(1:dot_idx(length(dot_idx))), jlog_extn);
+
 
 % get the list of rectangles to classify, first see if they already exist in a
 % jtag file, otherwise build them from scratch
 try
     tmp_struct = parse_jtag(s.jtag_file);
+    s.img_file = tmp_struct.img_file;
     if size(tmp_struct.rects,1) < 1
         fprintf('Found no rects in jtag file - rshould run xycuts.\n');
         error
@@ -102,31 +103,53 @@ try
     s.rects = tmp_struct.rects;
 catch
     fprintf('Running xycut segmentation algorithm.\n');
-    rects = xycut(img_file);
+    
+    rects = xycut(s.img_file);
     % rects = dist_img(img_file);
     % rects = dist_img_red(img_file);
     disp(strcat('Found ', int2str(size(rects,1)), ' rectangles'));
-    for i = 1:size(rects,1)
-        % s.rects = [s.rects; line_detect(pixels, rects(i,:))];
-        s.rects(i,:) = get_sr(rects(i,:), pixels);
-    end
+    s.rects = rects;
 end
+
+% attempt to open and load the pixel contents of IMG_FILE passed (to 
+% ensure it exists)
+pixels = imread(s.img_file);
+
+for i = 1:size(s.rects,1)
+    % s.rects = [s.rects; line_detect(pixels, rects(i,:))];
+    s.rects(i,:) = get_sr(s.rects(i,:), pixels);
+end
+
+%classify all rectangles
+all_features = run_all_features(s.rects,s.img_file);
+if ~isempty(varargin)
+    s.class_id = feval(class_fn, s.class_name, all_features, ...
+                       s, varargin{:});
+else;
+    s.class_id = feval(class_fn, s.class_name, all_features, s);
+end;
+
+if (size(s.class_id,1) < size(s.class_id,2));
+    s.class_id = s.class_id';
+end;
 
 % loop to classify each reactangle
-all_features = run_all_features(s.rects,pixels);
-for i = 1:size(s.rects,1)
-    % run through all features for this rectangle
-    features = all_features(i,:);
-    if ~isempty(varargin)
-        s.class_id(i,:) = feval(class_fn, s.class_name, features, varargin{:});
-    else
-        s.class_id(i,:) = feval(class_fn, s.class_name, features);
-    end
-end
+%all_features = run_all_features(s.rects,s.img_file);
+%for i = 1:size(s.rects,1)
+%    % run through all features for this rectangle
+%    features = all_features(i,:);
+%    if ~isempty(varargin)
+%        s.class_id(i,:) = feval(class_fn, s.class_name, features, ...
+%                                s, varargin{:});
+%    else
+%        s.class_id(i,:) = feval(class_fn, s.class_name, features, s);
+%    end
+%end
 
 % dump the results out to jtag and jlog files
-res = dump_jfiles(s);
+dump_jfiles(s);
 
+res = s;
 
 % SUBFUNCITON DECLARATIONS %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,7 +1,62 @@
 To Do
 ------
 
+<DONE>Create a memm_fn function so that memm can be called from JTAG.
+
+<DONE>Change the sorting function so that instead of actually rearranging
+the data, it just lists the correct indecies.
+
+<DONE>Change the memm_train function to account for the new sorting method.
+
+<DONE>Change the memm_predict function to account for the new sorting method.
+
+<DONE>Change the memm_add_td_label_features function to account for the new
+sorting method.
+
+<DONE>Change the lr_fn to accept the jtag_file as a parameter.
+
+<DONE>Change the knn_fn to accept the jtag_file as a parameter.
+
+<DONE>Test the new lr_fn
+
+<DONE>Test the new knn_fn
+
+<DONE>Test the new memm_predict function
+
+<DONE>Test the new memm_fn
+
+<DONE>Test the new memm_train function
+
+<DONE>Change run_all_features to accept the path to the pixels file, rather than
+the pixels.
+
+Do something about the lack of a "figure" class label.  Guh, this will
+take a while.
+
+Go through all the data to deal with the "figure" solution.
+
+Add features for:
+    -Is first region on page
+    -Is last region on page
+    -Fraction of the way down the page, in terms of region order
+    -Is first page
+    -Is last page
+    -In last 15% of document pages
+    -Fraction of the way through the document, in terms of page #
+
 Normalize the features in each data set before saving (do some research to make sure this is done right).
+
+Re-extract all feature data.
+
+Retrain all lr, knn, and memm classifiers.
+Retest all lr, knn, and memm classifiers.
+
+Train all classifiers without the "snapped" features.
+Test all classifiers without the "snapped" features.
+
+
+
+
 
 <DONE> Change the way the feature extraction functions work so that they accept all the rectangles at once, rather than one at a time.
 
@@ -72,7 +127,13 @@ Implement MEMM
              <DONE>NOTE: Include a trailing "end-of-page" tag.
     2. By training a separate classifier for each previous class.
 
-
+Check over the feature extraction code for:
+    1. on_left_edge
+    2. on_top_edge
+    3. on_right_edge
+    4. on_bottom_edge
+    5. furthest_left
+    6. h_sharpness
 
 
 
