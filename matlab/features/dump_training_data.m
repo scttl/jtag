@@ -13,11 +13,14 @@ function res = dump_training_data(s, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: dump_training_data.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: dump_training_data.m,v 1.2 2004-07-16 20:28:51 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: dump_training_data.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-16 20:28:51  klaven
+% Assorted changes made to accommodate memm.
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.2  2003/09/22 17:46:48  scottl
@@ -65,6 +68,12 @@ end
 fprintf(out_fid, ']\n\n');
 
 fprintf(out_fid, 'num_pages = %d\n\n', s.num_pages);
+
+if (isfield(s,'label_feats_added') && s.label_feats_added);
+    fprintf(out_fid, 'label_feats_added = 1\n\n');
+else;
+    fprintf(out_fid, 'label_feats_added = 0\n\n');
+end;
 
 
 % loop through each page to print its data

@@ -33,11 +33,14 @@ function s = parse_training_data(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_training_data.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: parse_training_data.m,v 1.2 2004-07-16 20:28:53 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_training_data.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-16 20:28:53  klaven
+% Assorted changes made to accommodate memm.
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.1  2003/08/20 21:22:35  scottl
@@ -55,7 +58,7 @@ s.num_pages = 0;
 s.pg_names = {};
 s.feat_names = {};
 s.pg = {};
-
+s.isSorted = false;
 
 % first do some argument sanity checking on the argument passed
 error(nargchk(1,1,nargin));
@@ -88,6 +91,8 @@ while ~ feof(fid)
         end
     elseif strcmp(line{1}, 'num_pages')
         s.num_pages = str2num(line{2,1});
+    elseif strcmp(line{1}, 'label_feats_added')
+        s.label_feats_added = str2num(line{2,1});
     end
 end
 

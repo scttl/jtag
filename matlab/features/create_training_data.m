@@ -34,11 +34,14 @@ function s = create_training_data(file_list, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.2 2004-07-01 16:45:50 klaven Exp $
+% $Id: create_training_data.m,v 1.3 2004-07-16 20:28:51 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.2  2004-07-01 16:45:50  klaven
+% Revision 1.3  2004-07-16 20:28:51  klaven
+% Assorted changes made to accommodate memm.
+%
+% Revision 1.2  2004/07/01 16:45:50  klaven
 % Changed the code so that we only need to extract the features once.  All testing functions work only with the extracted features now.
 %
 % Revision 1.1  2004/06/19 00:27:26  klaven
@@ -77,6 +80,7 @@ s.num_pages = length(file_list);
 s.pg_names = file_list;
 s.feat_names = run_all_features;
 s.pg = {};
+s.isSorted = false;
 
 for i = 1:length(file_list)
 
