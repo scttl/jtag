@@ -1,0 +1,196 @@
+                JTAG REQUIREMENTS SPECIFICATION DOCUMENT
+               ******************************************
+
+
+DOCUMENT HISTORY:
+-- $Log: specification.txt,v $
+-- Revision 1.1  2003-06-11 17:52:21  scottl
+-- Initial revision
+--
+
+
+1. INTRODUCTION
+---------------
+
+1.1 Purpose: 
+    This document is intended to capture all specifications and
+    functionality required of a software application used to identify and
+    tag various components of scanned journal articles.
+
+1.2 Overview:
+    The jtag application software will be designed with the goal of allowing a
+    user to load and display scanned image representations of journal articles
+    so that different portions can be selected and classified by the user.  
+    These portions will include (but are not limited to) body text, equations, 
+    images, headers, tables, titles, and page numbers etc.  By keeping track 
+    of these classifications, we should then be able to build up a corpus of 
+    data that can be used to train a computer to automatically classify 
+    new journal articles into various components.
+
+    The machine learning algorithms used to automatically classify the 
+    components of a journal image page will be rolled into a separate 
+    application which jtag will interact with.  The jtag application will
+    send the journal currently being displayed to this application for 
+    automatic classification, then interpret the results from that application
+    to display to the user the classifications it predicted.  The user can then 
+    look through the classified journal and make any necessary corrections 
+    manually.
+
+
+2. MAJOR FUNCTIONALITY
+----------------------
+
+2.1 Display image representations of scanned journal articles
+    * should handle various image formats (tiff, pdf at a minimum)
+    * must be able to flip between pages in multiple page docs
+    *? how to handle odd resolutions or large images -- normalize selections? 
+    *? possibility of batch processing i.e. load all docs from a single dir
+
+2.2 Select and "Crop" any portion of the displayed journal with the mouse
+    *? work with quadrilaterals only
+    * 2 different modes:
+      - typical "crop" to make a complete bounding box
+      - simple horizontal selection.  Bound by page width to create bounding
+        box
+    * ability to redo or refine selection
+    * store x,y co-ords of selection.  Since always square, need 4 #'s
+      x_left, x_right, y_min, y_max.  Use UNIX conv. 0,0 = top left corner
+    * store time to make each selection + time to classify selection (move it
+      to a bucket)
+    * display cropped selection in default colour (black?) until it has
+      been classified (moved to a bucket)
+
+2.3 Classify selected portion
+    * "buckets" around document setup so that selections can be dragged over
+       it
+    * bucket border width should change when a selection can be placed over
+      it (selection itself could be transparent / blank square)
+    * must be able to configure (add/remove) buckets (through config file on
+      startup only)
+    * use of colour coding for each bucket/selection
+    * ability to reclassify selections.  Use a stack and display most recent
+      selection in each bucket
+    * store number of times selection was reclassified (user changed bucket)
+    * Must save selections between iterations of opening and closing file
+      (See section 5)
+
+2.4 Display selections made
+    * Should be able to display all selections, poss. use of colour coding to
+      show what each was classified as.
+
+2.5 Read in Configuration Data from a file on startup
+    * on program startup look in current directory, then $HOME for a file
+      named .jtag
+    * if not found, load some default set of config options
+    * Data in config file will include:
+      - list of valid classification types
+      -? configure default selection mode
+      - default output directory / filename suffix
+      - turn on/off look-ahead feature (see 2.6)
+
+2.6 Store current classifications efficiently in memory, dump to file on
+    save/exit
+    * Will have to store order of classification to allow reclassifying.
+    * Multiple stacks (one per bucket) seems logical.
+    *? Order written out to disk probably unimportant?
+
+2.7 Use selections made in previous pages, to look ahead and predict tags
+    for future pages.
+    * feature not required in initial version, but will be implemented in time
+    * will make use of calls to helper application
+
+
+3. CONSTRAINTS
+--------------
+
+3.1 Platform / Software / Libraries
+    * Must run on CSLab machines (Red Hat Linux)
+    * Write in Tcl/Tk
+      - Will require img widget (for displaying tiff files)
+      - img in turn requires libtiff.so
+    *? Others??
+
+3.2 Must save selections between invocations of program on given file
+    * Make use of output file, written to disk on program termination.  See 
+      section 5
+    * Look for such a file upon program startup.  If found, load selections
+      on to image to be displayed
+
+
+4. CONFIGURATION FILE FORMAT
+----------------------------
+
+4.1 File Name
+    * .jtag
+
+4.2 Location
+    * Will be searched for in current directory, and if not found, in $HOME
+    * If not found at either place, a default configuration will be loaded
+
+4.3 Contents
+    * All leading blank characters (space/tab/newline) will be discarded
+      when processing a line
+    * Any line with a '#' character will be treated as a comment, and have
+      all characters after it on the same line discarded
+
+    4.3.1 Header Info
+    *? Anything necessary??
+
+    4.3.2 Body Info
+    * First line will contain 'def_mode=' followed by a string representing
+      the default mode.  Valid values are "crop" or "simple"
+    * Next lines will contain a 'classifiers=[' followed by a list of 
+      classification types, each is comma separated and may span multiple 
+      lines.  End when closing ']' is reached.  Each classification type 
+      is a string representing what a portion of the journal may be.  e.x.
+           classifiers=[text,
+                          equation,
+                   title,
+                       graph   ]
+    *? Other configuration attributes??
+
+
+5. OUTPUT FILE FORMAT
+---------------------
+
+5.1 Name
+    * <in_file_name_prefix>.tag
+
+5.2 Location
+    * Same directory as input file
+
+5.3 Contents
+    * All leading blank characters (space/tab/newline) will be discarded
+      when processing a line
+    * Any line with a '#' character will be treated as a comment, and have
+      all characters after it on the same line discarded
+
+    5.3.1 Header Info
+    * First line contains 'img=' followed by the associated image file name
+    * Second line contains 'type=' followed by the image file type (tiff/pdf)
+    * Third line contains 'resolution=' followed by the image resolution (in 
+      pixels e.x. 640x480)
+    *? Fourth line contains 'cksum=' followed by a checksum of the associated 
+      image file
+
+    5.3.2 Body Info (Repeated 0 or more times -- each rep. a single selection)
+    * First line contains a separator of '---'
+    * Second line contains 'class=' followed by the classification type e.x. 
+      text or title
+    * Third line should contain 'pos=' followed by a series of 4 comma
+      separated numbers representing selection co-ords (normalized by image
+      resolution)
+    * Fourth line should contain 'mode=' followed by a string representing the
+      mode used ("crop" or "simple")
+    * Fifth line contains 'sel_time=' followed by a decimal number
+      representing the time in seconds to make the final bounding box selection 
+      This includes edit and refinement time.
+    * Sixth line should contain 'class_attempts=' followed by a positive 
+      integer representing the total number of classification attempts
+      made (i.e. if placed in a bucket, then later changed to another).  Must
+      be >= 1
+    * Seventh line should contain class_time=' followed by the total time taken 
+      to classify the selection (i.e. once bounding box created, the time 
+      required to drag the selection over a bucket).  Must add time, each time 
+      a selection is reclassified -- moved from one bucket to another
+    *? Anything else??
