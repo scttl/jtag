@@ -26,7 +26,7 @@ impath = jt.img_file;
 d_idx = regexp(impath, '\.');
 impath = strcat(fpath(1:dot_idx(length(dot_idx))), ...
                 impath(d_idx(length(d_idx))+1:end));
-fprintf('Loading image from %s\n',impath);
+%fprintf('Loading image from %s\n',impath);
 jt.img_file = impath;
 
 if ((nargin < 2) || (plot_it));
