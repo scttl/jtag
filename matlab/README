@@ -1,7 +1,7 @@
 ##################################################################################
 ## FILE: README
 ##
-## CVS: $Id: README,v 1.1 2003-08-26 20:49:18 scottl Exp $
+## CVS: $Id: README,v 1.2 2003-09-19 15:26:36 scottl Exp $
 ##
 ## DESCRIPTION: Text file describing this directory structure, its contents,
 ##              useage, and other notes.
@@ -326,10 +326,10 @@ a) Startup matlab with this (the matlab) dir in your path (or cd to that dir
 b) Load the training data to be used into memory (See section 3.1 and 3.2) on
    how to do this
 
-c) Call classify_pg passing in the training data, a string specifying the path
-   and name of the image file to classify, a string giving the name of the
-   matlab function to use as a learner (ex: 'knn_fn') and (optionally) any
-   addtional arguments the learner requires
+c) Call classify_pg passing in a string specifying the path and name of the 
+   image file to classify, a string giving the name of the matlab function to 
+   use as a learner (ex: 'knn_fn') and (optionally) any addtional arguments 
+   the learner requires.
 
 d) The results are automatically dumped to the jtag and jlog files created by
    replacing the input image file extension with jtag and jlog respectively.
