@@ -6,12 +6,10 @@ function loglikelihood = seg_eval(p,seg_pred,seg_cor);
 %     seg_pred is the predicted segmentation
 %     seg_cor is the correct (actual) segmentation
 %
+% Any predicted/actual pair in which each of the four dimensions
+% is within 10 pixels of its counterpart is considered a match.
 %
-% First attempt: Each actual segment that does not have a
-% predicted segment matching all 4 parameters within 10
-% pixels is considered an error.
-%
-% Loss = num_errors * num_pred / (num_cor^2)
+% Loss = num_wrong;
 %
 
 num_cor = 0;
@@ -36,7 +34,9 @@ for i = 1:size(seg_cor,1);
     end;
 end;
 
-loglikelihood = - (sum(abs(c_matched-1))+sum(abs(p_matched-1)) );
+loglikelihood = - num_wrong;
+
+%loglikelihood = - (sum(abs(c_matched-1))+sum(abs(p_matched-1)) );
 
 %loglikelihood = - (num_wrong) * (size(seg_pred,1) + 0.5);
 

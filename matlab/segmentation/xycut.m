@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.4 2004-08-16 22:34:34 klaven Exp $
+% $Id: xycut.m,v 1.5 2004-09-15 14:58:30 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.4  2004-08-16 22:34:34  klaven
+% Revision 1.5  2004-09-15 14:58:30  klaven
+% *** empty log message ***
+%
+% Revision 1.4  2004/08/16 22:34:34  klaven
 % New best_cuts algorithm core complete, and an implementation for xycuts.  The best_cuts implementation of xycuts produces identical results to xycuts.m.
 %
 % Revision 1.3  2004/07/27 22:04:34  klaven
@@ -66,13 +69,13 @@ function m = xycut(img_file, varargin)
 
 % default horizontal threshold (if not passed above)
 %ht = 40;  % prefered ht for single-column layout
-ht = 80;  % optimized ht for jmlr
+ht = 40;  % optimized ht for jmlr
 % ht = 20;  %prefered ht for double-column layout
-%ht = 65; %optimized ht for nips
+%ht = 45; %optimized ht for nips
 
 %vt = 18;  % default vertical threshold (if not passed above)
-vt = 24; % optimized vt for jmlr
-%ht = 22; % optimized vt for nips
+vt = 16; % optimized vt for jmlr
+%ht = 14; % optimized vt for nips
 
 
 %wst = 0.009;  % minimum percent ink in whitespace to count as valley
@@ -291,10 +294,10 @@ mid = nan;
 
 % strip the leading and trailing 0 runs from sums (since we want a full valley
 % for our run count).
-while (means(s) <= wst) & (s < e)
+while (s < e) && (means(s) <= wst)
     s = s + 1;
 end
-while (means(e) <= wst) & (s < e)
+while (s < e) && (means(e) <= wst)
     e = e - 1;
 end
 

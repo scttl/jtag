@@ -1,7 +1,13 @@
 function scores = xyc_eval(pix, seg, candidates);
 
-c_h = 24;
-c_v = 80;
+%Settings optimized for JMLR
+c_h = 18; 
+c_v = 55;
+
+%Settings optimized for NIPS
+%c_h = 16;
+%c_v = 45;
+
 
 if isempty(candidates);
     scores = [];

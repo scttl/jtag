@@ -29,15 +29,15 @@ top = seg(2);
 right = seg(3);
 bot = seg(4);
 
-fprintf('Snapping [%i %i %i %i], with wst=%i\n',left,top,right,bot,wst);
+%fprintf('Snapping [%i %i %i %i], with wst=%i\n',left,top,right,bot,wst);
 
 subpix = pix(top:bot, left:right);
 
 prj_on_x = mean(1 - subpix);
 ink_x = find(prj_on_x > wst);
 if (length(ink_x) > 0);
-    fprintf('x-ink starts %i and ends %i from the left: %i\n', ink_x(1), ...
-            ink_x(end), left);
+    %fprintf('x-ink starts %i and ends %i from the left: %i\n', ink_x(1), ...
+    %        ink_x(end), left);
     right = ink_x(end) + left - 1;
     left = ink_x(1) + left - 1;
     %fprintf('      so left=%i, right=%i\n',left,right);
@@ -46,13 +46,13 @@ end;
 prj_on_y = mean(1 - subpix');
 ink_y = find(prj_on_y > wst);
 if (length(ink_y) > 0);
-    fprintf('y-ink starts %i and ends %i from the top: %i\n', ink_y(1), ...
-            ink_y(end), top);
+    %fprintf('y-ink starts %i and ends %i from the top: %i\n', ink_y(1), ...
+    %        ink_y(end), top);
     bot = ink_y(end) + top - 1;
     top = ink_y(1) + top - 1;
     %fprintf('      so top=%i, bot=%i\n',top, bot);
 end;
 
-fprintf('To       [%i %i %i %i]\n',left,top,right,bot);
+%fprintf('To       [%i %i %i %i]\n',left,top,right,bot);
 
 seg = [left top right bot];
