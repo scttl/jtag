@@ -1,9 +1,9 @@
-function s = sr_ink_feature(rect, pixels, varargin)
-% SR_INK_FEATURE   Returns the subrectangle bounding box within the rectangle
-%                  passed that meets an ink percentage threshold.
+function s = get_sr(rect, pixels, varargin)
+% GET_SR   Returns the subrectangle bounding box within the rectangle passed 
+%          that meets an ink percentage threshold.
 %
-%  SR_INK_FEATURE(RECT, PAGE, {THRESHOLD})  This feature attempts to shrink the 
-%  sides of 4 element vector RECT passed, working in a clockwise manner,
+%  GET_SR(RECT, PAGE, {THRESHOLD})  This function attempts to shrink the sides 
+%  of 4 element vector RECT passed, working in a clockwise manner,
 %  until the number of non-background PAGE pixels counted for the side currently
 %  under consideration is larger than THRESHOLD percentage passed.  If 
 %  THRESHOLD is not specified it defaults to 2 percent of the total pixels of 
@@ -13,11 +13,14 @@ function s = sr_ink_feature(rect, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: sr_ink_feature.m,v 1.5 2003-08-13 19:31:42 scottl Exp $
+% $Id: get_sr.m,v 1.6 2003-08-18 15:23:08 scottl Exp $
 % 
 % REVISION HISTORY:
-% $Log: sr_ink_feature.m,v $
-% Revision 1.5  2003-08-13 19:31:42  scottl
+% $Log: get_sr.m,v $
+% Revision 1.6  2003-08-18 15:23:08  scottl
+% Renamed sr_ink_feature.m to get_sr.m
+%
+% Revision 1.5  2003/08/13 19:31:42  scottl
 % Updated to return original subrectangle instead of empty one if no
 % sufficient amount of ink was found.
 %
