@@ -3,7 +3,7 @@
 ##
 ## FILE: pdf_to_tiff.sh
 ##
-## CVS: $Id: pdf_to_tiff.sh,v 1.4 2003-09-08 17:23:44 scottl Exp $
+## CVS: $Id: pdf_to_tiff.sh,v 1.5 2003-09-15 17:28:33 scottl Exp $
 ##
 ## DESCRIPTION: script that takes as input a directory containing pdf files,
 ##              and converts each of them into multiple tiff files (one per
@@ -21,6 +21,7 @@
 
 ROOT=$1                     # where to find the pdf files
 OUTDIR=${ROOT}/READY_TO_TAG # default output directory
+PDF_EXTN=pdf                # suffix of files to look for
 TIFF_EXTN=tif               # suffix to place on the tiff file created
 GS_CMD=gs                   # ghostscript command to use for the conversion
 TIFF_DEVICE=tiffg4          # device to use for ghostscript
@@ -73,8 +74,8 @@ if [ $? != 0 ]; then
 fi
 
 # go through each pdf in $ROOT one by one, processing it to a tiff
-for curr in `ls ${ROOT}/*.pdf`; do
-    outfile=${OUTDIR}/`basename $curr pdf`$TIFF_EXTN
+for curr in `ls ${ROOT}/*.${PDF_EXTN}`; do
+    outfile=${OUTDIR}/`basename $curr $PDF_EXTN`$TIFF_EXTN
 
     # perform the conversion to tiff
     $GS_CMD -sDEVICE=${TIFF_DEVICE} -dBATCH -q -dNOPAUSE \
@@ -82,7 +83,7 @@ for curr in `ls ${ROOT}/*.pdf`; do
 
     # split into multiple files (one page per file)
     if [ $USE_SPLIT == true ]; then
-        $SPLIT_CMD $outfile ${OUTDIR}/`basename $curr pdf`
+        $SPLIT_CMD $outfile ${OUTDIR}/`basename $curr $PDF_EXTN`
     fi
 
     # remove the original multipage tiff
