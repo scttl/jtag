@@ -1,8 +1,8 @@
-function feature_vals = run_all_features(rects, pixels)
+function feature_vals = run_all_features(rects, pix_file)
 % RUN_ALL_FEATURES    Iterates through each feature available on RECT,  building
 %                     up a cell array containing all the results.
 %
-%   RES = RUN_ALL_FEATURES(RECTS, PIXELS)  This function runs through each
+%   RES = RUN_ALL_FEATURES(RECTS, PIX_FILE)  This function runs through each
 %   feature listed, passing the appropriate arguments, collecting the result
 %   and adding it to the vector RES which is returned once all features have
 %   been completed.
@@ -18,11 +18,14 @@ function feature_vals = run_all_features(rects, pixels)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.1 2004-06-19 00:27:27 klaven Exp $
+% $Id: run_all_features.m,v 1.2 2004-07-27 21:57:58 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.1  2004-06-19 00:27:27  klaven
+% Revision 1.2  2004-07-27 21:57:58  klaven
+% run_all_features now takes the path to the image file, rather than the pixels.  This will let us parse the file name to determine which page it is, and how many pages there are in the journal.
+%
+% Revision 1.1  2004/06/19 00:27:27  klaven
 % Re-organizing files.  Third step: re-add the files.
 %
 % Revision 1.7  2004/06/14 16:25:19  klaven
@@ -65,6 +68,9 @@ if nargin == 0
 elseif nargin == 1
     error('must pass exactly 2 args or none at all');
 else
+
+    pixels = imread(char(pix_file));
+
     [r, c] = size(pixels);
     if ndims(rects) > 2 | size(rects,2) ~= 4;
         error('Each RECT must have exactly 4 elements.');

@@ -34,11 +34,14 @@ function s = create_training_data(file_list, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.4 2004-07-19 17:26:06 klaven Exp $
+% $Id: create_training_data.m,v 1.5 2004-07-27 21:57:57 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.4  2004-07-19 17:26:06  klaven
+% Revision 1.5  2004-07-27 21:57:57  klaven
+% run_all_features now takes the path to the image file, rather than the pixels.  This will let us parse the file name to determine which page it is, and how many pages there are in the journal.
+%
+% Revision 1.4  2004/07/19 17:26:06  klaven
 % *** empty log message ***
 %
 % Revision 1.3  2004/07/16 20:28:51  klaven
@@ -97,10 +100,10 @@ for i = 1:length(file_list)
 
   feats = [];
   cids = [];
-  pixels = imread(pg_s.img_file);
+  %pixels = imread(pg_s.img_file);
 
-  %all_features = run_all_features(pg_s.rects,pixels);
-  feats = run_all_features(pg_s.rects,pixels);
+  %all_features = run_all_features(pg_s.rects,pg_s.img_file);
+  feats = run_all_features(pg_s.rects,pg_s.img_file);
   for j = 1:size(pg_s.rects,1)
 
       % run through each feature adding it to features
