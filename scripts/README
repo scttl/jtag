@@ -1,7 +1,7 @@
 ##################################################################################
 ## FILE: README
 ##
-## CVS: $Id: README,v 1.1 2003-09-15 17:38:00 scottl Exp $
+## CVS: $Id: README,v 1.2 2003-09-17 18:14:47 scottl Exp $
 ##
 ## DESCRIPTION: Text file describing this directory structure, its contents,
 ##              useage, and other notes.
@@ -25,6 +25,12 @@ image files, installing the JTAG application and updating jtag and jlog files.
 ----------------
 
 README            - This file
+build_td_script.pl- This script dynamically generates a MATLAB script that can
+                    be used to generate ASCII training data dumps.  You
+                    specify the output location and name of the MATLAB script
+                    and the director(y|ies) to search for tagged image files
+                    as arguments.  The tagged image files found are used as
+                    the basis of the training data.
 extract_stable.pl - This script iterates over each file in a specified
                     directory looking for stable html links to the JSTOR
                     journal archive site.  Any links found are converted and
