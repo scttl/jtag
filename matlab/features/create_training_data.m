@@ -34,11 +34,14 @@ function s = create_training_data(file_list, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.3 2004-07-16 20:28:51 klaven Exp $
+% $Id: create_training_data.m,v 1.4 2004-07-19 17:26:06 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.3  2004-07-16 20:28:51  klaven
+% Revision 1.4  2004-07-19 17:26:06  klaven
+% *** empty log message ***
+%
+% Revision 1.3  2004/07/16 20:28:51  klaven
 % Assorted changes made to accommodate memm.
 %
 % Revision 1.2  2004/07/01 16:45:50  klaven
@@ -129,6 +132,8 @@ for i = 1:length(file_list)
   s.pg{i}.features = feats;
 
 end
+
+s = update_td_class_names(s);
 
 if (nargin == 2);
     dump_training_data(s,outfile);

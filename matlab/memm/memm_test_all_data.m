@@ -25,17 +25,17 @@ function res = test_set(f_trn,f_tst,f_ww,fname);
     ww = parse_lr_weights(f_ww);
 
     fprintf('     Calculating MEMM training error.\n');
-    [cor,tot,res,data] = memm_test(trn,ww);
+    [cor,tot,r,data] = memm_test(trn,ww);
     res.trn.cor = cor;
     res.trn.tot = tot;
-    res.trn.res = res;
+    res.trn.res = r;
     res.trn.data = data;
 
     fprintf('     Calculating MEMM test error.\n');
-    [cor,tot,res,data] = memm_test(tst,ww);
+    [cor,tot,r,data] = memm_test(tst,ww);
     res.tst.cor = cor;
     res.tst.tot = tot;
-    res.tst.res = res;
+    res.tst.res = r;
     res.tst.data = data;
 
 

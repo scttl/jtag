@@ -35,5 +35,6 @@ for i=1:td_in.num_pages;
 end;
 
 td_out.class_names = class_names;
-td_out.feat_names = [td_out.feat_names, strcat('follows_', class_names)];
+td_out.feat_names = [td_out.feat_names, {'follows_unknown_class'}, ...
+                     strcat('follows_', class_names)];
 
