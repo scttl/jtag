@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.11 2003-07-21 21:35:18 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.12 2003-07-23 20:12:07 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.11  2003-07-21 21:35:18  scottl
+## Revision 1.12  2003-07-23 20:12:07  scottl
+## rounded co-ords to remove sligt decimal numbers that sometimes occured.
+##
+## Revision 1.11  2003/07/21 21:35:18  scottl
 ## Moved snapping to inital rectangle creation only, also moved snap threshold to
 ## be read from the config file instead of hard-coded within this file.
 ##
@@ -346,8 +349,9 @@ proc ::Jtag::Classify::add {c class x1 y1 x2 y2 mode {id ""} {sl_time ""} \
     }
 
     # update the data array
-    set data($class,$data($class,num_sels)) [list $id $x1 $y1 $x2 $y2 \
-              $mode $sl_time $cl_time $attmpts]
+    set data($class,$data($class,num_sels)) [list $id [expr round($x1)] \
+                  [expr round($y1)] [expr round($x2)] [expr round($y2)] \
+                  $mode $sl_time $cl_time $attmpts]
     incr data($class,num_sels)
 
 }
