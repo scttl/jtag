@@ -2,8 +2,8 @@ function s = parse_jtag(file)
 % PARSE_JTAG    Reads the contents of the jtag file passed into a structure
 %               array.
 %
-%   Attempts to validate and open FILE passed, reading its header and selection
-%   information into fields of structure S as follows:
+%   S = PARSE_JTAG(FILE)  Attempts to validate and open FILE passed, reading its 
+%   header and selection information into fields of structure S as follows:
 %
 %     s.jtag_file  -> the full path and name to the .jtag file used to create s
 %     s.img_file   -> the full path and name to the associated image file
@@ -15,6 +15,11 @@ function s = parse_jtag(file)
 %                     the class associated with that row number (note that
 %                     these entries may be padded with trailing blanks to keep
 %                     the matrix rectangular).
+%     s.mode       -> n x 1 matrix listing 'simple' if the rectangle was
+%                     selected in simple mode or 'crop' if selected in crop mode
+%     s.snapped    -> n x 1 matrix listing a 1 if the rectangle was created by
+%                     snapping its bounding box to ink, or a 0 if it was manually
+%                     sized by the user
 %
 %   If there is a problem at any point during file parsing or structure
 %   creation, an appropriate error is returned to the caller.
@@ -22,11 +27,14 @@ function s = parse_jtag(file)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jtag.m,v 1.2 2003-07-24 19:12:49 scottl Exp $
+% $Id: parse_jtag.m,v 1.3 2003-07-29 21:01:06 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jtag.m,v $
-% Revision 1.2  2003-07-24 19:12:49  scottl
+% Revision 1.3  2003-07-29 21:01:06  scottl
+% Added snapped and mode fields to structure created.
+%
+% Revision 1.2  2003/07/24 19:12:49  scottl
 % Changed structure to be easier to manipulate.
 %
 % Revision 1.1  2003/07/23 16:23:01  scottl
@@ -73,15 +81,18 @@ while ~ feof(fid)
 end
 
 % now loop to parse and add each of the selections, should be in multiples
-% of 3 (4 including the separator)
+% of 4 (5 including the separator)
 s.rects      = [];
 s.class_id   = [];
 s.class_name = [];
+s.mode       = [];
+s.snapped    = [];
 while ~ feof(fid)
 
     class_line = parse_line(fgetl(fid));
     pos_line = parse_line(fgetl(fid));
     mode_line = parse_line(fgetl(fid));
+    snapped_line = parse_line(fgetl(fid));
 
     class_name = deblank(class_line(2,:));
     data = str2num([pos_line(2:5,:)]);
@@ -104,6 +115,8 @@ while ~ feof(fid)
 
     % add this selection's data to the arrays
     s.class_id(size(s.rects,1) + 1, :) = id;
+    s.mode = strvcat(s.mode, ddeblank(mode_line(2,:)));
+    s.snapped(size(s.rects,1) + 1, :) = str2num(snapped_line(2,1));
     s.rects(size(s.rects,1) + 1, :) = data;
 
     % next line must be a separator (if more lines exist)
