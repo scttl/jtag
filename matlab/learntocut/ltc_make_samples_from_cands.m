@@ -66,93 +66,186 @@ for i=1:length(candidates);
     samp.s1 = s1;
     samp.s2 = s2;
     samp.ws = ws;
+    samp.feat_names = [];
+    samp.feat_vals = [];
 
-    samp.feat_names{1} = 's0_height';
-    samp.feat_vals(1) = s0.b - s0.t + 1;
-    samp.feat_names{2} = 's1_height';
-    samp.feat_vals(2) = s1.b - s1.t + 1;
-    samp.feat_names{3} = 's2_height';
-    samp.feat_vals(3) = s2.b - s2.t + 1;
-    samp.feat_names{4} = 'ws.height';
-    samp.feat_vals(4) = ws.b - ws.t + 1;
-    samp.feat_names{5} = 's0_width';
-    samp.feat_vals(5) = s0.r - s0.l + 1;
-    samp.feat_names{6} = 's1_width';
-    samp.feat_vals(6) = s1.r - s1.l + 1;
-    samp.feat_names{7} = 's2_width';
-    samp.feat_vals(7) = s2.r - s2.l + 1;
-    samp.feat_names{8} = 'ws_width';
-    samp.feat_vals(8) = ws.r - ws.l + 1;
-    samp.feat_names{9} = 's0_area';
-    samp.feat_vals(9) = (s0.b - s0.t + 1) * (s0.r - s0.l + 1);
-    samp.feat_names{10} = 's1_area';
-    samp.feat_vals(10) = (s1.b - s1.t + 1) * (s1.r - s1.l + 1);
-    samp.feat_names{11} = 's2_area';
-    samp.feat_vals(11) = (s2.b - s2.t + 1) * (s2.r - s2.l + 1);
-    samp.feat_names{12} = 'ws_area';
-    samp.feat_vals(12) = (ws.b - ws.t + 1) * (ws.r - ws.l + 1);
+    samp.feat_names{length(samp.feat_names)+1} = 's0_height';
+    samp.feat_vals(length(samp.feat_vals)+1) = s0.b - s0.t + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 's1_height';
+    samp.feat_vals(length(samp.feat_vals)+1) = s1.b - s1.t + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 's2_height';
+    samp.feat_vals(length(samp.feat_vals)+1) = s2.b - s2.t + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 'ws.height';
+    samp.feat_vals(length(samp.feat_vals)+1) = ws.b - ws.t + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 's0_width';
+    samp.feat_vals(length(samp.feat_vals)+1) = s0.r - s0.l + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 's1_width';
+    samp.feat_vals(length(samp.feat_vals)+1) = s1.r - s1.l + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 's2_width';
+    samp.feat_vals(length(samp.feat_vals)+1) = s2.r - s2.l + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 'ws_width';
+    samp.feat_vals(length(samp.feat_vals)+1) = ws.r - ws.l + 1;
+    samp.feat_names{length(samp.feat_names)+1} = 's0_area';
+    samp.feat_vals(length(samp.feat_vals)+1) = (s0.b - s0.t + 1) * (s0.r - s0.l + 1);
+    samp.feat_names{length(samp.feat_names)+1} = 's1_area';
+    samp.feat_vals(length(samp.feat_vals)+1) = (s1.b - s1.t + 1) * (s1.r - s1.l + 1);
+    samp.feat_names{length(samp.feat_names)+1} = 's2_area';
+    samp.feat_vals(length(samp.feat_vals)+1) = (s2.b - s2.t + 1) * (s2.r - s2.l + 1);
+    samp.feat_names{length(samp.feat_names)+1} = 'ws_area';
+    samp.feat_vals(length(samp.feat_vals)+1) = (ws.b - ws.t + 1) * (ws.r - ws.l + 1);
 
-    samp.feat_names{13} = 'cuts_full_page';
+    samp.feat_names{length(samp.feat_names)+1} = 'cuts_full_page';
     if (samp.horizontal);
         wsbox = pix(ws.t:ws.b, 1:size(pix,2));
-        if (min(max(1-wsbox')) == 0);
-            samp.feat_vals(13) = 1;
+        if (min(max(1-wsbox')) == 0); %If any row is white all the way across
+            samp.feat_vals(length(samp.feat_vals)+1) = 1;
         else;
-            samp.feat_vals(13) = 0;
+            samp.feat_vals(length(samp.feat_vals)+1) = 0;
         end;
     else;
         wsbox = pix(1:size(pix,1),ws.l:ws.r);
-        if (min(max(1-wsbox)) == 0);
-            samp.feat_vals(13) = 1;
+        if (min(max(1-wsbox)) == 0); %If any col is white all the way across
+            samp.feat_vals(length(samp.feat_vals)+1) = 1;
         else;
-            samp.feat_vals(13) = 0;
+            samp.feat_vals(length(samp.feat_vals)+1) = 0;
         end;
     end;
 
-    samp.feat_names{14} = 's0.dens';
-    samp.feat_vals(14) = mean(mean(1-pix(s0.t:s0.b,s0.l:s0.r)));
-    samp.feat_names{15} = 's1.dens';
-    samp.feat_vals(15) = mean(mean(1-pix(s1.t:s1.b,s1.l:s1.r)));
-    samp.feat_names{16} = 's2.dens';
-    samp.feat_vals(16) = mean(mean(1-pix(s2.t:s2.b,s2.l:s2.r)));
+    samp.feat_names{length(samp.feat_names)+1} = 's0.dens';
+    samp.feat_vals(length(samp.feat_vals)+1) = mean(mean(1-pix(s0.t:s0.b,s0.l:s0.r)));
+    samp.feat_names{length(samp.feat_names)+1} = 's1.dens';
+    samp.feat_vals(length(samp.feat_vals)+1) = mean(mean(1-pix(s1.t:s1.b,s1.l:s1.r)));
+    samp.feat_names{length(samp.feat_names)+1} = 's2.dens';
+    samp.feat_vals(length(samp.feat_vals)+1) = mean(mean(1-pix(s2.t:s2.b,s2.l:s2.r)));
     
-    samp.feat_names{17} = 'h_reduction';
-    samp.feat_vals(17) = (s0.r-s0.l+1) - min([(s1.r-s1.l+1),(s2.r-s2.l+1)]);
+    samp.feat_names{length(samp.feat_names)+1} = 'h_reduction';
+    samp.feat_vals(length(samp.feat_vals)+1) = (s0.r-s0.l+1) - min([(s1.r-s1.l+1),(s2.r-s2.l+1)]);
 
-    samp.feat_names{18} = 'v_reduction';
-    samp.feat_vals(18) = (s0.b-s0.t+1) - min([(s1.b-s1.t+1),(s2.b-s2.t+1)]);
+    samp.feat_names{length(samp.feat_names)+1} = 'v_reduction';
+    samp.feat_vals(length(samp.feat_vals)+1) = (s0.b-s0.t+1) - min([(s1.b-s1.t+1),(s2.b-s2.t+1)]);
 
-    samp.feat_names{19} = 's0.l';
-    samp.feat_vals(19) = s0.l;
-    samp.feat_names{20} = 's0.r';
-    samp.feat_vals(20) = s0.r;
-    samp.feat_names{21} = 's0.t';
-    samp.feat_vals(21) = s0.t;
-    samp.feat_names{22} = 's0.b';
-    samp.feat_vals(22) = s0.b;
+    samp.feat_names{length(samp.feat_names)+1} = 's0.l';
+    samp.feat_vals(length(samp.feat_vals)+1) = s0.l;
+    samp.feat_names{length(samp.feat_names)+1} = 's0.r';
+    samp.feat_vals(length(samp.feat_vals)+1) = s0.r;
+    samp.feat_names{length(samp.feat_names)+1} = 's0.t';
+    samp.feat_vals(length(samp.feat_vals)+1) = s0.t;
+    samp.feat_names{length(samp.feat_names)+1} = 's0.b';
+    samp.feat_vals(length(samp.feat_vals)+1) = s0.b;
 
-    samp.feat_names{23} = 's1.l';
-    samp.feat_vals(23) = s1.l;
-    samp.feat_names{24} = 's1.r';
-    samp.feat_vals(24) = s1.r;
-    samp.feat_names{25} = 's1.t';
-    samp.feat_vals(25) = s1.t;
-    samp.feat_names{26} = 's1.b';
-    samp.feat_vals(26) = s1.b;
+    samp.feat_names{length(samp.feat_names)+1} = 's1.l';
+    samp.feat_vals(length(samp.feat_vals)+1) = s1.l;
+    samp.feat_names{length(samp.feat_names)+1} = 's1.r';
+    samp.feat_vals(length(samp.feat_vals)+1) = s1.r;
+    samp.feat_names{length(samp.feat_names)+1} = 's1.t';
+    samp.feat_vals(length(samp.feat_vals)+1) = s1.t;
+    samp.feat_names{length(samp.feat_names)+1} = 's1.b';
+    samp.feat_vals(length(samp.feat_vals)+1) = s1.b;
 
-    samp.feat_names{27} = 's2.l';
-    samp.feat_vals(27) = s2.l;
-    samp.feat_names{28} = 's2.r';
-    samp.feat_vals(28) = s2.r;
-    samp.feat_names{29} = 's2.t';
-    samp.feat_vals(29) = s2.t;
-    samp.feat_names{30} = 's2.b';
-    samp.feat_vals(30) = s2.b;
+    samp.feat_names{length(samp.feat_names)+1} = 's2.l';
+    samp.feat_vals(length(samp.feat_vals)+1) = s2.l;
+    samp.feat_names{length(samp.feat_names)+1} = 's2.r';
+    samp.feat_vals(length(samp.feat_vals)+1) = s2.r;
+    samp.feat_names{length(samp.feat_names)+1} = 's2.t';
+    samp.feat_vals(length(samp.feat_vals)+1) = s2.t;
+    samp.feat_names{length(samp.feat_names)+1} = 's2.b';
+    samp.feat_vals(length(samp.feat_vals)+1) = s2.b;
 
     for j=1:size(pnum_feats,2);
-        samp.feat_names{30 + j} = pnum_feats(j).name;
-        samp.feat_vals(30 + j) = pnum_feats(j).val;
+        samp.feat_names{length(samp.feat_names)+1} = pnum_feats(j).name;
+        samp.feat_vals(length(samp.feat_vals)+1) = pnum_feats(j).val;
     end;
+
+    samp.feat_names{length(samp.feat_names)+1} = 'avg_ws';
+    ws_sum = 0;
+
+    
+    if (samp.horizontal);
+        subpix = pix(max(ws.t-80,1):min(ws.b+80,size(pix,1)), ws.l:ws.r);
+        y = cand.y-max(ws.t-80,1)+1;
+
+        top_pix = subpix(1:y-1,1:end);
+        di_up = [ones(120,1);1;zeros(120,1)];
+        top_pix = 1-imdilate(1-top_pix,di_up);
+        ws_sum = ws_sum + length(find(top_pix));
+        
+        bot_pix = subpix(y+1:end,1:end);
+        di_down = [zeros(120,1);1;ones(120,1)];
+        bot_pix = 1-imdilate(1-bot_pix,di_down);
+        ws_sum = ws_sum + length(find(bot_pix));
+
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum / size(subpix,2);
+    else; %Must be vertical
+        subpix = pix(ws.t:ws.b,max(ws.l-80,1):min(ws.r+80,size(pix,2)));
+        x = cand.x - max(ws.l-80,1);
+
+        l_pix = subpix(1:end,1:x-1);
+        di_left = [ones(1,120),1,zeros(1,120)];
+        l_pix = 1-imdilate(1-l_pix,di_left);
+        ws_sum = ws_sum + length(find(l_pix));
+        
+        r_pix = subpix(1:end,x+1:end);
+        di_right = [zeros(1,120),1,ones(1,120)];
+        r_pix = 1-imdilate(1-r_pix,di_right);
+        ws_sum = ws_sum + length(find(r_pix));
+
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum / size(subpix,1);
+    end;
+        
+
+
+
+%    
+%    if (samp.horizontal);
+%        subpix = pix(max(ws.t-80,1):min(ws.b+80,size(pix,1)), ws.l:ws.r);
+%        y = cand.y-max(ws.t-80,1)+1;
+%        top_pix = subpix(1:y-1,1:end);
+%        bot_pix = subpix(y+1:end,1:end);
+%        for i=1:size(subpix,2);
+%            row = top_pix(1:end,i);
+%            row_ink = find(1-row);
+%            if (length(row_ink) > 0);
+%                row_ws = size(top_pix,1) - row_ink(end);
+%            else;
+%                row_ws = 0;
+%            end;
+%            ws_sum = ws_sum + (row_ws);
+%            row = bot_pix(1:end,i);
+%            row_ink = find(1-bot_pix);
+%            if (length(row_ink) > 0);
+%                row_ws = row_ink(1);
+%            else;
+%                row_ws = 0;
+%            end;
+%            ws_sum = ws_sum + (row_ws);
+%        end;
+%        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum / size(subpix,2);
+%    else; %Must be vertical
+%        subpix = pix(ws.t:ws.b,max(ws.l-80,1):min(ws.r+80,size(pix,2)));
+%        x = cand.x - max(ws.l-80,1);
+%        l_pix = subpix(1:end,1:x-1);
+%        r_pix = subpix(1:end,x+1:end);
+%        for i=1:size(subpix,1);
+%            col = l_pix(i,1:end);
+%            col_ink = find(1-col);
+%            if (length(col_ink) > 0);
+%                col_ws = size(l_pix,2) - col_ink(end);
+%            else;
+%                col_ws = 0;
+%            end;
+%            ws_sum = ws_sum + col_ws;
+%            col = r_pix(i,1:end);
+%            col_ink = find(1-col);
+%            if (length(col_ink) > 0);
+%                col_ws = col_ink(1);
+%            else;
+%                col_ws = 0;
+%            end;
+%            ws_sum = ws_sum + col_ws;
+%        end;
+%        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum / size(subpix,1);
+%    end;
+%        
     samps = [samps,samp];
 end;
 

@@ -46,11 +46,11 @@ if ~ iscellstr(file_list)
     error('FILE_LIST must be a cell array, each element of which is a string');
 end
 
-
+tic;
 samples = [];
 for i = 1:length(file_list)
 
-  fprintf('File %i: %s\n', i, file_list{i});
+  fprintf('File %i: %s,  t=%i\n', i, file_list{i}, floor(toc));
   % parse file_name to determine name of jtag and jlog files
   dot_idx = regexp(file_list{i}, '\.');
 

@@ -26,7 +26,7 @@ live_segs = start_seg;
 
 done_segs = [];
 
-cut_classes = {'v_part_no','v_part_yes','v_full_no','v_full_yes', ...
+cut_classes = {'v_no','v_yes','UNUSED','UNUSED', ...
                'h_part_no','h_part_yes','h_full_no','h_full_yes'};
 
 its = 0;
@@ -64,7 +64,7 @@ while (~ isempty(live_segs));
         sv = ltc_make_samples_from_cands(cv,pixels,jt);
         v_feats = reshape([sv.feat_vals], ...
                           length(sv(1).feat_vals),length(sv));
-        v_cids = lr_fn(cut_classes(1:4),v_feats','null',ww.wv) - 1;
+        v_cids = lr_fn(cut_classes(1:2),v_feats','null',ww.wv) - 1;
         for i=1:length(sv);
             sv(i).valid_cut = mod(v_cids(i),2);
             sv(i).fullpage = mod(floor(v_cids(i)/2),2);

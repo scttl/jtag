@@ -7,7 +7,7 @@ end;
 for cnum = 1:length(candidates);
     cand = candidates(cnum);
     if (cand.valid_cut);
-        cscore = (30 * cand.ws_t) + cand.ws_l;
+        cscore = 100000 - ((30 * cand.ws_t) + cand.ws_l);
         if (cand.fullpage);
             cscore = cscore + 100000;
             if (strcmp(cand.direction, 'vertical'));

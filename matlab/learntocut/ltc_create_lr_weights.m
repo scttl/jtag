@@ -27,15 +27,15 @@ if(nargin < 3) maxevals = 1e4; end
 
 %Class name scheme (add 1 to each):
 %  Binary  Decimal  Meaning
-%   000       0     v_part_no
-%   001       1     v_part_yes
-%   010       2     v_full_no
-%   011       3     v_full_yes
+%   000       0     v_no
+%   001       1     v_yes
+%   010       2     UNUSED
+%   011       3     UNUSED
 %   100       4     h_part_no
 %   101       5     h_part_yes
 %   110       6     h_full_no
 %   111       7     h_full_yes
-cut_classes = {'v_part_no','v_part_yes','v_full_no','v_full_yes', ...
+cut_classes = {'v_no','v_yes','UNUSED','UNUSED', ...
                'h_part_no','h_part_yes','h_full_no','h_full_yes'};
 
 sh = samples(find([samples.horizontal]));
@@ -43,7 +43,7 @@ sv = samples(find(1 - [samples.horizontal]));
 
 h_cids = (([sh.fullpage] * 2) + ([sh.valid_cut]));
 h_cids = 1 + h_cids;
-v_cids = (([sv.fullpage] * 2) + ([sv.valid_cut]));
+v_cids = [sv.valid_cut];
 v_cids = 1 + v_cids;
 
 fnames = samples(1).feat_names;
@@ -52,7 +52,7 @@ h_fvals = reshape([sh.feat_vals], length(sh(1).feat_vals),length(sh));
 v_fvals = reshape([sv.feat_vals], length(sv(1).feat_vals),length(sv));
                 
 % initialize output struct and fields
-wv.class_names = cut_classes(1:4);
+wv.class_names = cut_classes(1:2);
 wv.weights = [];
 wv.feature_names = fnames;
 wh.class_names = cut_classes(5:8);
@@ -80,8 +80,8 @@ v_C = length(wv.class_names);
 [v_M,v_N] = size(v_fvals);
 
 
-fprintf('h_C=%i, h_M=%i, h_N=%i\n',h_C,h_M,h_N);
-fprintf('v_C=%i, v_M=%i, v_N=%i\n',v_C,v_M,v_N);
+%fprintf('h_C=%i, h_M=%i, h_N=%i\n',h_C,h_M,h_N);
+%fprintf('v_C=%i, v_M=%i, v_N=%i\n',v_C,v_M,v_N);
 
 
 [weightmatrix,llprogress,iterations] = ...

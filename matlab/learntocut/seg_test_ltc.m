@@ -11,7 +11,7 @@ function [score,allsegs] = seg_test_ltc(data, ww);
 
 maxits = 10000;
 
-
+tic;
 clear score;
 score = 0;
 for j=1:min([maxits, data.num_pages]); 
@@ -23,8 +23,9 @@ for j=1:min([maxits, data.num_pages]);
     s = seg_eval(imread(char(jt.img_file)), ...
                  ltc_cut_file(jt,ww), jt.rects, jt.class_id);
     score = score + s; 
-    fprintf('    Page %i of %i scored %f, for running total of %f\n', ...
-            j, min([maxits, data.num_pages]), s, score); 
+    fprintf('    Page %i of %i scored %f, for total %f, time=%i\n', ...
+            j, min([maxits, data.num_pages]), s, score, ...
+            floor(toc)); 
 end;
 save LearnToCut_Optimization_in_progress.mat score allsegs;
 
