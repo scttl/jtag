@@ -36,11 +36,14 @@ function s = parse_jlog(file, st)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: parse_jlog.m,v 1.2 2003-08-01 22:01:00 scottl Exp $
+% $Id: parse_jlog.m,v 1.3 2003-08-12 22:19:31 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: parse_jlog.m,v $
-% Revision 1.2  2003-08-01 22:01:00  scottl
+% Revision 1.3  2003-08-12 22:19:31  scottl
+% Made error checking more robust.
+%
+% Revision 1.2  2003/08/01 22:01:00  scottl
 % Added resize_attempts parameter to jlog file.
 %
 % Revision 1.1  2003/07/29 21:01:22  scottl
@@ -94,11 +97,31 @@ s.resize_attempts  = nan + zeros(size(s.rects, 1), 1);
 
 while ~ feof(fid)
 
-    pos_line       = parse_line(fgetl(fid));
-    sel_line       = parse_line(fgetl(fid));
-    class_line     = parse_line(fgetl(fid));
-    cl_attmpt_line = parse_line(fgetl(fid));
-    re_attmpt_line = parse_line(fgetl(fid));
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    pos_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    sel_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    class_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    cl_attmpt_line = line;
+    line = parse_line(fgetl(fid));
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    re_attmpt_line = line;
 
     data = str2num([pos_line(2:5,:)]);
     data = data';
@@ -126,7 +149,17 @@ while ~ feof(fid)
     s.resize_attempts(i, :) = str2num(re_attmpt_line(2));
 
     % next line must be a separator (if more lines exist)
-    fgetl(fid);
+    if ~feof(fid)
+        line = parse_line(fgetl(fid));
+    else
+        break;
+    end
+    while isempty(line)
+        line = parse_line(fgetl(fid));
+    end
+    if ~ strcmp(deblank(line(1,:)), separator)
+        error('separtator not found between selections');
+    end
 
 end
 
