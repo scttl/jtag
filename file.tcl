@@ -4,11 +4,14 @@
 ##
 ## DESCRIPTION: Responsible for all things file related within the application
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/file.tcl,v 1.4 2003-07-31 19:17:09 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/file.tcl,v 1.5 2003-09-05 14:32:08 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: file.tcl,v $
-## Revision 1.4  2003-07-31 19:17:09  scottl
+## Revision 1.5  2003-09-05 14:32:08  scottl
+## Bugfix to ensure that lines with empty value after '=' are counted as valid.
+##
+## Revision 1.4  2003/07/31 19:17:09  scottl
 ## Changed comment prefix to a % symbol.
 ##
 ## Revision 1.3  2003/07/10 21:04:51  scottl
@@ -123,7 +126,7 @@ proc ::Jtag::File::parse {fileToRead} {
                     set MultiData [concat $MultiData [SplitTrim $Line]]
                 }
             }
-        } elseif {! $MultiOn && [regexp ^(.+)=(.+)$ $Line Match Name Vals]} {
+        } elseif {! $MultiOn && [regexp ^(.+)=(.*)$ $Line Match Name Vals]} {
             # normal, valid single line
             set Vals [string trim $Vals]
             lappend Data [concat [string trim $Name] [SplitTrim $Vals]]
