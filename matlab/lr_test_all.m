@@ -31,11 +31,14 @@ results = zeros(length(ww.class_names),length(ww.class_names)+1);
 tstFiles = dir(strcat(tstDir, '/*.jtag'));
 
 
+fprintf('Weights loaded.  Found %i test files\n', length(tstFiles));
 for ii = 1:size(tstFiles,1);
+  fprintf('File %i: %s...', ii, tstFiles(ii).name);
   [cor,tot,res] = lr_test_file(strcat(tstDir,'/',tstFiles(ii).name),ww);
   correct = correct + cor;
   total = total + tot;
   results = results + res;
+  fprintf(' done.  Got %i/%i, for %i/%i so far.\n',cor,tot,correct,total);
 end;
 
 

@@ -33,11 +33,14 @@ function s = create_training_data(file_list)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_training_data.m,v 1.3 2004-06-01 21:56:54 klaven Exp $
+% $Id: create_training_data.m,v 1.4 2004-06-08 00:56:49 klaven Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_training_data.m,v $
-% Revision 1.3  2004-06-01 21:56:54  klaven
+% Revision 1.4  2004-06-08 00:56:49  klaven
+% Debugged new distance and density features.  Added a script to make training simpler.  Added a script to print out output.
+%
+% Revision 1.3  2004/06/01 21:56:54  klaven
 % Modified all functions that call the feature extraction methods to call them with all the rectanges at once.
 %
 % Revision 1.2  2003/08/22 15:13:11  scottl
@@ -70,6 +73,7 @@ s.pg = {};
 
 for i = 1:length(file_list)
 
+  fprintf('File %i: %s\n', i, file_list{i});
   % parse file_name to determine name of jtag and jlog files
   dot_idx = regexp(file_list{i}, '\.');
 
@@ -81,11 +85,12 @@ for i = 1:length(file_list)
   cids = [];
   pixels = imread(pg_s.img_file);
 
-  all_features = run_all_features(pg_s.rects,pixels);
+  %all_features = run_all_features(pg_s.rects,pixels);
+  feats = run_all_features(pg_s.rects,pixels);
   for j = 1:size(pg_s.rects,1)
 
       % run through each feature adding it to features
-      feats = all_features(j,:);
+      %feats = [feats;all_features(j,:)];
 
       % convert the local classid for this rectangle to a global one, add it
       % to cid

@@ -15,12 +15,12 @@ function res = density_features(rects, pixels, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: density_features.m,v 1.5 2004-06-01 21:56:54 klaven Exp $
+% $Id: density_features.m,v 1.6 2004-06-08 00:56:50 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: density_features.m,v $
-% Revision 1.5  2004-06-01 21:56:54  klaven
-% Modified all functions that call the feature extraction methods to call them with all the rectanges at once.
+% Revision 1.6  2004-06-08 00:56:50  klaven
+% Debugged new distance and density features.  Added a script to make training simpler.  Added a script to print out output.
 %
 % Revision 1.4  2004/06/01 21:38:21  klaven
 % Updated the feature extraction methods to take all the rectangles at once, rather than work one at a time.  This allows for the extraction of features that use relations between rectangles.
@@ -63,7 +63,6 @@ else
        max(rects(:,3)) > c | max(rects(:,4)) > r;
         error('RECT passed exceeds PAGE boundaries');
     end
-
     if nargin == 3
         if varargin{1} < 0 | varargin{1} > 1
             error('THRESHOLD passed must be a percentage (between 0 and 1)');
@@ -72,7 +71,7 @@ else
     end
 end
 
-res = {};
+%res = {};
 
 
 if get_names
@@ -84,28 +83,28 @@ rect = rects(rr,:);
 
 % feature 1 counts the percentage of non-background pixels over the total
 % number of pixels inside the rectangle passed.
-res{rr,1}.name  = 'rect_dens';
+res(rr,1).name  = 'rect_dens';
 
 % feature 2 is similar to 1, but calculates the percentage of non-backgorund
 % pixels over the total number of pixels inside the "snapped" subrectangle of
 % the rectangle passed.
-res{rr,2}.name  = 'sr_dens';
+res(rr,2).name  = 'sr_dens';
 
 % feature 3 is the "sharpness" of the horizontal projection.  This should help
 % distinquish between text and non-text regions (when the document is
 % properly aligned).
-%res{rr,3}.name = 'h_sharpness';
+res(rr,3).name = 'h_sharpness';
 
 % feature 4 is a boolean indicating whether there appears to be a horizontal
 % line stretching across the region.
-%res{rr,4}.name = 'h_line';
+res(rr,4).name = 'h_line';
 
 % feature 5 is a boolean indicating whether there appears to be a vertical
 % line stretching across the region.
-%res{rr,5}.name = 'v_line';
+res(rr,5).name = 'v_line';
 
 % feature 6 is the fraction of the total ink falling in the left quarter
-%res{rr,6}.name = 'left_quarter_ink_fraction';
+res(rr,6).name = 'left_quarter_ink_fraction';
 
 % features 7 and on deal with the number of marks on the page, and their sizes
 
@@ -120,6 +119,7 @@ top    = rect(2);
 right  = rect(3);
 bottom = rect(4);
 
+ink_count = 0;
 for i = top:bottom
     for j = left:right
         if pixels(i, j) ~= bg
@@ -128,41 +128,41 @@ for i = top:bottom
     end
 end
 
-res{rr,1}.val = ink_count / ((bottom - top + 1) * (right - left + 1));
+res(rr,1).val = ink_count / ((bottom - top + 1) * (right - left + 1));
 
 
 % now calculate feature 2 value
 sr = get_sr(rect, pixels, threshold);
-res{rr,2}.val = ink_count / ((sr(4) - sr(2) + 1) * (sr(3) - sr(1) + 1));
+res(rr,2).val = ink_count / ((sr(4) - sr(2) + 1) * (sr(3) - sr(1) + 1));
 
 
 % calculate feature 3 value
-%h = mean(pixels(top:bottom,left:right),2);
-%h = h(2:end) - h(1:(end-1));
-%h = h .* h;
-%res{rr,3}.val = mean(h);
+h = mean(pixels(top:bottom,left:right),2);
+h = h(2:end) - h(1:(end-1));
+h = h .* h;
+res(rr,3).val = mean(h);
 
 
 % calculate feature 4 value
-%temp = max(mean(1 - pixels(top:bottom,left:right),2));
-%if (temp > 0.9)
-%    res{rr,4}.val = 1;
-%else
-%    res{rr,4}.val = 0;
-%end;
+temp = max(mean(1 - pixels(top:bottom,left:right),2));
+if (temp > 0.9)
+    res(rr,4).val = 1;
+else
+    res(rr,4).val = 0;
+end;
 
 
 % calculate feature 5 value
-%temp = max(mean(1 - pixels(top:bottom,left:right),1));
-%if (temp > 0.9)
-%    res{rr,5}.val = 1;
-%else
-%    res{rr,5}.val = 0;
-%end;
+temp = max(mean(1 - pixels(top:bottom,left:right),1));
+if (temp > 0.9)
+    res(rr,5).val = 1;
+else
+    res(rr,5).val = 0;
+end;
 
 
 % calculate feature 6 value
-%v = mean(1 - pixels(top:bottom,left:right),1)
-%res{rr,6}.val = sum(v(1:(round(end / 4)))) / sum(v);
+v = mean(1 - pixels(top:bottom,left:right),1);
+res(rr,6).val = sum(v(1:(round(end / 4)))) / sum(v);
 
 end;

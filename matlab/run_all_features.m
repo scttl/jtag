@@ -18,11 +18,14 @@ function feature_vals = run_all_features(rects, pixels)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: run_all_features.m,v 1.5 2004-06-01 21:38:21 klaven Exp $
+% $Id: run_all_features.m,v 1.6 2004-06-08 00:56:50 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: run_all_features.m,v $
-% Revision 1.5  2004-06-01 21:38:21  klaven
+% Revision 1.6  2004-06-08 00:56:50  klaven
+% Debugged new distance and density features.  Added a script to make training simpler.  Added a script to print out output.
+%
+% Revision 1.5  2004/06/01 21:38:21  klaven
 % Updated the feature extraction methods to take all the rectangles at once, rather than work one at a time.  This allows for the extraction of features that use relations between rectangles.
 %
 % Revision 1.4  2004/06/01 19:24:34  klaven
@@ -76,21 +79,29 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if get_names
-    data(1:20) = distance_features;
-    data(21:22) = density_features;
-    for i = 1:length(data)
-        feature_vals{i} = data{i}.name;
-    end
+    data = distance_features;
+    feature_vals = {data.name};
+    data = density_features;
+    feature_vals = [feature_vals,{data.name}];
+
+    %data = [data,[density_features.name]];
+    %data(1:20) = distance_features;
+    %data(21:22) = density_features;
+    %for i = 1:length(data)
+    %    feature_vals{i} = data{i}.name;
+    %end
 else
-    data(:,1:20) = distance_features(rects,pixels);
-    data(:,21:22) = density_features(rects,pixels);
-    for j = 1:length(rects);
-        %data(1:20) = distance_features(rects(j,:),pixels);
-        %data(21:22) = density_features(rects(j,:),pixels);
-        for i = 1:length(data);
-	    feature_vals(j,i) = data{i}.val;
-        end;
-    end;
+    data = distance_features(rects,pixels);
+    feature_vals = reshape([data.val],size(data));
+    data = density_features(rects,pixels);
+    feature_vals = [feature_vals,reshape([data.val],size(data))];
+
+    %data = [data,density_features(rects,pixels)];
+    %for j = 1:length(rects);
+    %    for i = 1:length(data);
+    %    feature_vals(j,i) = data{i}.val;
+    %    end;
+    %end;
 end;
 
 

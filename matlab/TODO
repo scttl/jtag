@@ -3,22 +3,24 @@ To Do
 
 Normalize the features in each data set before saving (do some research to make sure this is done right).
 
-<DONE> Change the way the feature extraction functions work so that they accept all the rectanges at once, rather than one at a time.
+<DONE> Change the way the feature extraction functions work so that they accept all the rectangles at once, rather than one at a time.
 
-Make sure the above changes work.
+<DONE> Make sure the above changes work.
 
 Add some new distance features:
-  -Height
-  -Width
-  -Area
-  -Aspect Ratio (what's the best way to do this?)
-  -distance to neighbouring regions
-  -% overlap of projection on nieghbouring features
-  -Boolean "is centered"
-  -Boolean "on (left/right/top/botton) edge"
+  <DONE>-Height
+  <DONE>-Width
+  <DONE>-Area
+  <DONE>-Aspect Ratio (what's the best way to do this?)
+  <DONE>-distance to neighbouring regions
+  <DONE>-% overlap of projection on nieghbouring features
+  <DONE>-Boolean "is centered"
+  <DONE>-Boolean "on (left/right/top/botton) edge"
 
+<DONE> Debug the new features
+  -Getting negative values, when we shouldn't
 
-
+<DONE> Normalize the new features
 
 
 Add some "marks" features:
@@ -29,6 +31,18 @@ Add some "marks" features:
   -Area of largest mark (as fraction of total?)
   -Pixels in largest mark
 
-Create a single train/test script
+<DONE> Create a single train/test script
 
-Re-train and re-test with new features
+<DONE> Re-train and re-test with new features
+
+Check out "NCA" for KNN (talk to Jacob)
+
+Implement HMM
+
+Get ready to send stuff to Microsoft
+
+Decide on consistent style for Inline Heading, Author List, and 
+References.
+
+Go over test data and training data, to make above items consistent.
+

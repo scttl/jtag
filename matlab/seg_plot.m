@@ -1,6 +1,6 @@
 function MM = seg_plot(pixels, segs);
 
-%functon h = plotsegs(pixels, segs);
+%functon function MM = seg_plot(pixels, segs);
 %Plots the image pixels with the segmentation segs
 %Segs:   L1  T1  R1  B1
 %        L2  T2  R2  B2
@@ -19,6 +19,8 @@ imagesc(pixels); axis equal; axis off; colormap gray;
 %line([segs(:,3)';segs(:,3)'],[segs(:,2)';segs(:,4)'],'Color','b');
 
 %Draw boxes around each of the segments.
-patch([segs(:,1),segs(:,3),segs(:,3),segs(:,1)]',[segs(:,2),segs(:,4),segs(:,4),segs(:,2)]','r','FaceColor','none');
+patch([segs(:,1),segs(:,3),segs(:,3),segs(:,1)]', ...
+      [segs(:,2),segs(:,2),segs(:,4),segs(:,4)]', ...
+      'r','FaceColor','none');
 
 
