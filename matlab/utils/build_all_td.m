@@ -1,5 +1,8 @@
 function res = build_all_td(batchname);
-
+    evalstr = ['diary ' batchname '-diary.txt'];
+    eval(evalstr);
+    diary on;
+    
     nipsTrainDirs = {'/p/learning/klaven/Journals/TAGGED/nips_2001/', ...
                      '/p/learning/klaven/Journals/TAGGED/nips_2002/'};
     nipsTestDirs = {'/p/learning/klaven/Journals/TEST_DATA/nips_2001/', ...
@@ -18,7 +21,7 @@ function res = build_all_td(batchname);
     fprintf('For jmlr test data:\n');
     build_td(jmlrTestDirs,[batchname '-jmlr-test'],false);
 
-    
+    diary off;
 
 
 %*********************************************

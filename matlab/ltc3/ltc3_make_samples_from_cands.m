@@ -23,10 +23,32 @@ end;
 fnames = {'cut_width'; ...      %How wide of a valley is being cut
           'cut_length'; ...     %How long is the cut
           'cut_area'; ...       %Total cut area (width * height)
-          'avg_ws'; ...         %Average whitespace in a block extended 80
-                                %pixels above & below cut.
-          'total_ws'; ...       %Total whitespace in a block extended 80
-                                %pixels above & below cut
+          'avg_ws_up_80'; ...     %Average whitespace in a block extended 80
+                                  %pixels above cut.
+          'total_ws_up_80'; ...   %Total whitespace in a block extended 80
+                                  %pixels above cut
+          'avg_ws_up_40'; ...
+          'total_ws_up_40'; ...
+          'avg_ws_up_30'; ...
+          'total_ws_up_30'; ...
+          'avg_ws_up_25'; ...
+          'total_ws_up_25'; ...
+          'avg_ws_up_20'; ...
+          'total_ws_up_20'; ...
+          
+          'avg_ws_down_80'; ...    %Average whitespace in a block extended 80
+                                   %pixels below cut.
+          'total_ws_down_80'; ...  %Total whitespace in a block extended 80
+                                   %pixels below cut
+          'avg_ws_down_40'; ...
+          'total_ws_down_40'; ...
+          'avg_ws_down_30'; ...
+          'total_ws_down_30'; ...
+          'avg_ws_down_25'; ...
+          'total_ws_down_25'; ...
+          'avg_ws_down_20'; ...
+          'total_ws_down_20'; ...
+
           'pct_ws_line-20'; ... %Pct whitespace on row 20 pixels above cut
           'pct_ws_line-19'; ... %Pct whitespace on row 19 pixels above cut
           'pct_ws_line-18'; ... %Pct whitespace on row 18 pixels above cut
@@ -68,21 +90,34 @@ fnames = {'cut_width'; ...      %How wide of a valley is being cut
           'pct_ws_line+18'; ... %Pct whitespace on row 18 pixels below cut
           'pct_ws_line+19'; ... %Pct whitespace on row 19 pixels below cut
           'pct_ws_line+20'; ... %Pct whitespace on row 20 pixels below cut
-          'pct_ws_end'; ...   %Pct whitespace in block of the 20% last columns,
-                              %in the cut, extended 80 pixels up & down 
-                              %from the cut point.
-          'pct_ws_mid'; ...   %Pct whitespace in block of the 20% middle
-                              %columns in the cut, extended 80 pixels up &
-                              %down from the cut point.
-          'pct_ws_start'}; ... %Pct whitespace in block of the 20% first 
-                               %columns, in the cut, extended 80 pixels up &
-                               %down from the cut point.
+          'pct_ws_end_80'; ...    %Pct whitespace in block of the 20% last columns,
+                                  %in the cut, extended 80 pixels up & down 
+                                  %from the cut point.
+          'pct_ws_mid_80'; ...    %Pct whitespace in block of the 20% middle
+                                  %columns in the cut, extended 80 pixels up &
+                                  %down from the cut point.
+          'pct_ws_start_80'; ...  %Pct whitespace in block of the 20% first 
+                                  %columns, in the cut, extended 80 pixels up &
+                                  %down from the cut point.
+          'pct_ws_end_40'; ...
+          'pct_ws_mid_40'; ...
+          'pct_ws_start_40'; ...
+          'pct_ws_end_30'; ...
+          'pct_ws_mid_30'; ...
+          'pct_ws_start_30'; ...
+          'pct_ws_end_25'; ...
+          'pct_ws_mid_25'; ...
+          'pct_ws_start_25'; ...
+          'pct_ws_end_20'; ...
+          'pct_ws_mid_20'; ...
+          'pct_ws_start_20'}; 
 
 for j=1:size(pnum_feats,2);
     fnames{length(fnames)+1} = pnum_feats(j).name;
 end;
 
 if (nargin == 0);
+    samps = fnames;
     return;
 end;
 
@@ -104,6 +139,7 @@ for i=1:length(cut_cands);
     s0.r = cand.seg_right;
     s0.t = cand.seg_top;
     s0.b = cand.seg_bot;
+    rect = [s0.l, s0.t, s0.r, s0.b];
     
     if ~h; %This is a vertical cut
         x = cand.x;
@@ -123,24 +159,51 @@ for i=1:length(cut_cands);
         %'cut_area'; ...       %Total cut area (width * height)
         samp.feat_vals(length(samp.feat_vals)+1) = (ws.r-ws.l+1)*(ws.b-ws.t+1);
 
-        %'avg_ws'; ...         %Average whitespace in a block extended 80
-        %                      %pixels above & below cut.
-        subpix = pix(ws.t:ws.b,max(ws.l-80,1):min(ws.r+80,size(pix,2)));
-        x = cand.x - max(ws.l-80,1);
-        l_pix = subpix(1:end,1:x-1);
-        di_left = [ones(1,120),1,zeros(1,120)];
-        l_pix = 1-imdilate(1-l_pix,di_left);
-        ws_sum = length(find(l_pix));
-        r_pix = subpix(1:end,x+1:end);
-        di_right = [zeros(1,120),1,ones(1,120)];
-        r_pix = 1-imdilate(1-r_pix,di_right);
-        ws_sum = ws_sum + length(find(r_pix));
-
-        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum / size(subpix,1);
-        
-        %'total_ws'; ...       %Total whitespace in a block extended 80
-        %                      %pixels above & below cut
+        %'avg_ws_u_80'; ...         %Average whitespace in a block extended 80
+        %                      %pixels above cut.
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,80,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
         samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,40,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,30,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,25,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,20,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+
+        %'avg_ws_d_80'; ...         %Average whitespace in a block extended 80
+        %                      %pixels below cut.
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,80,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,40,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,30,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,25,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_v(pix,rect,cand.x,20,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
 
         %'pct_ws_line-20'; ... %Pct whitespace on row 20 pixels above cut
         for i=-20:20;
@@ -152,29 +215,36 @@ for i=1:length(cut_cands);
             samp.feat_vals(length(samp.feat_vals)+1) = ws_row;
         end;
 
+
         %'pct_ws_end'; ...   %Pct whitespace in block of the 20% last columns,
         %                  %in the cut, extended 80 pixels up & down 
         %                  %from the cut point.
-        pct_20 = floor((ws.b-ws.t+1) * 0.2);
-        samp.feat_vals(length(samp.feat_vals)+1) = ...
-            mean(mean(pix(ws.b-pct_20:ws.b, ...
-                          max(1,x-80):min(size(pix,2),x+80))));
+        [ws_l,ws_m,ws_r] = pct_20_v(pix,rect,cand.x,80);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_v(pix,rect,cand.x,40);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_v(pix,rect,cand.x,30);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_v(pix,rect,cand.x,25);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_v(pix,rect,cand.x,20);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
 
 
-        %'pct_ws_mid'; ...   %Pct whitespace in block of the 20% middle
-        %                  %columns in the cut, extended 80 pixels up &
-        %                  %down from the cut point.
-        midpt = floor((ws.t+ws.b)/2);
-        samp.feat_vals(length(samp.feat_vals)+1) = ...
-            mean(mean(pix(midpt-floor(pct_20/2):midpt+floor(pct_20/2), ...
-                          max(1,x-80):min(size(pix,2),x+80))));
-
-        %'pct_ws_start'}; ... %Pct whitespace in block of the 20% first 
-        %                   %columns, in the cut, extended 80 pixels up &
-        %                   %down from the cut point.
-        samp.feat_vals(length(samp.feat_vals)+1) = ...
-            mean(mean(pix(ws.t:ws.t+pct_20, ...
-                          max(1,x-80):min(size(pix,2),x+80))));
         
     else;  %This is a horizontal cut
         y = cand.y;
@@ -194,26 +264,51 @@ for i=1:length(cut_cands);
         %'cut_area'; ...       %Total cut area (width * height)
         samp.feat_vals(length(samp.feat_vals)+1) = (ws.r-ws.l+1)*(ws.b-ws.t+1);
 
-        %'avg_ws'; ...         %Average whitespace in a block extended 80
-        %                      %pixels above & below cut.
-        subpix = pix(max(ws.t-80,1):min(ws.b+80,size(pix,1)), ws.l:ws.r);
-        y = cand.y-max(ws.t-80,1)+1;
-
-        top_pix = subpix(1:y-1,1:end);
-        di_up = [ones(120,1);1;zeros(120,1)];
-        top_pix = 1-imdilate(1-top_pix,di_up);
-        ws_sum = length(find(top_pix));
-        
-        bot_pix = subpix(y+1:end,1:end);
-        di_down = [zeros(120,1);1;ones(120,1)];
-        bot_pix = 1-imdilate(1-bot_pix,di_down);
-        ws_sum = ws_sum + length(find(bot_pix));
-
-        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum / size(subpix,2);
-        
-        %'total_ws'; ...       %Total whitespace in a block extended 80
-        %                      %pixels above & below cut
+        %'avg_ws_u_80'; ...         %Average whitespace in a block extended 80
+        %                      %pixels above cut.
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,80,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
         samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,40,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,30,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,25,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,20,true,false,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+
+        %'avg_ws_d_80'; ...         %Average whitespace in a block extended 80
+        %                      %pixels below cut.
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,80,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,40,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,30,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,25,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
+        [ws_sum,ws_avg] = total_ws_h(pix,rect,cand.y,20,false,true,true);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_avg;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_sum;
+
 
         %'pct_ws_line-20'; ... %Pct whitespace on row 20 pixels above cut
         for i=-20:20;
@@ -228,25 +323,32 @@ for i=1:length(cut_cands);
         %'pct_ws_end'; ...   %Pct whitespace in block of the 20% last columns,
         %                  %in the cut, extended 80 pixels up & down 
         %                  %from the cut point.
-        pct_20 = floor((ws.r-ws.l+1) * 0.2);
-        samp.feat_vals(length(samp.feat_vals)+1) = ...
-            mean(mean(pix(max(1,y-80):min(y+80,size(pix,1)), ...
-                          (ws.r-pct_20):ws.r)));
-        
-        %'pct_ws_mid'; ...   %Pct whitespace in block of the 20% middle
-        %                  %columns in the cut, extended 80 pixels up &
-        %                  %down from the cut point.
-        midpt = floor((ws.l+ws.r)/2);
-        samp.feat_vals(length(samp.feat_vals)+1) = ...
-            mean(mean(pix(max(1,y-80):min(y+80,size(pix,1)), ...
-                          midpt-floor(pct_20/2):midpt+floor(pct_20/2))));
+        [ws_l,ws_m,ws_r] = pct_20_h(pix,rect,cand.y,80);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
 
-        %'pct_ws_start'}; ... %Pct whitespace in block of the 20% first 
-        %                   %columns, in the cut, extended 80 pixels up &
-        %                   %down from the cut point.
-        samp.feat_vals(length(samp.feat_vals)+1) = ...
-            mean(mean(pix(max(1,y-80):min(y+80,size(pix,1)), ...
-                          ws.l:ws.l+pct_20)));
+        [ws_l,ws_m,ws_r] = pct_20_h(pix,rect,cand.y,40);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_h(pix,rect,cand.y,30);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_h(pix,rect,cand.y,25);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        [ws_l,ws_m,ws_r] = pct_20_h(pix,rect,cand.y,20);
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_r;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_m;
+        samp.feat_vals(length(samp.feat_vals)+1) = ws_l;
+
+        
     end;
     
     for j=1:size(pnum_feats,2);
@@ -256,3 +358,94 @@ for i=1:length(cut_cands);
     samps = [samps;samp];
 end;
 
+
+%----------------------------------------------------
+%Subfunctions
+
+function [ws_l,ws_m,ws_r] = pct_20_h(pix,rect,cut_y,dist);
+
+        pct_20 = floor((rect(3)-rect(1)+1) * 0.2);
+        
+        ws_r = mean(mean(pix(max(1,cut_y-dist):min(cut_y+dist,size(pix,1)), ...
+                          (rect(3)-pct_20):rect(3))));
+
+        midpt = floor((rect(1)+rect(3))/2);
+        ws_m = mean(mean(pix(max(1,cut_y-dist):min(cut_y+dist,size(pix,1)), ...
+                          midpt-floor(pct_20/2):midpt+floor(pct_20/2))));
+        ws_l = mean(mean(pix(max(1,cut_y-dist):min(cut_y+dist,size(pix,1)), ...
+                          rect(1):rect(1)+pct_20)));
+
+
+
+function [ws_t,ws_m,ws_b] = pct_20_v(pix,rect,cut_x,dist);
+
+        pct_20 = floor((rect(4)-rect(2)+1) * 0.2);
+        
+        ws_b = mean(mean(pix(rect(4)-pct_20:rect(4), ...
+                          max(1,cut_x-dist):min(size(pix,2),cut_x+dist))));
+
+        midpt = floor((rect(2)+rect(4))/2);
+
+        ws_m = mean(mean(pix(midpt-floor(pct_20/2):midpt+floor(pct_20/2), ...
+                          max(1,cut_x-dist):min(size(pix,2),cut_x+dist))));
+
+        ws_t = mean(mean(pix(rect(2):rect(2)+pct_20, ...
+                          max(1,cut_x-dist):min(size(pix,2),cut_x+dist))));
+
+
+
+function [ws_sum,ws_avg] = total_ws_h(pix,rect,cut_y,dist,above,below,smear);
+
+    subpix = pix(max(cut_y-dist,1):min(cut_y+dist,size(pix,1)),rect(1):rect(3));
+    y = cut_y - (max(cut_y-dist,1)) + 1;
+
+    ws_sum = 0;
+
+    if (above);
+        top_pix = subpix(1:y-1,1:end);
+        if (smear);
+            di_up = [ones(dist+1,1);1;zeros(dist+1,1)];
+            top_pix = 1-imdilate(1-top_pix,di_up);
+        end;
+        ws_sum = ws_sum + length(find(top_pix));
+    end;
+    
+    if (below);
+        bot_pix = subpix(y+1:end,1:end);
+        if (smear);
+            di_down = [zeros(dist+1,1);1;ones(dist+1,1)];
+            bot_pix = 1-imdilate(1-bot_pix,di_down);
+        end;
+        ws_sum = ws_sum + length(find(bot_pix));
+    end;
+
+    ws_avg = ws_sum / (size(subpix,2));
+
+
+function [ws_sum,ws_avg] = total_ws_v(pix,rect,cut_x,dist,left,right,smear);
+
+    subpix = pix(rect(2):rect(4),max(cut_x-dist,1):min(cut_x+dist,size(pix,2)));
+    
+    x = cut_x - max(cut_x-dist,1) + 1;
+
+    ws_sum = 0;
+
+    if (left);
+        l_pix = subpix(1:end,1:x-1);
+        if (smear);
+            di_left = [ones(1,dist+1),1,zeros(1,dist+1)];
+            l_pix = 1-imdilate(1-l_pix,di_left);
+        end;
+        ws_sum = ws_sum + length(find(l_pix));
+    end;
+
+    if (right);
+        r_pix = subpix(1:end,x+1:end);
+        if (smear);
+            di_right = [zeros(1,dist+1),1,ones(1,dist+1)];
+            r_pix = 1-imdilate(1-r_pix,di_right);
+        end;
+        ws_sum = ws_sum + length(find(r_pix));
+    end;
+
+    ws_avg = ws_sum / (size(subpix,1));

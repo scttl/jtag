@@ -9,6 +9,8 @@ bg = 1;
 
 fid = fopen(logfile,'w');
 
+fprintf('Found %i jtag files.\n',length(files));
+
 for i=1:length(files);
 
     jt = parse_jtag([jtdir, files(i).name]);

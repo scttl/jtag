@@ -12,14 +12,14 @@ function res = ltc2_build_all_td(batchname);
     jmlrTestDirs = {'/p/learning/klaven/Journals/TEST_DATA/jmlr/'};
 
     fprintf('For nips test data:\n');
-    build_td(nipsTestDirs,[batchname '-nips-test'],false);
+    %build_td(nipsTestDirs,[batchname '-nips-test'],false);
     fprintf('For nips training data:\n');
-    build_td(nipsTrainDirs,[batchname '-nips-train'],true);
+    %build_td(nipsTrainDirs,[batchname '-nips-train'],true);
 
     fprintf('For jmlr training data:\n');
     build_td(jmlrTrainDirs,[batchname '-jmlr-train'],true);
     fprintf('For jmlr test data:\n');
-    build_td(jmlrTestDirs,[batchname '-jmlr-test'],false);
+    %build_td(jmlrTestDirs,[batchname '-jmlr-test'],false);
     res = 0;
 
     diary off;

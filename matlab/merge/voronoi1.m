@@ -1,5 +1,5 @@
 function segs = voronoi1(pix,Td1,Td2);
-
+%tic;
 if (nargin < 2);
     Td1 = 8;
 end;
@@ -9,18 +9,22 @@ end;
 
 %mark_rects = smear(pix,1,1,0,1);
 [L,num] = bwlabel(1-pix);
+%fprintf('Call to bwlabel done at %i\n',toc);
 mark_rects = [];
 for i=1:num;
+    L = sparse(L);
     [y,x] = find(L==i);
     rect=[min(x),min(y),max(x),max(y)];
     mark_rects = [mark_rects;rect];
 end;
+%fprintf('mark_rects found at %i\n',toc);
 
 %Create the region map:
 regmap = zeros(size(pix));
 for i=1:size(mark_rects,1);
     regmap(mark_rects(i,2):mark_rects(i,4),mark_rects(i,1):mark_rects(i,3)) = i;
 end;
+%fprintf('regmap made at %i\n',toc);
 
 %Find neighbours:
 marks = [];
@@ -83,6 +87,28 @@ for i=1:size(mark_rects,1);
     end;
     marks = [marks;mark];
 end;
+%fprintf('neighbours found at %i\n',toc);
+
+tmp1 = max([m1';m2']);
+tmp2 = min([m1';m2']);
+m1 = tmp1;
+m2 = tmp2;
+[junk,morder] = sort((100000*m1)+ m2);
+m1 = m1(morder);
+m2 = m2(morder);
+i=2;
+while (i <= length(m1));
+    if (m2(i-1)==m2(i)) && (m1(i-1)==m1(i));
+        m1(i) = [];
+        m2(i) = [];
+    else;
+        i=i+1;
+    end;
+end;
+m1 = reshape(m1,length(m1),1);
+m2 = reshape(m2,length(m2),1);
+%fprintf('Duplicate pairings (%i) removed at %i\n',(length(tmp1)-length(m1)), ...
+%        toc);
 
 %xy = [floor((mark_rects(:,1)+mark_rects(:,3))/2), ...
 %      floor((mark_rects(:,2)+mark_rects(:,4))/2)];
@@ -120,6 +146,7 @@ for i=1:size(marks,1);
     %marks(i).all_n = find(mmat(i,:));
     %marks(i).all_n = reshape(marks(i).all_n,length(marks(i).all_n),1);
 end;
+%fprintf('Voronoi decisions done at %i\n',toc);
 
 %xy = [floor((mark_rects(:,1)+mark_rects(:,3))/2), ...
 %      floor((mark_rects(:,2)+mark_rects(:,4))/2)];
@@ -129,7 +156,7 @@ end;
 %Start a record of which group each original group is currently in
 find_mark = 1:length(marks);
 
-fprintf('Doing merges.\n');
+%fprintf('Doing merges.\n');
 m_groups = [];
 todo = 1:length(marks);
 while length(todo) > 0;
@@ -147,6 +174,7 @@ while length(todo) > 0;
     end;
     m_groups = [m_groups;m1];
 end;
+%fprintf('Mergings done at %i\n',toc);
 
 segs = [];
 for i=1:length(m_groups);
@@ -156,7 +184,7 @@ end;
 segs = seg_snap(pix,segs);
 segs = rem_overlapping_segs(pix,segs);
 
-
+%fprintf('Finished at %i\n',toc);
 
 %--------------------------------------------------------------------
 %----Subfunction declarations

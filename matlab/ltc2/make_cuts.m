@@ -15,6 +15,7 @@ if strcmp(cut_cands(1).direction, 'horizontal');
     for i=2:length(cut_cands);
         next_cut = cut_cands(cut_order(i));
         seg = [cs(1), y, cs(3), next_cut.y];
+        seg = seg_snap(pixels,seg,0);
         y = next_cut.y + 1;
         segs = [segs;seg];
     end;

@@ -23,6 +23,7 @@ use.snap = false;
 use.pnum = true;
 use.dens = true;
 use.mark = true;
+use.ocr = false;
 
 
 % imfile = 'cancedda03a.ac.tif';

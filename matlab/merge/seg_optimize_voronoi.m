@@ -4,10 +4,10 @@ jmlr = parse_training_data('./results/nosnap/nosnap-jmlr-train.knn.mat');
 
 nips = parse_training_data('./results/nosnap/nosnap-nips-train.knn.mat');
 
-Td1=[ 7  7  7  7  7  8  8  8  8  8  9  9  9  9  9 ...
-     10 10 10 10 10 11 11 11 11 11 12 12 12 12 12];
-Td2=[ 3  4  5  6  7  3  4  5  6  7  3  4  5  6  7 ...
-      3  4  5  6  7  3  4  5  6  7  3  4  5  6  7];
+Td1=[8  8  8  8  9  9  9  9 ...
+     10 10 10 10 11 11 11 11];
+Td2=[3  4  5  6  3  4  5  6 ...
+      3  4  5  6  3  4  5  6];
      
 
 [JScores,JAllScores] = seg_test_voronoi(jmlr,Td1,Td2);
