@@ -1,7 +1,7 @@
 function res = weights_to_csv(weights,outfile);
 % res = function weights_to_csv(weights,outfile);
   fnum = fopen(outfile,'w');
-  fnames = run_all_features;
+  fnames = weights.feature_names;
   for i=1:length(weights.class_names);
     fprintf(fnum,',%s',weights.class_names{i});
   end;
