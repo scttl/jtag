@@ -5,11 +5,14 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.7 2003-07-16 20:28:05 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.8 2003-07-16 20:51:20 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.7  2003-07-16 20:28:05  scottl
+## Revision 1.8  2003-07-16 20:51:20  scottl
+## Bugfix to allow proper resizing when scrolled away from top-left corner.
+##
+## Revision 1.7  2003/07/16 20:28:05  scottl
 ## Renamed classifiers to classes to avoid confusion with the name.
 ##
 ## Revision 1.6  2003/07/16 19:08:37  scottl
@@ -474,7 +477,8 @@ proc ::Jtag::Classify::PressDecide {c x y} {
                                    $cnfg(mode)
     } else {
         # check if we clicked on the border (and thus allow resizing to start)
-        set Pos [eval ::Jtag::Classify::DeterminePos [join $Coords] $x $y]
+        set Pos [eval ::Jtag::Classify::DeterminePos [join $Coords] \
+                                        [$c canvasx $x] [$c canvasy $y]]
         if {$Pos != ""} {
             ::Jtag::Classify::ResizeStart $c $R $Pos
         } else {
@@ -557,7 +561,7 @@ proc ::Jtag::Classify::MotionDecide {c x y} {
         set X2 [lindex $Coords 2]
         set Y2 [lindex $Coords 3]
         $c configure -cursor [::Jtag::Classify::DeterminePos $X1 $Y1 $X2 $Y2 \
-                                                             $x $y]
+                              [$c canvasx $x] [$c canvasy $y]]
     } else {
         $c configure -cursor left_ptr
     }
@@ -921,8 +925,8 @@ proc ::Jtag::Classify::AddToBucket {c b} {
 #    ry1    The top rectangle co-ordinate
 #    rx2    The right rectangle co-ordinate
 #    ry2    The bottom rectangle co-ordinate
-#    x      The x position to determine
-#    y      The y position to determine
+#    x      The x position to determine (must be canvas relative)
+#    y      The y position to determine (must be canvas relative)
 #
 # Results:
 #    Returns one of: top_left_corner, top_side, top_right_corner, right_side,
