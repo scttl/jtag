@@ -19,11 +19,14 @@ function m = xycut(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: xycut.m,v 1.5 2004-04-28 18:53:54 klaven Exp $
+% $Id: xycut.m,v 1.6 2004-04-30 00:25:42 klaven Exp $
 %
 % REVISION HISTORY:
 % $Log: xycut.m,v $
-% Revision 1.5  2004-04-28 18:53:54  klaven
+% Revision 1.6  2004-04-30 00:25:42  klaven
+% xycut now uses a snap function that jumps back to the beginning of the current mark once the threshold is crossed.  The threshold is now cumulative since the start of the most recent mark.
+%
+% Revision 1.5  2004/04/28 18:53:54  klaven
 % Tweaking the elimination of whitespace from the xycut algorithm.  In progress.
 %
 % Revision 1.4  2004/04/26 22:53:22  klaven
@@ -108,7 +111,8 @@ elseif hrunlength > ht & hrunlength >= vrunlength
            segment(p, (x1 + hrunpos), y1, x2, y2, ht, vt, wst)];
 else
     % non-recursive case, don't split anything
-    res = [x1, y1, x2, y2];
+    [x1,y1,x2,y2] = snap(p,x1, y1, x2, y2,wst);
+    res = [x1,y1,x2,y2];
 end
 
 
@@ -118,75 +122,129 @@ function [left,top,right,bottom] = snap(pixels, x1, y1, x2, y2, wst)
 
 bg = 1;           % default value for background pixels
 
-[left,top,right,bottom] = [x1,y1,x2,y2];
+left=x1; top = y1; right=x2; bottom=y2;
 
 l_done = false;
 t_done = false;
 r_done = false;
 b_done = false;
 
+l_markstart = left;
+t_markstart = top;
+r_markstart = right;
+b_markstart = bottom;
+
+
 while ~ (l_done & t_done & r_done & b_done)
 
     if left >= right | top >= bottom
         warning('Did not find sufficient ink.  Returning orig. subrectangle');
-        [left, top, right, bottom] = [x1, y1, x2, y2];
         return;
     end
 
     if ~ l_done
-        count = 0;
-        for i = top:bottom
-            if pixels(i, left) ~= bg
-                count = count + 1;
+        %count = 0;
+        %for i = top:bottom
+        %    if pixels(i, left) ~= bg
+        %        count = count + 1;
+        %    end
+        %end
+	count = sum(sum(bg - pixels(top:bottom,left)));
+	if (count == 0)
+	    l_markstart = left;
+	    left = left + 1;
+	else
+	    count = sum(sum((bg - pixels(top:bottom,l_markstart:left))>0));
+            if count > (wst * (bottom - top + 1))
+	        left = l_markstart;
+                l_done = true;
+            else
+                left = left + 1;
             end
-        end
-        if count > (wst * (bottom - top + 1))
-            l_done = true;
-        else
-            left = left + 1;
-        end
+	end
     end
 
     if ~ t_done
-        count = 0;
-        for i = left:right
-            if pixels(top,i) ~= bg
-                count = count + 1;
+        %count = 0;
+        %for i = left:right
+        %    if pixels(top,i) ~= bg
+        %        count = count + 1;
+        %    end
+        %end
+	count = sum(sum(bg - pixels(top,left:right)));
+	if (count == 0)
+	    t_markstart = top;
+	    top = top + 1;
+	else
+	    count = sum(sum((bg - pixels(t_markstart:top,left:right))>0));
+            if count > (wst * (right - left + 1))
+	        top = t_markstart;
+                t_done = true;
+            else
+                top = top + 1;
             end
-        end
-        if count > (wst * (right - left + 1))
-            t_done = true;
-        else
-            top = top + 1;
-        end
+	end
     end
 
     if ~ r_done
-        count = 0;
-        for i = top:bottom
-            if pixels(i, right) ~= bg
-                count = count + 1;
+        %count = 0;
+        %for i = top:bottom
+        %    if pixels(i, right) ~= bg
+        %        count = count + 1;
+        %    end
+        %end
+        %if count > (wst * (bottom - top + 1))
+        %    r_done = true;
+        %else
+        %    right = right - 1;
+        %end
+	count = sum(sum(bg - pixels(top:bottom,right)));
+	if (count == 0)
+	    r_markstart = right;
+	    right = right - 1;
+	else
+	    count = sum(sum((bg - pixels(top:bottom,right:r_markstart))>0));
+            if count > (wst * (bottom - top + 1))
+	        right = r_markstart;
+                r_done = true;
+            else
+                right = right - 1;
             end
-        end
-        if count > (wst * (bottom - top + 1))
-            r_done = true;
-        else
-            right = right - 1;
-        end
+	end
     end
 
     if ~ b_done
-        count = 0;
-        for i = left:right
-            if pixels(bottom, i) ~= bg
-                count = count + 1;
+        %count = 0;
+        %for i = left:right
+        %    if pixels(bottom, i) ~= bg
+        %        count = count + 1;
+        %    end
+        %end
+        %if count > (wst * (right - left + 1))
+        %    b_done = true;
+        %else
+        %    bottom = bottom - 1;
+        %end
+
+	count = sum(sum((bg - pixels(bottom,left:right))>0));
+
+	if (count == 0)
+	    b_markstart = bottom;
+	    bottom = bottom - 1;
+	    %fprintf('no area count, bottom = %i, b_markstart = %i ',bottom, b_markstart);
+	else
+	    fprintf('Bottom count = %i, ', count);
+	    count = sum(sum((bg - pixels(bottom:b_markstart,left:right))>0));
+	    fprintf('area count = %i, bottom = %i, b_markstart = %i, ',count, bottom, b_markstart);
+	    if count > (wst * (right - left + 1))
+	        fprintf('done.\n');
+	        bottom = b_markstart;
+                b_done = true;
+            else
+	        fprintf('not done.\n');
+                bottom = bottom - 1;
             end
-        end
-        if count > (wst * (right - left + 1))
-            b_done = true;
-        else
-            bottom = bottom - 1;
-        end
+	end
     end
 
 end  %end while loop
@@ -197,7 +255,7 @@ end  %end while loop
 
 function [longlength, mid] = long_valley(means, wst)
 % LONG_VALLEY  Subfunction that determines the length and midpoint position of
-%              the longest background valley (meanss value <=wst) run in the 
+%              the longest background valley (meanss value <=wst) run in the
 %              vector passed.  If the vector is all non-zero, a length of 0 is
 %              returned and the mid is undefiend (NaN).
 % wst: White Space Threshold (fraction of ink pixels considered whitespace)
