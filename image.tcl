@@ -5,11 +5,15 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.7 2003-07-16 16:46:02 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.8 2003-07-18 17:56:36 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.7  2003-07-16 16:46:02  scottl
+## Revision 1.8  2003-07-18 17:56:36  scottl
+## Implemented multiple page functionality, by checking for a particular file
+## format during image creation, and creating a go_to_pg method.
+##
+## Revision 1.7  2003/07/16 16:46:02  scottl
 ## Fixed small bug to allow scaling by height when resizing.  Also implemented
 ## snapping of canvas size to that of the image.
 ##
@@ -89,6 +93,10 @@ namespace eval ::Jtag::Image {
     # the name of the file
     set img(file_name) {}
 
+    # multipage properties (turned off by default)
+    set img(multi_page) 0
+    set img(curr_page) 0
+
     # its original and current resolution (in pixels)
     set img(actual_height) 0
     set img(actual_width) 0
@@ -123,7 +131,10 @@ namespace eval ::Jtag::Image {
 #
 #    Attempts to open, validate and create the image given by the filename
 #    argument passed.  Also attempts to load any selection data from an
-#    associated jtag file.
+#    associated jtag file.  Also checks whether the file is the first page in
+#    an already split multi-page document (by looking for 
+#    <base_name>.aa.<suffix> as the file name.  If so, it sets additional
+#    attributes.
 #
 # Arguments:
 #    file_name    The name of the file to open
@@ -139,7 +150,9 @@ proc ::Jtag::Image::create_image {file_name} {
     variable can
 
     # declare any local variables needed
-    variable JtagFile
+    variable FileBase {}
+    variable DotPos
+    variable FirstPageSuffix {aa}
     variable JtagExtn {jtag}
     variable Response
     variable ScaleW
@@ -174,6 +187,24 @@ proc ::Jtag::Image::create_image {file_name} {
         set img(file_format) {}
     }
 
+    # see if we are dealing with the first page of a multi-page image
+    set DotPos [string last "." $file_name]
+    if {$DotPos == -1} {
+        set FileBase $file_name.
+        set img(multi_page) 0
+    } else {
+        set FileBase [string range $file_name 0 [expr $DotPos - 1]]
+        set DotPos [string last "." $FileBase]
+        if {$DotPos != -1 && [string range $FileBase [expr $DotPos + 1] end] \
+                             == $FirstPageSuffix} {
+            set img(multi_page) 1
+            set img(curr_page) 1
+            # enable mutiple page functions
+            ::Jtag::Menus::multi_page_functions 1
+        }
+        set FileBase $FileBase.
+    }
+
     # scale and add the image to the canvas
     set ScaleW [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
     set ScaleH [expr [$can(path) cget -height] / ($img(actual_height) + 0.0)]
@@ -183,15 +214,9 @@ proc ::Jtag::Image::create_image {file_name} {
     ::Jtag::Classify::bind_selection $can(path)
 
     # check and see if a valid jtag file exists for this image
-    set JtagFile [string range $file_name 0 [string last "." $file_name]]
-    if {$JtagFile == ""} {
-        # doesn't have an extension, so add the extension to the end of the
-        # file
-        set JtagFile $file_name.
-    }
-    set img(jtag_name) $JtagFile$JtagExtn
+    set img(jtag_name) ${FileBase}$JtagExtn
 
-    # open and read the selection data into the data variable
+    # open and read the selection (and poss. config) data into the 'data' var
     if {[catch {::Jtag::Config::read_data $img(jtag_name)} Response]} {
         debug "Failed to read contents of $img(jtag_name).  Reason:\n$Response"
     }
@@ -518,7 +543,7 @@ proc ::Jtag::Image::resize {{factor 1.}} {
 
 proc ::Jtag::Image::clear_canvas {} {
 
-    # link any namespcae variables
+    # link any namespace variables
     variable can
 
     # declare any local variables
@@ -533,6 +558,86 @@ proc ::Jtag::Image::clear_canvas {} {
     $can(path) delete all
 
     ::Jtag::Classify::unbind_selection
+
+}
+
+
+# ::Jtag::Image::go_to_pg --
+#
+#    Attempts to load the page number passed from a multi-page image into the
+#    canvas for display.  
+#
+# Arguments:
+#    pg    A positive number specifying the page number we are attempting to 
+#          access
+#
+# Results:
+#    The next image is loaded into memory and displayed on the canvas (along
+#    with its selections), provided that the next page image exists.  Note
+#    that this call has no affect if either the canvas or image has not yet 
+#    been created, or the image name is not in valid multi-page format.
+
+proc ::Jtag::Image::go_to_pg {pg} {
+
+    # link any namespace variables
+    variable img
+    variable can
+    variable ::Jtag::Config::data
+
+    # declare any local variables
+    variable Result
+    variable A1
+    variable A2
+    variable NextPgSuffix
+    variable NextPg
+
+    debug {entering ::Jtag::Image::go_to_pg}
+
+    if {! $can(created) || ! $img(created) || ! $img(multi_page) || $pg < 1} {
+        debug "Either the canvas/image does not exist or is not multiple pages"
+        return
+    }
+
+    # save the current pages data
+    if {[ catch {::Jtag::Config::write_data} Result]} {
+        debug "Failed to write out current pages selections.  Reason:\n$Result"
+    }
+
+    # determine the next page
+    set img(curr_page) $pg
+    set A2 [expr $img(curr_page) % 26]
+    if {$A2 == 0} {
+        set A2 26
+    }
+    set A1 [expr ($img(curr_page) / 26) + 1]
+    if {$A2 == 26} {
+        incr A1 -1
+    }
+    # to get the unecode values from decimal, we must add 96 
+    incr A1 96
+    incr A2 96
+
+    set NextPgSuffix [format "%c%c" $A1 $A2]
+
+    set LastCommaPos [string last "." $img(file_name)]
+    set NextPg [string range $img(file_name) 0 [expr $LastCommaPos - 3]]
+    set NextPg ${NextPg}$NextPgSuffix[string range $img(file_name) \
+                                      $LastCommaPos end]
+
+
+    # remove previous selections from the screen and arrays
+    while {[array names data -regexp {(.*)(,)([0-9])+}] != ""} {
+        ::Jtag::Classify::remove [lindex \
+             [array names data -regexp {(.*)(,)([0-9])+}] 0]
+
+    } 
+
+    ::Jtag::Image::clear_canvas
+
+    # now open the new page
+    if {[catch {::Jtag::Image::create_image $NextPg} Result]} {
+        debug "Failed to open page $pg.  Reason:\n$Result"
+    }
 
 }
 
