@@ -1,35 +1,70 @@
+##################################################################################
+## FILE: classlist.txt
+##
+## CVS: $Id: classlist.txt,v 1.2 2005-12-22 16:29:03 scottl Exp $
+##
+## DESCRIPTION: Text file defining the possible labels used to tag a given
+##              region.
+##
+## ARGUMENTS:
+##
+## REQUIRES:
+##
+################################################################################
 
  'header'
--A header at the top of a page.  If the header is composed of more than one part (eg part of it is left-aligned, part is right-aligned), these are considered to be separate regions.
+-A header at the top of a page.  If the header is composed of more than one part
+ (eg part of it is left-aligned, part is right-aligned), these are considered 
+ to be separate regions.
 
 'code_block'
--A block of code, or code-like text.  These often come in the form of pseudo-code, which may contain bullets, equations, and small diagrams.  A block of code is considered a single region unless it is clearly divided by a large block of whitespace, or a region of another type.
+-A block of code, or code-like text.  These often come in the form of 
+ pseudo-code, which may contain bullets, equations, and small diagrams.  A block
+ of code is considered a single region unless it is clearly divided by a large 
+ block of whitespace, or a region of another type.
 
 'section_heading'
--A top-level heading such as "1. Introduction".  The heading may be numbered, such as "1. Introduction", or lettered, such as "Appendix A.".  The number of the heading and the associated text are considered a single region.
+-A top-level heading such as "1. Introduction".  The heading may be numbered, 
+ such as "1. Introduction", or lettered, such as "Appendix A.".  The number of 
+ the heading and the associated text are considered a single region.
 
 'subsection_heading'
 -A second, third, fourth, etc. level heading, such as "1.2 Motivation for 
-Research", "1.2.1.4 Why They Did it That Way", or "A.2 Detailed proofs".  There is some ambiguity as to what qualifies as a heading, and what is merely a single line of bold text.  This data uses the rule that if it was numbered or used a larger font size, it is a heading.
+ Research", "1.2.1.4 Why They Did it That Way", or "A.2 Detailed proofs".  There
+ is some ambiguity as to what qualifies as a heading, and what is merely a 
+ single line of bold text.  This data uses the rule that if it is numbered or 
+ uses a larger font size, it is a heading.
 
 'decoration'
--Bits of ink detached from other regions, used to decorate or divide the space.  Some decorations are not considered separate regions: a vertical line along the left edge of another region is considered part of that region, and a [REFERENCES] used to denote the end of a proof may be considered part of a text region if it is not separated from the text by whitespace.  Common decorations include horizontal lines above footnotes, and squares used to denote QED at the end of proofs.  
+-Bits of ink detached from other regions, used to decorate or divide the space. 
+ Some decorations are not considered separate regions: a vertical line along the
+ left edge of another region is considered part of that region, and a (square)
+ [] used to denote the end of a proof may be considered part of a text region if
+ it is not separated from the text by whitespace.  Common decorations include i
+ horizontal lines above footnotes, and squares used to denote QED at the end of 
+ proofs.  
 
 'figure_caption'
 -The caption associated with a figure, along with any label.
 
 'references'
-References, usually found at the end of a paper.  Each reference is contain be its own region.
+-References, are usually found at the end of a paper.  Each reference should be
+ contained in its own region.
 
 'abstract'
--The abstract, usually found at the beginning of the paper.  The word "Abstract" which generally appears at the top is also part of this region.
+-The abstract is usually found at the beginning of the paper.  The word 
+ "Abstract" which generally appears at the top should not be part of this 
+ region unless it is inline with the text of the abstract.
 
 'text'
--Any block of text not classified as another region.  If paragraphs have a line of whitespace between them, they are separated into different regions; otherwise, they are grouped together.
+-Any block of text not classified as another region.  If paragraphs have a line 
+ of whitespace between them, they are separated into different regions; 
+ otherwise, they are grouped together.
 
 'bullet_item'
--A single item in a bulleted or numbered list.
--Even if there is no line of whitespace between lines, multiple bullet items are each given a separate region.
+-A single item in a bulleted or numbered list.  Even if there is no line of 
+ whitespace between lines, multiple bullet items are each given a separate 
+ region.
 
 'pg_number'
 -The page number.  Usually found at the bottom of the page.
@@ -38,36 +73,62 @@ References, usually found at the end of a paper.  Each reference is contain be i
 -A table.  Cells can be separated by lines, or by whitespace.
 
 'main_title'
--The main title of the paper.  A main title that spans multiple lines is considered a single region.
+-The main title of the paper.  A main title that spans multiple lines is 
+ considered a single region.
 
 'footer'
--A footer is a small bit of text repeated at the bottom of each page.  This is NOT the same as a footnote, which explains some detail about the contents of the paper.
+-A footer is a small bit of text repeated at the bottom of each page.  This is 
+ NOT the same as a footnote, which explains some detail about the contents of 
+ the paper.
 
 'table_caption'
 -The caption associated with a table, including any label.
 
 'equation'
--An equation that is given its own line.  Small equations placed in the middle of a paragraph are considered part of that text region; they are not labeled as equations.
+-An equation that is given its own line.  Small equations placed in the middle 
+ of a paragraph are considered part of that text region; they are not labeled as
+ equations.  Multiple line derivations should be grouped as a single equation 
+ region.
 
 'eq_number'
--The number (or letter) assigned to a particular equation.  Always paired with an "equation" region.
+-The number (or letter) assigned to a particular equation.  Always paired with 
+ an "equation" region.
 
 'authour_list'
--Information about the authors of the paper.  Usually comes at the beginning of the paper.  If some information is left-aligned, and some is right-aligned, and there is a significant space between them, the left and right aligned sections each get their own region.
+-Information about the authors of the paper.  Usually comes at the beginning of 
+ the paper.  If some information is left-aligned, and some is right-aligned, and
+ there is a significant space between them, the left and right aligned sections 
+ each get their own region.
 
 'footnote'
--A footnote explains some detail about the contents of the paper.  This is NOT the same as a footer, whihc is a small bit of repeating text found at the bottom 
-of each page.
+-A footnote explains some detail about the contents of the paper.  This is NOT 
+ the same as a footer, which is a small bit of repeating text found at the 
+ bottom of each page.
 
 'image'
--A picture (such as a photograph) in the paper.  The picture can be modified in any number of ways, but must be recognizable as a picture, rather than a diagram.
+-A picture (such as a photograph) in the paper.  The picture can be modified in 
+ any number of ways, but must be recognizable as a picture, rather than a 
+ diagram, a graph or some other figure.
 
 'graph'
--A single graph or chart.  Must contain a drawn or strongly implied set of axes.  Multiple graphs that are too close together to be reasonably segmented are not labeled as graphs - these get the 'figure' label.
+-A single graph or chart.  Must contain a drawn or strongly implied set of axes.
+ Multiple graphs should be split into individual regions.
 
 'figure'
--Any figure that does not fit into any of the other classes (code block, image, graph, etc.).  Most figures are diagrams used to illustrate something.  Multiple graphs that are too close together to reasonably segment are classified as figures.
+-Any figure that does not fit into any of the other classes (code block, image, 
+ graph, etc.).  Most figures are diagrams used to illustrate something.  
 
 'editor_list'
 -List of editors for a paper.
 
+'start_of_page'**
+-A special tag used by the MEMM sequential classifier to denote the start of a
+ page.  This tag should not be seen in the JTAG application, and no region
+ should ever be classified by this tag, but this is required by several Matlab
+ scripts to perform sequential classification of a given page.
+
+'end_of_page'**
+-A special tag used by the MEMM sequential classifier to denote the end of a
+ page.  This tag should not be seen in the JTAG application, and no region
+ should ever be classified by this tag, but this is required by several Matlab
+ scripts to perform sequential classification of a given page.
