@@ -5,7 +5,7 @@
 %% DESCRIPTION: Sample configuration file to be distributed with jtag
 %%              application.
 %%
-%% CVS: $Id: .jconfig,v 1.12 2004-11-10 22:21:13 klaven Exp $
+%% CVS: $Id: .jconfig,v 1.13 2005-12-22 15:49:58 scottl Exp $
 %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -25,7 +25,7 @@ config_style = global
 % Set the default selection mode.  Valid choices are 'crop' or
 % 'simple'.  Crop allows the user to create a bounding box with the mouse,
 % whereas simple only allows the user to select vertical boundaries by
-% clicking with the mouse (orizontal boundaries are the image width
+% clicking with the mouse (horizontal boundaries are the image width
 % boundaries)
 %mode = simple
 mode = crop
@@ -83,9 +83,8 @@ learner = lr_fn
 % as an argument.  Each argument you do specify should be separated by
 % whitespace.  For more information see the matlab file associated with the
 % learner specified above and the matlab/README file.
-% learner_args = '/h/40/klaven/jtag/matlab/features/nips-train-nomarks.knn.mat'
-learner_args = '/h/40/klaven/jtag/matlab/results/withmarks/marks-nips-train.lr.mat'
-% learner_args = '/h/40/klaven/jtag/matlab/memm/memm-jmlr.memm.mat'
+%learner_args = './matlab/results/withmarks/marks-jmlr-train.lr.mat'
+learner_args = './matlab/results/withmarks/marks-nips-train.lr.mat'
 
 % classes:
 % List of possible classification types based on the component of the journal
@@ -94,7 +93,6 @@ learner_args = '/h/40/klaven/jtag/matlab/results/withmarks/marks-nips-train.lr.m
 % values).  Each classifier will be separted by whitespace/newlines, and the
 % component name and colour can not contain any spaces.
 classes = (
-               figure               #1983F2
                abstract             #FF0000
                authour_list         #FFE600
                bullet_item          #33FF00
@@ -103,6 +101,7 @@ classes = (
                editor_list          #8000FF
                equation             #DC0000
                eq_number            #A37C90
+               figure               #1983F2
                figure_caption       #2CDC00
                figure_label         #00DC9A
                footer               #0058DC
@@ -119,22 +118,7 @@ classes = (
                table_label          #1D9400
                table_caption        #009467
                text                 #003B94
-           )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+               % the following 2 classes will not actually appear as buckets
+               start_of_page        #00FF00
+               end_of_page          #0000FF 
+          )
