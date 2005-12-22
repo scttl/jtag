@@ -1,8 +1,0 @@
-
-$Id: Improvements.txt,v 1.1 2004-01-23 18:04:38 klaven Exp $
-
-Desired Improvements
---------------------
-
--Make regions automatically SNAP after being split.
--Make SNAP incremental (horiz, vert, h, v, etc.), rather than all at once.
