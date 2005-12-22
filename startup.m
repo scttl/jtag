@@ -11,6 +11,9 @@ addpath('./matlab/utils/');
 addpath('./matlab/memm/');
 addpath('./matlab/merge/');
 addpath('./matlab/reflow/');
+addpath('./matlab/candcut/');
+addpath('./matlab/hmm/');
+addpath('./matlab/gaussnb/');
 global class_names
 class_names = {'text' 'authour_list' 'section_heading' 'main_title' ...
                'decoration' 'footnote' 'abstract' 'eq_number' ...
