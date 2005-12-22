@@ -10,6 +10,10 @@ addpath('./utils/');
 addpath('./memm/');
 addpath('./merge/');
 addpath('./reflow/');
+addpath('./candcut/');
+addpath('./denoise/');
+addpath('./gaussnb/');
+addpath('./hmm/');
 global class_names;
 class_names = {'text' 'authour_list' 'section_heading' 'main_title' ...
                'decoration' 'footnote' 'abstract' 'eq_number' ...
@@ -25,10 +29,3 @@ use.pnum = true;
 use.dens = true;
 use.mark = true;
 use.ocr = false;
-
-
-% imfile = 'cancedda03a.ac.tif';
-% p = imread(imfile);
-
-% segs = xycut(imfile);
-
