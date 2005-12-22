@@ -1,7 +1,7 @@
 ##################################################################################
 ## FILE: README
 ##
-## CVS: $Id: README,v 1.1 2003-09-15 18:11:43 scottl Exp $
+## CVS: $Id: README,v 1.2 2005-12-22 16:29:58 scottl Exp $
 ##
 ## DESCRIPTION: Text file describing this directory structure, its contents,
 ##              useage, and other notes.
@@ -30,6 +30,10 @@ README - this file
 TODO.txt - An irregularly updated text file containing a list of things that
            still must be completed for the JTAG application or any of its 
            helper scripts and components.
+building_a_data_set.txt - Gives an overview of scripts available to train and
+                         run classification algorithms on tagged page images.
+classlist.txt - This gives a definition of what each class in the program
+                entails.  Useful when deciding how to tag new pages.
 segmentation_alg_survey.ps - This postscript file contains a survey of several
                              bottom-up and top-down page segmentation 
                              algorithms, and was used as the basis for the 
