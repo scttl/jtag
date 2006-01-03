@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.15 2004-04-22 17:08:20 klaven Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.16 2006-01-03 22:28:41 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.15  2004-04-22 17:08:20  klaven
+## Revision 1.16  2006-01-03 22:28:41  scottl
+## Added candidate cut functionality, removed dependence on imagemagick
+##
+## Revision 1.15  2004/04/22 17:08:20  klaven
 ## Reduced the threshold for snapping.  The snapping was causing regions to miss a fair bit of ink, and sometimes to omit entire symbols (such as superscripts in equations).
 ##
 ## Revision 1.14  2004/01/19 01:44:57  klaven
@@ -247,6 +250,9 @@ proc ::Jtag::Image::create_image {file_name} {
 
     # attempt to add auto-prediction functionality buttons
     ::Jtag::Menus::auto_prediction
+
+    # attempt to add candidate-cut functionality button
+    ::Jtag::Menus::cand_cuts
 
     # scale and add the image to the canvas
     set ScaleW [expr [$can(path) cget -width] / ($img(actual_width) + 0.0)]
@@ -697,6 +703,39 @@ proc ::Jtag::Image::go_to_pg {pg} {
 }
 
 
+# ::Jtag::Image::add_cut --
+#
+#   Adds the point passed onto the canvas for display
+#
+# Arguments:
+#   x - the x-coodinate of the point
+#   y - the y-coordinate of the point
+#
+# Results:
+# 
+proc ::Jtag::Image::add_cut {x y} {
+
+    # link the globals
+    variable can
+    variable img
+
+    # declare any locals
+    variable z
+    set z [expr $img(zoom)]
+    set x1 [expr $z * $x]
+    set y1 [expr $z * $y]
+    set x2 [expr $x1 + 1]
+    set y2 [expr $y1 + 1]
+
+    debug {entering ::Jtag::Image::add_cut}
+
+    set id [$can(path) create oval $x1 $y1 $x2 $y2]
+    $can(path) itemconfigure $id -width 3 -activewidth 6 -fill red -outline \
+        red
+
+}
+
+
 
 # PRIVATE PROCEDURES #
 ######################
@@ -719,17 +758,14 @@ proc ::Jtag::Image::GetFormat {file_name} {
     global appdir
 
     # declare any local variables necessary
-    variable IdentPath $appdir/bin/identify
-    variable IdentArg1 {-format}
-    variable IdentArg2 {"%m"}
-    variable IdentArg3 {2>/dev/null}
+    variable FileExe file
     variable DotPos
     variable Extn
 
-    # check to see if the 'identify' program exists in the appropriate dir.
-    if {[file executable $IdentPath]} {
+    # check to see if the 'file' program exists on the system
+    if {[exec which $FileExe {2>/dev/null}] != ""} {
         # use the tool to determine the image type
-        set Result [exec $IdentPath $IdentArg1 $IdentArg2 $IdentArg3 $file_name]
+        set Result [exec $FileExe $file_name]
 
         switch -regexp -- $Result {
             TIFF|TIF {
