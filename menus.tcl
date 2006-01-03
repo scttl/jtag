@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.15 2004-06-28 16:22:38 klaven Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.16 2006-01-03 22:29:29 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.15  2004-06-28 16:22:38  klaven
+## Revision 1.16  2006-01-03 22:29:29  scottl
+## Added candidate cuts functionality.
+##
+## Revision 1.15  2004/06/28 16:22:38  klaven
 ## *** empty log message ***
 ##
 ## Revision 1.14  2004/04/22 17:08:20  klaven
@@ -101,6 +104,7 @@ namespace eval ::Jtag::Menus {
     set edit(next_btn) {}
     set edit(prev_btn) {}
     set edit(predict_btn) {}
+    set edit(cands_btn) {}
 
     # the zoom menu
     variable zoom
@@ -414,8 +418,6 @@ proc ::Jtag::Menus::run_prediction {} {
     ::blt::busy hold .
 
     # build a temporary matlab script that can be used
-    # lappend TmpScript "addpath $MatlabPath"
-    # lappend TmpScript "setmlpaths"
     if {$cnfg(learner_args) == ""} {
         eval lappend TmpScript "{classify_pg( $Classes, '$img(file_name)', \
                       '$cnfg(learner)')}"
@@ -456,6 +458,154 @@ proc ::Jtag::Menus::run_prediction {} {
 }
 
 
+# ::Jtag::Menus::cand_cuts --
+#
+#    Enables or disables the ability to have the JTAG application
+#    automatically find candidate cut points (for later use in segmentation
+#    or classification)
+#    This is accomplished through the use of config file
+#    settings and MATLAB functionality.  If matlab, the candidate cut
+#    scripts, or other dependancies can not be found, this feature is
+#    disabled.
+#
+# Arguments:
+#    
+# Results:
+#    All of the required components (matlab executable, matlab
+#    scripts) are checked for and if any are missing or invalid, the 
+#    functionality is disabled and 0 is returned.  Only if all the above exist
+#    is a button created that allows displaying of candidate-cuts.
+
+proc ::Jtag::Menus::cand_cuts {} {
+
+    # link the appdir global variable
+    global appdir
+
+    # link any namespace variables needed
+    variable f
+    variable edit
+    variable ::Jtag::Image::img
+    variable ::Jtag::Config::cnfg
+    variable ::Jtag::Menus::matlab_exe
+
+    # declare any local variables needed
+    variable CandCutFn $appdir/matlab/candcut/candcuts.m
+    
+    debug {entering ::Jtag::Menus::cand_cuts}
+    
+    
+    # start by disabling cand_cuts (incase it was enabled previously)
+    destroy $edit(cands_btn)
+    catch {$edit(m) delete "Display Candidate Cuts"}
+
+    # does matlab exist in the path
+    if {[exec which $matlab_exe {2>/dev/null}] == ""} {
+        debug {failed to set cand_cuts: $matlab_exe not in path}
+        return 0
+    }
+
+    # does our matlab page prediction function file exist?
+    if {! [file exists $CandCutFn]} {
+        debug {failed to set cand_cuts: $CandCutFn doesn't exist}
+        return 0
+    }
+    
+    # everything looks ok, create the button and display it.
+    set edit(cands_btn) $f(path).cands
+    button $edit(cands_btn) -text {Display Candidate Cuts} -relief solid \
+              -overrelief raised -command {::Jtag::Menus::get_cand_cuts}
+    $edit(m) add command -label "Display Candidate Cuts" -command \
+              {::Jtag::Menus::get_cand_cuts}
+    pack $edit(cands_btn) -side left
+}
+
+
+# ::Jtag::Menus::get_cand_cuts --
+#   
+#    This procedure carries out the actual candidate cut detection process
+#    using MATLAB procedures (the existence of which are verified in the
+#    cand_cuts proc above)
+#
+# Arguments: 
+#   
+# Results: 
+#    Any candidate points found on the page are displayed on top of the image.
+#    If there is a problem at any time it is displayed to the user and the 
+#    candidate cut procedure is cancelled.  Otherwise the file has its
+#    new jtag and jlog selection items reloaded and displayed.
+
+proc ::Jtag::Menus::get_cand_cuts {} {
+
+    # link the appdir global variable
+    global appdir
+
+    # link any namespace variables needed
+    variable ::Jtag::Image::img
+    variable ::Jtag::Config::cnfg
+    variable ::Jtag::Config::data
+    variable ::Jtag::Menus::matlab_exe 
+    
+    # declare any local variables needed
+    variable TmpInFile $appdir/tmpIn.m
+    variable TmpOutFile $appdir/tmpOut.m
+    variable MatlabPath $appdir/matlab
+    variable TmpScript {}
+    variable FoundSels 0
+    variable RemoveOk 0
+    variable I
+    variable Classes
+    variable Result
+    variable FID
+    variable Line
+
+    debug {entering ::Jtag::Menus::get_cand_cuts}
+
+    update
+    ::blt::busy hold .
+
+    # build a temporary matlab script that can be used
+    eval lappend TmpScript "{\[tl, tr, bl, br\] = candcuts( '$img(file_name)')}"
+    if {[catch {::Jtag::File::write $TmpInFile $TmpScript} Response]} {
+        debug "Failed to create temp file $TmpInFile.  Reason:\n$Response"
+        return
+    }
+
+    # run it (saving the output)
+    ::Jtag::UI::status_text "Running Candidate-Cut Determiniation...."
+    update idletasks
+    eval exec $matlab_exe -nojvm -nosplash "<" $TmpInFile "> " $TmpOutFile
+    ::blt::busy release .
+
+    file delete $TmpInFile
+
+    # redisplay the page
+    if {$FoundSels} {
+        while {[array names data -regexp {(.*)(,)([0-9])+}] != ""} {
+            ::Jtag::Classify::remove [lindex \
+                         [array names data -regexp {(.*)(,)([0-9])+}] 0]
+        }
+    }
+    ::Jtag::Image::clear_canvas
+    if {[catch {::Jtag::Image::create_image $img(file_name)} Response]} {
+        debug "Failed to validate/display new image.  Reason:\n$Response"
+    }
+
+    ::Jtag::UI::status_text "Successfully Reopened image: $img(file_name)"
+
+    # draw the new points from the output file created above
+    ::Jtag::UI::status_text "Adding cut points\n"
+    set FID [open $TmpOutFile r]
+
+    while {! [eof $FID]} {
+        set Line [string trimleft [gets $FID]]
+        # we're looking for x,y pixel offset pairs separated by whitespace
+        if {[regexp ^(\\d+)(\\s+)(\\d+)$ $Line Match D1 WS D2]} {
+            ::Jtag::Image::add_cut $D1 $D2
+        }
+    }
+    file delete $TmpOutFile
+
+}
 
 
 # PRIVATE PROCEDURES #
