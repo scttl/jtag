@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for handling all things related to journal
 ##              page images and the canvas upon which they are displayed.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.16 2006-01-03 22:28:41 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/image.tcl,v 1.17 2006-01-04 19:46:00 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: image.tcl,v $
-## Revision 1.16  2006-01-03 22:28:41  scottl
+## Revision 1.17  2006-01-04 19:46:00  scottl
+## Fixup position of candidate cuts dots, delete temp file in auto-predict
+##
+## Revision 1.16  2006/01/03 22:28:41  scottl
 ## Added candidate cut functionality, removed dependence on imagemagick
 ##
 ## Revision 1.15  2004/04/22 17:08:20  klaven
@@ -722,8 +725,8 @@ proc ::Jtag::Image::add_cut {x y} {
     # declare any locals
     variable z
     set z [expr $img(zoom)]
-    set x1 [expr $z * $x]
-    set y1 [expr $z * $y]
+    set x1 [expr $z * $x - 1]
+    set y1 [expr $z * $y - 1]
     set x2 [expr $x1 + 1]
     set y2 [expr $y1 + 1]
 

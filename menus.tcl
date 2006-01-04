@@ -5,11 +5,14 @@
 ## DESCRIPTION: Responsible for the creation and manipulation of menu items
 ##              as part of the interface for the application.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.16 2006-01-03 22:29:29 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/menus.tcl,v 1.17 2006-01-04 19:46:00 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: menus.tcl,v $
-## Revision 1.16  2006-01-03 22:29:29  scottl
+## Revision 1.17  2006-01-04 19:46:00  scottl
+## Fixup position of candidate cuts dots, delete temp file in auto-predict
+##
+## Revision 1.16  2006/01/03 22:29:29  scottl
 ## Added candidate cuts functionality.
 ##
 ## Revision 1.15  2004/06/28 16:22:38  klaven
@@ -437,7 +440,7 @@ proc ::Jtag::Menus::run_prediction {} {
     ::blt::busy release .
 
     # clean up the temp script
-    # file delete $TmpFile
+    file delete $TmpFile
 
     # redisplay the page
     if {$FoundSels} {
