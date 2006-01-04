@@ -6,11 +6,15 @@
 ##              configuration settings for the jtag application.  Also
 ##              contains methods to update these settings.
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.14 2004-06-28 16:22:38 klaven Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/config.tcl,v 1.15 2006-01-04 21:53:32 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: config.tcl,v $
-## Revision 1.14  2004-06-28 16:22:38  klaven
+## Revision 1.15  2006-01-04 21:53:32  scottl
+## Removed start_of_page and end_of_page buckets, fixed snap bug causing
+## other selection to move after manual resize
+##
+## Revision 1.14  2004/06/28 16:22:38  klaven
 ## *** empty log message ***
 ##
 ## Revision 1.13  2004/01/19 01:44:57  klaven
@@ -134,9 +138,8 @@ namespace eval ::Jtag::Config {
     set data(title,num_sels) 0
     set data(equation,colour) red
     set data(equation,num_sels) 0
-    #added by Kevin
-      set data(eq_number,colour) purple
-      set data(eq_number,num_sels) 0
+    set data(eq_number,colour) purple
+    set data(eq_number,num_sels) 0
     set data(image,colour) orange
     set data(image,num_sels) 0
     set data(graph,colour) yellow

@@ -5,11 +5,15 @@
 ## DESCRIPTION: Contains methods to carry out the classification process
 ##              (selection of text, bucket selection etc.)
 ##
-## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.19 2003-09-15 19:06:35 scottl Exp $
+## CVS: $Header: /p/learning/cvs/projects/jtag/classify.tcl,v 1.20 2006-01-04 21:53:32 scottl Exp $
 ##
 ## REVISION HISTORY:
 ## $Log: classify.tcl,v $
-## Revision 1.19  2003-09-15 19:06:35  scottl
+## Revision 1.20  2006-01-04 21:53:32  scottl
+## Removed start_of_page and end_of_page buckets, fixed snap bug causing
+## other selection to move after manual resize
+##
+## Revision 1.19  2003/09/15 19:06:35  scottl
 ## Small bugfix to ensure we only activate the one matching bucket.
 ##
 ## Revision 1.18  2003/09/11 18:26:21  scottl
@@ -147,7 +151,10 @@ namespace eval ::Jtag::Classify {
 #
 #    Using information taken from the config file, sets up two frame widgets
 #    and evenly places buttons representing buckets inside them.  Also sets up
-#    each bucket as a drag&drop target.
+#    each bucket as a drag&drop target.  Note that if either of the two 
+#    specially named buckets: "start_of_page" or "end_of_page" is included in
+#    the list of buckets, these two are ignored since it doesn't make sense to
+#    tag an item as either of these.
 #
 # Arguments:
 #    wl    The left parent window path.  The left frame will be a child of
@@ -174,6 +181,8 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     variable Count
     variable Match
     variable Name
+    variable IgnoreSP "start_of_page" 
+    variable IgnoreEP "end_of_page"
 
     # the paths to the left, right frames
     variable LF
@@ -195,6 +204,12 @@ proc ::Jtag::Classify::create_buckets {wl wr} {
     # button
     set Count 1
     foreach I [lsort -dictionary [array names data -regexp {(.*)(,)(colour)}]] {
+
+        # skip if we match any of the Ignore strings
+        if {[regexp $IgnoreSP $I] || [regexp $IgnoreEP $I]} {
+            continue
+        }
+
         set Item(colour) $data($I)
         regexp (.*)(,)(colour) $I Match Name
         if {$Count % 2} {
@@ -744,9 +759,15 @@ proc ::Jtag::Classify::B1MotionDecide {c x y} {
     variable ::Jtag::Config::cnfg
 
     # declare any local variables needed
+    variable R
+    variable Coords
 
     # short circuit the call if we are in the middle of a drag & drop op
-    if {[::blt::drag&drop active]} {
+    # or happen to nudge the mouse while presseing or releasing the button
+    # inside a rectangle (ex after snapping or merging a selection)
+    set R [$c find withtag current]
+    set Coords [$c coords $R]
+    if {[::blt::drag&drop active] || [llength $Coords] == 4} {
         return
     }
 
