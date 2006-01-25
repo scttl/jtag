@@ -3,7 +3,7 @@
 ##
 ## FILE: update_jfiles.pl
 ##
-## CVS: $Id: update_jfiles.pl,v 1.1 2003-09-15 13:40:32 scottl Exp $
+## CVS: $Id: update_jfiles.pl,v 1.2 2006-01-25 20:23:53 scottl Exp $
 ##
 ## DESCRIPTION: script that attempts to convert the img tag in jtag and jlog
 ## files by replacing it with its full path if it is found in the same directory
@@ -65,7 +65,9 @@ while (defined($jfile = readdir(DIR))) {
            if ($line =~ $img_expn) {
 
                # does img file exist?
-               if (! -e $5) {
+               # don't check this anymore since we sometimes copy files to
+               # new directories
+               #if (! -e $5) {
 
                    #see if filename can be found in curr dir
                    $_ = $5;
@@ -77,7 +79,7 @@ while (defined($jfile = readdir(DIR))) {
                        $found = 1;
                        last;
                    }
-               }
+               #}
            }
         }
         close(FILE);
