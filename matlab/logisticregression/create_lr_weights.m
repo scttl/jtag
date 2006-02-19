@@ -10,7 +10,7 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 %   selections used to determine the weights.  The optional arguments that can
 %   be specified include SIGMA, the inverse variance of the gaussian weight
 %   prior (defaults to 1e-3), and ITERATIONS which specifies the maximum
-%   number of evaluations performed during optomization (defaults to 1e8). 
+%   number of evaluations performed during optomization (defaults to 1e4). 
 %   The struct w returned has the following structure:
 %
 %     w.class_names -> cell array whose entries represent the string name of
@@ -23,11 +23,14 @@ function w = create_lr_weights(data, sigma, maxevals, outfile)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: create_lr_weights.m,v 1.5 2004-12-04 22:12:22 klaven Exp $
+% $Id: create_lr_weights.m,v 1.6 2006-02-19 18:32:13 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: create_lr_weights.m,v $
-% Revision 1.5  2004-12-04 22:12:22  klaven
+% Revision 1.6  2006-02-19 18:32:13  scottl
+% Removed unused calls, cleaned up some diagnostic messages.
+%
+% Revision 1.5  2004/12/04 22:12:22  klaven
 % *** empty log message ***
 %
 % Revision 1.4  2004/08/04 20:51:19  klaven
@@ -96,16 +99,12 @@ cc = [];
 ff = [];
 for i = 1:data.num_pages
     if (min(data.pg{i}.cid) <= 0);
-        %fprintf('Found pg{%i} if %s has a cid of 0.\n',i,char(data.pg_names(i)));
-        error('ERROR - invalid cid');
+        error('ERROR - invalid cid in page %i', i);
     end;
     cc = [cc; reshape(data.pg{i}.cid,length(data.pg{i}.cid),1)];
     ff = [ff, data.pg{i}.features'];
 end
 
-%fprintf('cc(42)=%i\n',cc(42));
-
-%C = max(cc(:));
 C = length(class_names);
 [M,N] = size(ff);
 
