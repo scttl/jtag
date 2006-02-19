@@ -35,11 +35,14 @@ function [tl, tr, bl , br] = candcuts(img_file, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: candcuts.m,v 1.1 2005-11-16 18:04:19 scottl Exp $
+% $Id: candcuts.m,v 1.2 2006-02-19 18:29:34 scottl Exp $
 %
 % REVISION HISTORY:
 % $Log: candcuts.m,v $
-% Revision 1.1  2005-11-16 18:04:19  scottl
+% Revision 1.2  2006-02-19 18:29:34  scottl
+% Pushed pixels in by 1 on top and left to ensure we always reduce box size.
+%
+% Revision 1.1  2005/11/16 18:04:19  scottl
 % Initial revision.
 %
 %
@@ -65,7 +68,7 @@ if (ischar(img_file));
 else;
     p = img_file;
 end;
-p = 1 - p;
+p = ~p;
 
 if nargin >= 2
     ht = varargin{1};
@@ -281,7 +284,7 @@ br = [];
 % now recurse the boxes formed from the new points
 for i=1:length(cand_tops)
     for j=1:length(cand_lefts)
-        if cand_lefts(j) >= cand_rights(j) | cand_tops(i) >= cand_bots(i)
+        if cand_lefts(j) +1 >= cand_rights(j) | cand_tops(i) +1 >= cand_bots(i)
             %candidate box too narrow, skip it
             continue;
         end
