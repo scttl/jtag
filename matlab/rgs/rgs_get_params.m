@@ -7,7 +7,7 @@ prior_smoothing = 1;
 beta_smoothing = 1;
 
 global class_names;
-[feats,cids] = get_all_feats(td);
+[feats,cids] = get_all_features(td);
 
 means = zeros(length(class_names),size(feats,2));
 sigmas = zeros(length(class_names),size(feats,2));
