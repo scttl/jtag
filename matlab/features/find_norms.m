@@ -1,6 +1,6 @@
 function norms = find_norms(td);
 
-allfeats = get_all_feats(td);
+allfeats = get_all_features(td);
 
 for i=1:length(td.feat_names);
     if (td.feat_normalized);
