@@ -17,16 +17,19 @@ function res = mark_candidates(img_file, varargin)
 %   If there is a problem at any point an error is returned.  On success res
 %   is set to 1, and 0 otherwise.
 %
-%   See also:  CANDIDATE_CUTS
+%   See also:  CANDCUTS
 
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: mark_candidates.m,v 1.1 2005-11-16 18:05:14 scottl Exp $
+% $Id: mark_candidates.m,v 1.2 2006-02-19 18:28:05 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: mark_candidates.m,v $
-% Revision 1.1  2005-11-16 18:05:14  scottl
+% Revision 1.2  2006-02-19 18:28:05  scottl
+% Updated description.
+%
+% Revision 1.1  2005/11/16 18:05:14  scottl
 % Initial revision.
 %
 
@@ -90,7 +93,7 @@ fprintf('(%d,%d)\n', br');
 for i=1:size(tl,1)
     pixels = augment(pixels, tl(i,:),'none');
 end
-for i=1:size(tl,1)
+for i=1:size(tr,1)
     pixels = augment(pixels, tr(i,:),'left');
 end
 for i=1:size(bl,1)
