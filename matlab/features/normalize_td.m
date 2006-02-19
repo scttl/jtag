@@ -1,7 +1,7 @@
 function td = normalize_td(td_in, norm); 
 
 if (isfield(td_in,'already_normalized') && td_in.already_normalized);
-    fprintf('ERROR - training data with %i pages is already normalized',td.num_pages);
+    fprintf('ERROR - training data with %i pages is already normalized',td_in.num_pages);
 end; 
 
 
