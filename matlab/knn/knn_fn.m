@@ -19,11 +19,14 @@ function class_id = knn_fn(class_names, features, jtag_file, in_data, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: knn_fn.m,v 1.7 2004-12-15 00:52:00 klaven Exp $
+% $Id: knn_fn.m,v 1.8 2006-05-13 19:16:55 scottl Exp $
 % 
 % REVISION HISTORY:
 % $Log: knn_fn.m,v $
-% Revision 1.7  2004-12-15 00:52:00  klaven
+% Revision 1.8  2006-05-13 19:16:55  scottl
+% Implemented the ability to choose other k values (not tested)
+%
+% Revision 1.7  2004/12/15 00:52:00  klaven
 % *** empty log message ***
 %
 % Revision 1.6  2004/08/16 22:38:31  klaven
@@ -70,7 +73,7 @@ allow_perfect_match = false;  % Setting this to true will allow "perfect"
                               % matches, which generally represent an item
                               % matching itself.
 
-k = 1;  % default number of nearest neighbours to consider if k not passd as
+k = 1;  % default number of nearest neighbours to consider if k not passed as
         % an arg above.
 
 distances = [];  % will hold the top k nearest distances as they are computed
@@ -151,7 +154,8 @@ for ff = 1:size(features,1);
             if ((dist < max_dist) && (allow_perfect_match || (dist > 0)));
                 % add this element to the top k in the appropriate position.
                 pos = 1;
-                while pos < k & pos <= num_elems & dist >= distances(pos)
+                while pos < k & pos <= num_elems & ...
+                      length(distances) >= pos & dist >= distances(pos)
                     pos = pos + 1;
                 end
 

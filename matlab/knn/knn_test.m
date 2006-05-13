@@ -1,5 +1,15 @@
-function [correct,total,results] = knn_test(f_test, f_train);
-% function [correct,total,results] = knn_test(f_test, f_train);
+function [correct,total,results] = knn_test(f_test, f_train, varargin);
+% function [correct,total,results] = knn_test(f_test, f_train, {k});
+
+% first do some sanity checking on the arguments passed
+error(nargchk(2,3,nargin));
+
+if nargin == 3
+    k = varargin{1};
+    %fprintf('Value of K is %i\n',k);
+else
+    k = 1;
+end
 
 if (length(f_test.feat_names) ~= length(f_train.feat_names));
     error('TEST and TRAIN data must us the same features.');
@@ -27,7 +37,7 @@ for i=1:length(f_test.pg);
 end;
 
 classes = f_train.class_names;
-pred_cid = knn_fn(classes,feats,'null',f_train);
+pred_cid = knn_fn(classes,feats,'null',f_train,k);
 pred_cn = classes(pred_cid);
 
 results = zeros(length(classes),length(classes)+1);
