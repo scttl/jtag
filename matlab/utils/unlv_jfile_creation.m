@@ -19,10 +19,14 @@ function unlv_jfile_creation(pg_file, img_dir, img_extn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: unlv_jfile_creation.m,v 1.1 2007-01-02 17:13:18 scottl Exp $
+% $Id: unlv_jfile_creation.m,v 1.2 2007-01-02 19:09:05 scottl Exp $
 %
 % REVISION HISTORY
 % $Log: unlv_jfile_creation.m,v $
+% Revision 1.2  2007-01-02 19:09:05  scottl
+% added additional class names based on other UNLV datasets.  Added a few
+% comments.
+%
 % Revision 1.1  2007-01-02 17:13:18  scottl
 % initial check-in.
 %
@@ -52,37 +56,39 @@ class_attempts = 1;
 resize_attempts = 0;
 
 %default ordered list of classe names to use
-classes = {'section_heading', ...
-    'subsection_heading', ...
-    'footer', ...
-    'references', ...
-    'start_of_page', ...
-    'bullet_item', ...
-    'table_label', ...
-    'header', ...
-    'authour_list', ...
-    'code_block', ...
-    'main_title', ...
-    'figure_label', ...
-    'figure', ...
-    'image', ...
-    'text', ...
-    'equation', ...
-    'footnote', ...
-    'figure_caption', ...
-    'decoration', ...
-    'abstract', ...
-    'end_of_page', ...
-    'table', ...
-    'graph', ...
-    'eq_number', ...
-    'editor_list', ...
-    'table_caption', ...
-    'pg_number'};
+classes = {'section_heading', ...   %1
+    'subsection_heading', ...       %2
+    'footer', ...                   %3
+    'references', ...               %4
+    'start_of_page', ...            %5
+    'bullet_item', ...              %6
+    'table_label', ...              %7
+    'header', ...                   %8
+    'authour_list', ...             %9
+    'code_block', ...               %10
+    'main_title', ...               %11
+    'figure_label', ...             %12
+    'figure', ...                   %13
+    'image', ...                    %14
+    'text', ...                     %15
+    'equation', ...                 %16
+    'footnote', ...                 %17
+    'figure_caption', ...           %18
+    'decoration', ...               %19
+    'abstract', ...                 %20
+    'end_of_page', ...              %21
+    'table', ...                    %22
+    'graph', ...                    %23
+    'eq_number', ...                %24
+    'editor_list', ...              %25
+    'table_caption', ...            %26
+    'pg_number'};                   %27
 
 map_names = {'Caption', 'Footnote', 'Header/Footer', 'Other_Text', 'Table', ...
-             'Text'};
-map_vals = [18,17,8,15,22,15];
+             'Text', 'Letterhead', 'Dateline', 'Inside_Addr', 'Salutat', ...
+             'Closing', 'Signer', 'Sign/Type', 'Enclosure', 'cc', ...
+             'Attent_line', 'Subject', 'Company_Sig'};
+map_vals = [18,17,8,15,22,15,15,15,15,15,15,9,15,15,15,15,1,15];
 
 %value to assign when a zone type doesn't match any of the classes
 default_map = 15;  %this is text in the default list
@@ -102,11 +108,13 @@ end
 %read the list of images from the page file
 imgs = textread(pg_file, '%s');
 num_imgs = length(imgs);
+fprintf('found %d images to process\n', num_imgs);
 %convert any  '-' in the listed files to '_'
 imgs = regexprep(imgs, '-', '_');
 
 %loop and read the zone information from each file in the list (if it exists)
 for ii=1:num_imgs
+    fprintf('processing img: %d\r', ii);
     s.img_file = [img_dir, '/', imgs{ii}, '.', img_extn];
     s.jtag_file = [img_dir, '/', imgs{ii}, '.jtag'];
     s.jlog_file = [img_dir, '/', imgs{ii}, '.jlog'];
@@ -134,6 +142,7 @@ for ii=1:num_imgs
         error('problem creating jtag file for %s', s.img_file);
     end
 end
+fprintf('\n');
 
 
 
