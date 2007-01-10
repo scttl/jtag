@@ -1,7 +1,7 @@
 function unlv_jfile_creation(pg_file, img_dir, img_extn, varargin)
 % UNLV_JFILE_CREATION  Creates jtag and jlog files for UNLV OCR ground truth
 %
-%  UNLV_JFILE_CREATION(PG_FILE, IMG_DIR, IMG_EXTN, OUT_DIR, [VAR1, VAL1],...)
+%  UNLV_JFILE_CREATION(PG_FILE, IMG_DIR, IMG_EXTN, [VAR1, VAL1],...)
 %
 %  PG_FILE should be the full path and name of a file listing the pages
 %  to create jtag/jlog files for.  The files should be listed with '-' instead
@@ -19,11 +19,14 @@ function unlv_jfile_creation(pg_file, img_dir, img_extn, varargin)
 
 % CVS INFO %
 %%%%%%%%%%%%
-% $Id: unlv_jfile_creation.m,v 1.2 2007-01-02 19:09:05 scottl Exp $
+% $Id: unlv_jfile_creation.m,v 1.3 2007-01-10 18:49:15 scottl Exp $
 %
 % REVISION HISTORY
 % $Log: unlv_jfile_creation.m,v $
-% Revision 1.2  2007-01-02 19:09:05  scottl
+% Revision 1.3  2007-01-10 18:49:15  scottl
+% small fixup in comment.
+%
+% Revision 1.2  2007/01/02 19:09:05  scottl
 % added additional class names based on other UNLV datasets.  Added a few
 % comments.
 %
