@@ -1,16 +1,9 @@
-##################################################################################
-## FILE: README
-##
-## CVS: $Id: README,v 1.1 2003-08-29 18:54:15 scottl Exp $
-##
-## DESCRIPTION: Text file describing this directory structure, its contents,
-##              useage, and other notes.
-##
-## ARGUMENTS:
-##
-## REQUIRES:
-##
-################################################################################
+JTAG
+====
+Journal Image Tagger software developed by Scott Leishman and Kevin Laven circa 2003.
+
+A brief overview and a couple of screenshots can be found at:
+http://www.cs.toronto.edu/~scottl/data/jtag.html
 
 
 1. Directory Contents
